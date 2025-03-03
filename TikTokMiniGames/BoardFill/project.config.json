@@ -1,16 +1,1 @@
-{
-    "setting": {
-        "urlCheck": true,
-        "es6": true,
-        "postcss": true,
-        "minified": true,
-        "newFeature": true,
-        "autoCompile": true,
-        "compileHotReLoad": true,
-        "nativeCompile": true
-    },
-    "appid": "ttc6ccb07159c6d33302",
-    "projectname": "BoardFill",
-    "douyinProjectType": "native",
-    "cloudfunctionRoot": "cloudfunctions/"
-}
+{"setting":{"urlCheck":true,"es6":true,"postcss":true,"minified":true,"newFeature":true,"autoCompile":true,"compileHotReLoad":true,"nativeCompile":true},"appid":"ttc6ccb07159c6d33302","projectname":"BoardFill","douyinProjectType":"native","cloudfunctionRoot":"cloudfunctions/"}

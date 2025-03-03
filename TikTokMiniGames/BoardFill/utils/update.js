@@ -1,5 +1,9 @@
 import {canvas} from "../canvas"
-import {touched_start_button, init_game_1} from "../game/game_state"
+import {drawMainPage, 
+    touched_start_button, 
+    init_game_1, 
+    touched_return_button,
+    destroy_board} from "../game/game_state"
 
 export var game_state = 0;
 
@@ -12,7 +16,12 @@ function update_main_page(x, y) {
 }
 
 function update_game_page(x, y) {
-
+    // some special case first: return / hint / how_to_play / revoke
+    if (touched_return_button(x, y)) {
+        game_state = 0;
+        destroy_board();
+        drawMainPage();
+    }
 }
 
 export function update(touchInfo) {
