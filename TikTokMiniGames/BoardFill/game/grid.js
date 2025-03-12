@@ -1,4 +1,3 @@
-
 export class Grid {
     constructor(row = null, col = null, canModify = null, state = null) {
         this.row = row;
