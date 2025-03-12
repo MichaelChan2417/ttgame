@@ -1,10 +1,12 @@
-import {canvas, ctx, systemInfo} from "../canvas"
+import { canvas, ctx, systemInfo } from "../canvas"
 import { boardInstance, initBoard, destroyBoard } from "./board"
-
+import { logger  } from "./log"
 
 const window_width = systemInfo.windowWidth
 const window_height = systemInfo.windowHeight
 
+export const return_button_y = 80;
+export const return_button_height = 40;
 
 let expected_button_width = Math.floor(0.45 * window_width)
 let expected_button_height = Math.floor(0.12 * window_height)
@@ -48,8 +50,8 @@ let return_button_width = 40;
 let return_button_height = 40;
 
 export function init_game_1() {
-    console.log("init_game_1")
-    ctx.fillStyle = '#ffffff';
+    logger.log("init_game_1")
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, systemInfo.windowWidth, systemInfo.windowHeight);
 
     // draw return button
@@ -63,18 +65,18 @@ export function init_game_1() {
                 returnButtonImage.width, returnButtonImage.height,
                 return_button_x, return_button_y,
                 return_button_width, return_button_height,
-            );
-        };
-
-        
-    }
-    load_return_button();
-
-    // board initialize
-    initBoard();
-
-    // draw game timer
-    drawGameTimer();
+                );
+            };
+            
+            
+        }
+        load_return_button();
+        logger.log('This is a test message');
+        // board initialize
+        initBoard();
+        boardInstance.draw(ctx);
+        // draw game timer
+        drawGameTimer();
 }
 
 
@@ -106,9 +108,6 @@ let time_background_height = 40;
 let time_background_x = (window_width - time_background_width) / 2;
 let time_background_y = return_button_y;            // same height with return button
 function drawGameTimer() {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, systemInfo.windowWidth, systemInfo.windowHeight);
-
     // draw timebackground
     function load_time_background() {
         const timeBackgroundImage = tt.createImage();
@@ -141,7 +140,7 @@ function drawGameTimer() {
     const timerUpdate = setInterval(() => {
         if (boardInstance == null) {
             clearInterval(timerUpdate);
-            console.log("Timer Stopped");
+            logger.log("Timer Stopped");
             return;
         }
         load_time_background();
