@@ -65,18 +65,16 @@ export function init_game_1() {
                 returnButtonImage.width, returnButtonImage.height,
                 return_button_x, return_button_y,
                 return_button_width, return_button_height,
-                );
-            };
-            
-            
-        }
-        load_return_button();
-        logger.log('This is a test message');
-        // board initialize
-        initBoard();
-        boardInstance.draw(ctx);
-        // draw game timer
-        drawGameTimer();
+            );
+        };
+    }
+    load_return_button();
+    logger.log('This is a test message');
+    // board initialize
+    initBoard();
+    boardInstance.draw(ctx);
+    // draw game timer
+    drawGameTimer();
 }
 
 

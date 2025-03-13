@@ -34,42 +34,42 @@ class Board {
     }
 
 
-draw(ctx) {
-    // 计算安全区域（考虑返回按钮高度）
-    const safeArea = {
-      startY: return_button_y + return_button_height + 60,
-      availableHeight: systemInfo.windowHeight - return_button_y - return_button_height - 40
-    };
-  
-    // 动态计算格子尺寸
-    this.cellSize = Math.min(
-      Math.floor((systemInfo.windowWidth - 7 * 10) / 6), // 横向最大尺寸
-      Math.floor(safeArea.availableHeight / 6)          // 纵向最大尺寸
-    );
-  
-    // 居中布局
-    this.startPos = {
-      x: (systemInfo.windowWidth - (6 * this.cellSize + 5 * 10)) / 2, // 水平居中
-      y: safeArea.startY
-    };
-  
-    // 绘制棋盘
-    for (let i = 0; i < 6; i++) {
-      for (let j = 0; j < 6; j++) {
-        const x = this.startPos.x + j * (this.cellSize + 10);
-        const y = this.startPos.y + i * (this.cellSize + 10);
-        
-        // 绘制格子
-        ctx.fillStyle = COLORS[this.grid[i][j].state];
-        ctx.fillRect(x, y, this.cellSize, this.cellSize);
-        
-        // 绘制边框
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, this.cellSize, this.cellSize);
-      }
+    draw(ctx) {
+        // 计算安全区域（考虑返回按钮高度）
+        const safeArea = {
+            startY: return_button_y + return_button_height + 60,
+            availableHeight: systemInfo.windowHeight - return_button_y - return_button_height - 40
+        };
+    
+        // 动态计算格子尺寸
+        this.cellSize = Math.min(
+            Math.floor((systemInfo.windowWidth - 7 * 10) / 6), // 横向最大尺寸
+            Math.floor(safeArea.availableHeight / 6)          // 纵向最大尺寸
+        );
+    
+        // 居中布局
+        this.startPos = {
+        x: (systemInfo.windowWidth - (6 * this.cellSize + 5 * 10)) / 2, // 水平居中
+        y: safeArea.startY
+        };
+    
+        // 绘制棋盘
+        for (let i = 0; i < 6; i++) {
+            for (let j = 0; j < 6; j++) {
+                const x = this.startPos.x + j * (this.cellSize + 10);
+                const y = this.startPos.y + i * (this.cellSize + 10);
+                
+                // 绘制格子
+                ctx.fillStyle = COLORS[this.grid[i][j].state];
+                ctx.fillRect(x, y, this.cellSize, this.cellSize);
+                
+                // 绘制边框
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, this.cellSize, this.cellSize);
+            }
+        }
     }
-  }
 
     startTimer() {
         this.timeInterval = setInterval(() => {
