@@ -70,9 +70,11 @@ export function init_game_1() {
     }
     load_return_button();
     logger.log('This is a test message');
+
     // board initialize
     initBoard();
     boardInstance.draw(ctx);
+
     // draw game timer
     drawGameTimer();
 }
