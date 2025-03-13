@@ -37,7 +37,7 @@ class Board {
 draw(ctx) {
     // 计算安全区域（考虑返回按钮高度）
     const safeArea = {
-      startY: return_button_y + return_button_height + 20,
+      startY: return_button_y + return_button_height + 60,
       availableHeight: systemInfo.windowHeight - return_button_y - return_button_height - 40
     };
   
