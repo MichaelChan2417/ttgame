@@ -7,8 +7,6 @@ const COLORS = ['#FF5252', '#4CAF50', '#2196F3', '#FFC107', '#9C27B0'];
 const MODIFY_COLOR = '#EEEEEE'
 const UNCHANGABLE_COLOR = '#999999'
 
-// 计算安全区域（考虑返回按钮高度）
-
 class Board {
     constructor() {
         this.grid = Array.from({ length: 6 }, () => 
@@ -95,11 +93,13 @@ class Board {
         if ((dx < 0) || (dy < 0)) {
             return false
         }
-        let x = Math.trunc(dx / 70);let y = Math.trunc(dy / 70);
+        let extended_size = this.cellSize + 10;
+        let x = Math.trunc(dx / extended_size);
+        let y = Math.trunc(dy / extended_size);
         if ((x > 5) || (y > 5)) {
             return false;
         }
-        if ((dx % 70) > 60 || (dy % 70) > 60) {
+        if ((dx % extended_size) > this.cellSize || (dy % extended_size) > this.cellSize) {
             return false;
         }
         
