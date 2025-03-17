@@ -5,8 +5,10 @@ import { logger  } from "./log"
 const window_width = systemInfo.windowWidth
 const window_height = systemInfo.windowHeight
 
+export const return_button_x = 40;
 export const return_button_y = 80;
 export const return_button_height = 40;
+export const return_button_width = 40;
 
 let expected_button_width = Math.floor(0.45 * window_width)
 let expected_button_height = Math.floor(0.12 * window_height)
@@ -43,11 +45,6 @@ export function drawMainPage() {
   
 }
 
-
-let return_button_x = 40;
-let return_button_y = 80;
-let return_button_width = 40;
-let return_button_height = 40;
 
 export function init_game_1() {
     logger.log("init_game_1")

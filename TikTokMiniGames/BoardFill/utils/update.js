@@ -5,6 +5,8 @@ import {drawMainPage,
     touched_return_button,
     destroy_board} from "../game/game_state"
 
+import {boardInstance} from "../game/board"
+
 export var game_state = 0;
 
 
@@ -21,6 +23,8 @@ function update_game_page(x, y) {
         game_state = 0;
         destroy_board();
         drawMainPage();
+    } else if (boardInstance.touch_and_update_grid(x, y)) {
+        // Actually nothing need to do here
     }
 }
 
