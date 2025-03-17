@@ -4,27 +4,39 @@ import { return_button_y, return_button_height } from './game_state';
 
 const COLORS = ['#FF5252', '#4CAF50', '#2196F3', '#FFC107', '#9C27B0'];
 
-const MODIFY_COLOR = '#EEEEEE'
-const UNCHANGABLE_COLOR = '#999999'
+
 
 class Board {
     constructor() {
         this.grid = Array.from({ length: 6 }, () => 
             Array.from({ length: 6 }, () => new Grid())
         );
-
+        this.safeArea = {
+            startY: return_button_y + return_button_height + 60,
+            availableHeight: systemInfo.windowHeight - return_button_y - return_button_height - 40
+        };
+        // 动态计算格子尺寸
+        this.cellSize = Math.min(
+            Math.floor((systemInfo.windowWidth - 7 * 10) / 6), // 横向最大尺寸
+            Math.floor(this.safeArea.availableHeight / 6)          // 纵向最大尺寸
+        );
+        this.startPos = {
+            x: (systemInfo.windowWidth - (6 * this.cellSize + 5 * 10)) / 2, // 水平居中
+            y: this.safeArea.startY
+        };
+        
         // Init grids
         for (let i=0; i<6; i++) {
             for (let j=0; j<6; j++) {
                 this.grid[i][j].row = i;
                 this.grid[i][j].col = j;
                 this.grid[i][j].canModify = true;
+                this.grid[i][j].cellSize = this.cellSize;
+                this.grid[i][j].state = 0;
             }
         }
 
         this.timer = 0;
-        this.cellSize = 0;
-        this.startPos = { x: 0, y: 0 };
         this.startTimer();
     }
 
@@ -42,41 +54,15 @@ class Board {
 
     }
 
-    draw(ctx) {
-        const safeArea = {
-            startY: return_button_y + return_button_height + 60,
-            availableHeight: systemInfo.windowHeight - return_button_y - return_button_height - 40
-        };
-        // 动态计算格子尺寸
-        this.cellSize = Math.min(
-            Math.floor((systemInfo.windowWidth - 7 * 10) / 6), // 横向最大尺寸
-            Math.floor(safeArea.availableHeight / 6)          // 纵向最大尺寸
-        );
-    
-        // 居中布局
-        this.startPos = {
-            x: (systemInfo.windowWidth - (6 * this.cellSize + 5 * 10)) / 2, // 水平居中
-            y: safeArea.startY
-        };
-    
+    draw() {
         // 绘制棋盘
         for (let i = 0; i < 6; i++) {
             for (let j = 0; j < 6; j++) {
                 const x = this.startPos.x + i * (this.cellSize + 10);
                 const y = this.startPos.y + j * (this.cellSize + 10);
-                
-                // 绘制格子
-                if (this.grid[i][j].canModify) {
-                    ctx.fillStyle = MODIFY_COLOR;
-                } else {
-                    ctx.fillStyle = UNCHANGABLE_COLOR;
-                }
-                ctx.fillRect(x, y, this.cellSize, this.cellSize);
-                
-                // 绘制边框
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(x, y, this.cellSize, this.cellSize);
+                this.grid[i][j].start_x = x;
+                this.grid[i][j].start_y = y;
+                this.grid[i][j].draw()
             }
         }
     }
