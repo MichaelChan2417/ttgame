@@ -102,6 +102,17 @@ class Board {
         return true;
     }
 
+    check_valid() {
+        if (!this.checkGreaterThan3()) {
+            return false;
+        }
+        if (!this.checkCont3()) {
+            return false;
+        }
+        // TODO: 添加对 =/x 的逻辑检查
+        return true;
+    }
+
     // ------------------------------ inner funcs ------------------------------
     getCurrentTime() {
         return this.timer;
@@ -183,6 +194,66 @@ class Board {
 
     showRandomRelation() {
 
+    }
+
+    checkGreaterThan3() {
+        // row checks
+        for (let i=0; i<6; i++) {
+            let cnt1 = 0, cnt2 = 0;
+            for (let j=0; j<6; j++) {
+                if (this.grid[i][j].state == 1) {
+                    cnt1++;
+                }
+                if (this.grid[i][j].state == 2) {
+                    cnt2++;
+                }
+
+                if (cnt1 > 3 || cnt2 > 3) {
+                    return false;
+                }
+            }
+        }
+        // col checks
+        for (let i=0; i<6; i++) {
+            let cnt1 = 0, cnt2 = 0;
+            for (let j=0; j<6; j++) {
+                if (this.grid[j][i].state == 1) {
+                    cnt1++;
+                }
+                if (this.grid[j][i].state == 2) {
+                    cnt2++;
+                }
+
+                if (cnt1 > 3 || cnt2 > 3) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    checkCont3() {
+        for (let i=0; i<6; i++) {
+            for (let j=0; j<=3; j++) {
+                if (this.grid[i][j].state == 1 && this.grid[i][j+1].state == 1 && this.grid[i][j+2].state == 1) {
+                    return false;
+                }
+                if (this.grid[i][j].state == 2 && this.grid[i][j+1].state == 2 && this.grid[i][j+2].state == 2) {
+                    return false;
+                }
+            }
+        }
+        for (let i=0; i<6; i++) {
+            for (let j=0; j<=3; j++) {
+                if (this.grid[j][i].state == 1 && this.grid[j+1][i].state == 1 && this.grid[j+2][i].state == 1) {
+                    return false;
+                }
+                if (this.grid[j][i].state == 2 && this.grid[j+1][i].state == 2 && this.grid[j+2][i].state == 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
 

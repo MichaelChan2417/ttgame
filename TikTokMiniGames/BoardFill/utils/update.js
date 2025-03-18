@@ -24,14 +24,20 @@ function update_game_page(x, y) {
         destroy_board();
         drawMainPage();
     } else if (boardInstance.touch_and_update_grid(x, y)) {
-        // Actually nothing need to do here
+        let valid_result = boardInstance.check_valid();
+        if (!valid_result) {
+            console.log("===========================")
+            // TODO: 这个之后是要加error showing的 比如在做完一次操作后3秒， 如果有问题 ping出来
+        } else {
+            let result = boardInstance.check_end();
+            // if pass valid check, then if no zero, its an end
+
+        }
     }
 }
 
 export function update(touchInfo) {
     let x = touchInfo.clientX, y = touchInfo.clientY
-
-    console.log("User point on", x, y, "with game state", game_state)
 
     switch (game_state) {
         case 0:
