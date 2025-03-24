@@ -2,12 +2,18 @@ import { canvas, ctx, systemInfo } from "../canvas"
 
 const MODIFY_COLOR = '#EEEEEE'
 const UNCHANGABLE_COLOR = '#999999'
+const SIGN_WIDTH = 12
 
 
 const state1Image = tt.createImage();
 state1Image.src = './resources/state1.png'
 const state2Image = tt.createImage();
 state2Image.src = './resources/state2.png'
+
+const equalImage = tt.createImage();
+equalImage.src = './resources/equal_sign.png'
+const diffImage = tt.createImage();
+diffImage.src = './resources/cross_sign.png'
 
 export class Grid {
     constructor(row = null, col = null, canModify = null, state = null, cellSize = null,
@@ -51,6 +57,43 @@ export class Grid {
                 this.start_x, this.start_y,
                 this.cellSize, this.cellSize,
             );
+        }
+    }
+
+    draw_relation(is_draw_right, is_equal) {
+        console.log(this.row, this.col, is_draw_right, is_equal)
+        if (is_equal) {
+            if (is_draw_right) {
+                ctx.drawImage(
+                    equalImage,
+                    0, 0, equalImage.width, equalImage.height,
+                    this.start_x + this.cellSize, this.start_y + this.cellSize / 2 - SIGN_WIDTH / 2,
+                    SIGN_WIDTH, SIGN_WIDTH
+                )
+            } else {
+                ctx.drawImage(
+                    equalImage,
+                    0, 0, equalImage.width, equalImage.height,
+                    this.start_x + this.cellSize / 2 - SIGN_WIDTH / 2, this.start_y + this.cellSize,
+                    SIGN_WIDTH, SIGN_WIDTH
+                )
+            }
+        } else {
+            if (is_draw_right) {
+                ctx.drawImage(
+                    diffImage,
+                    0, 0, diffImage.width, diffImage.height,
+                    this.start_x + this.cellSize, this.start_y + this.cellSize / 2 - SIGN_WIDTH / 2,
+                    SIGN_WIDTH, SIGN_WIDTH
+                )
+            } else {
+                ctx.drawImage(
+                    diffImage,
+                    0, 0, diffImage.width, diffImage.height,
+                    this.start_x + this.cellSize / 2 - SIGN_WIDTH / 2, this.start_y + this.cellSize,
+                    SIGN_WIDTH, SIGN_WIDTH
+                )
+            }
         }
     }
 }

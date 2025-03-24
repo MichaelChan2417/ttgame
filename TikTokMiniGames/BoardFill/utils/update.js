@@ -31,7 +31,9 @@ function update_game_page(x, y) {
         } else {
             let result = boardInstance.check_end();
             // if pass valid check, then if no zero, its an end
-
+            if (result) {
+                boardInstance.stopTimer()
+            }
         }
     }
 }

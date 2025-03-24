@@ -1,10 +1,10 @@
 import { canvas, ctx, systemInfo } from "../canvas"
 import {Grid} from "./grid"
 import { return_button_y, return_button_height } from './game_state';
+import {bd} from '../resources/example'
+import {relation_vec} from './relation'
 
-const COLORS = ['#FF5252', '#4CAF50', '#2196F3', '#FFC107', '#9C27B0'];
-
-
+const space_width = 16;
 
 class Board {
     constructor() {
@@ -17,11 +17,11 @@ class Board {
         };
         // 动态计算格子尺寸
         this.cellSize = Math.min(
-            Math.floor((systemInfo.windowWidth - 7 * 10) / 6), // 横向最大尺寸
+            Math.floor((systemInfo.windowWidth - 7 * space_width) / 6), // 横向最大尺寸
             Math.floor(this.safeArea.availableHeight / 6)          // 纵向最大尺寸
         );
         this.startPos = {
-            x: (systemInfo.windowWidth - (6 * this.cellSize + 5 * 10)) / 2, // 水平居中
+            x: (systemInfo.windowWidth - (6 * this.cellSize + 5 * space_width)) / 2, // 水平居中
             y: this.safeArea.startY
         };
         
@@ -42,11 +42,11 @@ class Board {
 
     randomGenerate() {
 
-        // use this to generate one correct answer
-        this.boardSetUp();
-
         // randomly select several grid to be shown
         this.showRandomStart();
+
+        // use this to generate one correct answer (has to be after RandomStart)
+        this.boardSetUp();
 
         // randomly pick some relation, not between 2 Start
         this.showRandomRelation();
@@ -54,14 +54,11 @@ class Board {
 
     }
 
+    // this is the first time draw
     draw() {
         // 绘制棋盘
         for (let i = 0; i < 6; i++) {
             for (let j = 0; j < 6; j++) {
-                const x = this.startPos.x + i * (this.cellSize + 10);
-                const y = this.startPos.y + j * (this.cellSize + 10);
-                this.grid[i][j].start_x = x;
-                this.grid[i][j].start_y = y;
                 this.grid[i][j].draw()
             }
         }
@@ -73,13 +70,16 @@ class Board {
             this.timer = Math.min(this.timer, 1800)
         }, 1000);
     }
+    stopTimer() {
+        clearInterval(this.timeInterval);
+    }
 
     touch_and_update_grid(input_x, input_y) {
         let dx = input_x - this.startPos.x; let dy = input_y - this.startPos.y;
         if ((dx < 0) || (dy < 0)) {
             return false
         }
-        let extended_size = this.cellSize + 10;
+        let extended_size = this.cellSize + space_width;
         let x = Math.trunc(dx / extended_size);
         let y = Math.trunc(dy / extended_size);
         if ((x > 5) || (y > 5)) {
@@ -113,12 +113,20 @@ class Board {
         return true;
     }
 
+    check_end() {
+        for (let i=0; i<6; i++) {
+            for (let j=0; j<6; j++) {
+                if (this.grid[i][j].state == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     // ------------------------------ inner funcs ------------------------------
     getCurrentTime() {
         return this.timer;
-    }
-    stopTimer() {
-        clearInterval(this.timeInterval);
     }
     printBoard() {
         console.log(this.grid.map(row => row.map(cell => cell.state).join(" ")).join("\n"));
@@ -132,7 +140,19 @@ class Board {
 
     boardSetUp() {
         // TODO: make it generalized
-
+        let idx = 0;
+        for (let i=0; i<6; i++) {
+            for (let j=0; j<6; j++) {
+                const x = this.startPos.x + i * (this.cellSize + space_width);
+                const y = this.startPos.y + j * (this.cellSize + space_width);
+                this.grid[i][j].start_x = x;
+                this.grid[i][j].start_y = y;
+                if (!this.grid[i][j].canModify) {
+                    this.grid[i][j].state = bd[idx];
+                }
+                ++idx;
+            }
+        }
     }
 
     showRandomStart() {
@@ -193,7 +213,50 @@ class Board {
     }
 
     showRandomRelation() {
+        // 5 - 10 relations
+        let relation_cnt = Math.floor(Math.random() * (10 - 5 + 1)) + 5;
+    
+        // 获取所有有效的关系索引（两个grid不同时为不可修改）
+        const validIndices = [];
+        for (let i = 0; i < relation_vec.length; i++) {
+            const [x1, y1, x2, y2] = relation_vec[i];
+            // 假设通过grid访问每个格子的canModify属性
+            if (this.grid[x1][y1].canModify || this.grid[x2][y2].canModify) {
+                validIndices.push(i);
+            }
+        }
+        
+        // 调整数量不超过有效索引的数量
+        relation_cnt = Math.min(relation_cnt, validIndices.length);
+        if (relation_cnt === 0) return; // 无有效关系则退出
+        
+        // 随机打乱有效索引数组
+        for (let i = validIndices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [validIndices[i], validIndices[j]] = [validIndices[j], validIndices[i]];
+        }
+        
+        // 选取前relation_cnt个索引
+        const selectedIndices = validIndices.slice(0, relation_cnt);
 
+        console.log(selectedIndices)
+
+        // detect draw right/down
+        for (const idx of selectedIndices) {
+            let is_draw_right = true;
+            if (idx > relation_vec.length / 2) {
+                is_draw_right = false;
+            }
+
+            const cx = relation_vec[idx][0], cy = relation_vec[idx][1]
+            const nx = relation_vec[idx][2], ny = relation_vec[idx][3]
+            let is_equal = true;
+            if (bd[nx*6+ny] != bd[cx*6+cy]) {
+                is_equal = false;
+            }
+
+            this.grid[cx][cy].draw_relation(is_draw_right, is_equal)
+        }
     }
 
     checkGreaterThan3() {
