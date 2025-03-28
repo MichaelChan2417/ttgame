@@ -6,6 +6,9 @@ import {relation_vec} from './relation'
 
 const space_width = 16;
 
+const passImage = tt.createImage();
+passImage.src = './resources/pass.png'
+
 class Board {
     constructor() {
         this.grid = Array.from({ length: 6 }, () => 
@@ -124,6 +127,15 @@ class Board {
         return true;
     }
 
+    ShowPass() {
+        ctx.drawImage(
+            passImage,
+            0, 0, passImage.width, passImage.height,
+            120, 640,
+            200, 200
+        )
+    }
+
     // ------------------------------ inner funcs ------------------------------
     getCurrentTime() {
         return this.timer;
@@ -238,8 +250,6 @@ class Board {
         
         // 选取前relation_cnt个索引
         const selectedIndices = validIndices.slice(0, relation_cnt);
-
-        console.log(selectedIndices)
 
         // detect draw right/down
         for (const idx of selectedIndices) {

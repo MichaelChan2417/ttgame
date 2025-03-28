@@ -61,20 +61,19 @@ export class Grid {
     }
 
     draw_relation(is_draw_right, is_equal) {
-        console.log(this.row, this.col, is_draw_right, is_equal)
         if (is_equal) {
             if (is_draw_right) {
                 ctx.drawImage(
                     equalImage,
                     0, 0, equalImage.width, equalImage.height,
-                    this.start_x + this.cellSize, this.start_y + this.cellSize / 2 - SIGN_WIDTH / 2,
+                    this.start_x + this.cellSize + 2, this.start_y + this.cellSize / 2 - SIGN_WIDTH / 2,
                     SIGN_WIDTH, SIGN_WIDTH
                 )
             } else {
                 ctx.drawImage(
                     equalImage,
                     0, 0, equalImage.width, equalImage.height,
-                    this.start_x + this.cellSize / 2 - SIGN_WIDTH / 2, this.start_y + this.cellSize,
+                    this.start_x + this.cellSize / 2 - SIGN_WIDTH / 2, this.start_y + this.cellSize + 2,
                     SIGN_WIDTH, SIGN_WIDTH
                 )
             }
@@ -83,14 +82,14 @@ export class Grid {
                 ctx.drawImage(
                     diffImage,
                     0, 0, diffImage.width, diffImage.height,
-                    this.start_x + this.cellSize, this.start_y + this.cellSize / 2 - SIGN_WIDTH / 2,
+                    this.start_x + this.cellSize + 2, this.start_y + this.cellSize / 2 - SIGN_WIDTH / 2,
                     SIGN_WIDTH, SIGN_WIDTH
                 )
             } else {
                 ctx.drawImage(
                     diffImage,
                     0, 0, diffImage.width, diffImage.height,
-                    this.start_x + this.cellSize / 2 - SIGN_WIDTH / 2, this.start_y + this.cellSize,
+                    this.start_x + this.cellSize / 2 - SIGN_WIDTH / 2, this.start_y + this.cellSize + 2,
                     SIGN_WIDTH, SIGN_WIDTH
                 )
             }

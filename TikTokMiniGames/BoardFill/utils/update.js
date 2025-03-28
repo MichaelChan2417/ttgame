@@ -25,6 +25,7 @@ function update_game_page(x, y) {
         drawMainPage();
     } else if (boardInstance.touch_and_update_grid(x, y)) {
         let valid_result = boardInstance.check_valid();
+        boardInstance.ShowPass()
         if (!valid_result) {
             console.log("===========================")
             // TODO: 这个之后是要加error showing的 比如在做完一次操作后3秒， 如果有问题 ping出来
@@ -33,6 +34,7 @@ function update_game_page(x, y) {
             // if pass valid check, then if no zero, its an end
             if (result) {
                 boardInstance.stopTimer()
+                boardInstance.ShowPass()
             }
         }
     }
