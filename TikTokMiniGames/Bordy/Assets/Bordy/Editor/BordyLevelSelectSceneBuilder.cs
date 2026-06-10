@@ -1,0 +1,147 @@
+using System.IO;
+using Bordy;
+using UnityEditor;
+using UnityEditor.Events;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+namespace Bordy.EditorTools
+{
+    public static class BordyLevelSelectSceneBuilder
+    {
+        public const string ScenePath = "Assets/Bordy/Scenes/LevelSelect.unity";
+
+        private static readonly Color ColPageBg = new Color(0.96f, 0.95f, 0.92f);
+        private static readonly Color ColInk = new Color(0.16f, 0.16f, 0.18f);
+        private static readonly Color ColMuted = new Color(0.45f, 0.45f, 0.48f);
+        private static readonly Color ColAccent = new Color(1.00f, 0.66f, 0.10f);
+        private static readonly Color ColPill = new Color(0.92f, 0.91f, 0.88f);
+
+        [MenuItem("Bordy/Rebuild Level Select Scene")]
+        public static void BuildAndSave()
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath)!);
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            BuildHierarchy();
+            bool saved = EditorSceneManager.SaveScene(scene, ScenePath);
+            Debug.Log($"[BordyLevelSelectSceneBuilder] Saved → {ScenePath} (ok={saved})");
+            BordyHomeSceneBuilder.RegisterBuildScenes();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        public static void BuildHierarchy()
+        {
+            if (Object.FindObjectOfType<EventSystem>() == null)
+                new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+
+            var canvasGo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            var canvas = canvasGo.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            var scaler = canvasGo.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1080, 1920);
+            scaler.matchWidthOrHeight = 0.5f;
+
+            var nav = canvasGo.AddComponent<BordyNav>();
+            canvasGo.AddComponent<BordyLevelSelectController>();
+
+            var bg = CreatePanel("Background", canvasGo.transform, ColPageBg);
+            bg.raycastTarget = false;
+            Stretch(bg.rectTransform);
+
+            var back = CreateText("Back", canvasGo.transform, "←", 56, FontStyle.Normal);
+            Anchor(back.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1));
+            back.rectTransform.sizeDelta = new Vector2(90, 80);
+            back.rectTransform.anchoredPosition = new Vector2(40, -120);
+            back.alignment = TextAnchor.MiddleCenter;
+            back.color = ColInk;
+            back.raycastTarget = true;
+            var backBtn = back.gameObject.AddComponent<Button>();
+            backBtn.targetGraphic = back;
+            UnityEventTools.AddPersistentListener(backBtn.onClick, nav.BackToHome);
+
+            var title = CreateText("Title", canvasGo.transform, "选择关卡", 72, FontStyle.Bold);
+            Anchor(title.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
+            title.rectTransform.sizeDelta = new Vector2(900, 100);
+            title.rectTransform.anchoredPosition = new Vector2(0, -280);
+            title.alignment = TextAnchor.MiddleCenter;
+
+            var hint = CreateText("HintBanner", canvasGo.transform, "请先完成新手引导，解锁正式关卡", 30, FontStyle.Normal);
+            Anchor(hint.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
+            hint.rectTransform.sizeDelta = new Vector2(900, 60);
+            hint.rectTransform.anchoredPosition = new Vector2(0, -400);
+            hint.alignment = TextAnchor.MiddleCenter;
+            hint.color = ColMuted;
+
+            var tutorialBtn = CreateLevelButton("TutorialButton", canvasGo.transform, "新手引导", "4×4 教学关卡", ColAccent, Color.white, -620);
+            var level1Btn = CreateLevelButton("Level1Button", canvasGo.transform, "第一关", "6×6 正式挑战", ColPill, ColInk, -860);
+            tutorialBtn.gameObject.AddComponent<Button>().targetGraphic = tutorialBtn;
+            level1Btn.gameObject.AddComponent<Button>().targetGraphic = level1Btn;
+        }
+
+        private static Image CreateLevelButton(string name, Transform parent, string title, string subtitle, Color fill, Color textColor, float y)
+        {
+            var card = CreatePanel(name, parent, fill);
+            card.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            card.type = Image.Type.Sliced;
+            Anchor(card.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
+            card.rectTransform.sizeDelta = new Vector2(760, 180);
+            card.rectTransform.anchoredPosition = new Vector2(0, y);
+
+            var titleText = CreateText("Title", card.transform, title, 44, FontStyle.Bold);
+            Anchor(titleText.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1));
+            titleText.rectTransform.sizeDelta = new Vector2(-48, 80);
+            titleText.rectTransform.anchoredPosition = new Vector2(32, -24);
+            titleText.alignment = TextAnchor.MiddleLeft;
+            titleText.color = textColor;
+
+            var subText = CreateText("Subtitle", card.transform, subtitle, 28, FontStyle.Normal);
+            Anchor(subText.rectTransform, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0));
+            subText.rectTransform.sizeDelta = new Vector2(-48, 60);
+            subText.rectTransform.anchoredPosition = new Vector2(32, 24);
+            subText.alignment = TextAnchor.MiddleLeft;
+            subText.color = textColor == Color.white ? new Color(1f, 1f, 1f, 0.9f) : ColMuted;
+            return card;
+        }
+
+        private static Image CreatePanel(string name, Transform parent, Color color)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.transform.SetParent(parent, false);
+            go.GetComponent<Image>().color = color;
+            return go.GetComponent<Image>();
+        }
+
+        private static Text CreateText(string name, Transform parent, string content, int size, FontStyle style)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            go.transform.SetParent(parent, false);
+            var t = go.GetComponent<Text>();
+            t.text = content;
+            t.fontSize = size;
+            t.fontStyle = style;
+            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.color = ColInk;
+            t.raycastTarget = false;
+            return t;
+        }
+
+        private static void Stretch(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+        }
+
+        private static void Anchor(RectTransform rt, Vector2 min, Vector2 max, Vector2 pivot)
+        {
+            rt.anchorMin = min;
+            rt.anchorMax = max;
+            rt.pivot = pivot;
+        }
+    }
+}

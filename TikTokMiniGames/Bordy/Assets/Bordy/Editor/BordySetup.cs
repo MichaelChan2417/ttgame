@@ -21,8 +21,10 @@ namespace Bordy.EditorTools
             try
             {
                 ConfigurePlayerSettings();
-                BordySceneBuilder.BuildAndSave();      // gameplay scene (MainMenu) + back button
-                BordyHomeSceneBuilder.BuildAndSave();  // home scene (Home, build index 0)
+                BordyHomeSceneBuilder.BuildAndSave();
+                BordyLevelSelectSceneBuilder.BuildAndSave();
+                BordyTutorialSceneBuilder.BuildAndSave();
+                BordySceneBuilder.BuildAndSave();
                 SwitchToWebGL();
                 Debug.Log("[BordySetup] Done.");
             }

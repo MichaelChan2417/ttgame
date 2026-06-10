@@ -7,7 +7,13 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Bordy/Scenes/Home.unity
-    guid: 00000000000000000000000000000000
+    guid: 6bb6649778b25ca45809efae74735236
+  - enabled: 1
+    path: Assets/Bordy/Scenes/LevelSelect.unity
+    guid: 7cb8aeb3e9bd04d628bf6c40182e69a1
+  - enabled: 1
+    path: Assets/Bordy/Scenes/Tutorial.unity
+    guid: 5a12172e08cb04798bd59e64004c26dc
   - enabled: 1
     path: Assets/Bordy/Scenes/MainMenu.unity
     guid: 64f949b3d0f6b42e4be87c952411ad09

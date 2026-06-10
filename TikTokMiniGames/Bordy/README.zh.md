@@ -1,6 +1,44 @@
-# Bordy · TikTok 小游戏（Unity SDK 参考工程）
+# Bordy · TikTok 小游戏
 
 [English](README.md) · **中文**
+
+本仓库同时包含：
+
+1. **Bordy 逻辑谜题游戏**（太阳/月亮填格，当前可玩：新手引导 + 第一关）
+2. **TikTok 小游戏 SDK 参考**（`BordyMainMenu.cs` 演示全部 `TT.*` 接口）
+
+游戏开发说明见 **[docs/GAMEPLAY.zh.md](docs/GAMEPLAY.zh.md)** · 本阶段总结见 **[docs/PHASE-SUMMARY.md](docs/PHASE-SUMMARY.md)** · 协作见 **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)**
+
+---
+
+## 游戏快速上手
+
+```bash
+git clone <本仓库>
+cd Bordy
+# Unity Hub → Add project → 2022.3.62f3c1
+```
+
+1. 等首次资源导入完成。
+2. 菜单 **Bordy → Run Full Setup**（生成四个场景并写入 Build Settings）。
+3. **Bordy → Open Home Scene**，然后 Play。
+4. **开始游戏** → 关卡选择 → 完成 **新手引导**（4×4）→ 解锁 **第一关**（6×6）。
+
+```
+Home ──[开始游戏]──▶ LevelSelect ──[新手引导]──▶ Tutorial (4×4)
+                              └──[第一关]──────▶ MainMenu (6×6)
+```
+
+| Build | 场景 | 说明 |
+|-------|------|------|
+| 0 | `Home.unity` | 入口 |
+| 1 | `LevelSelect.unity` | 关卡选择 |
+| 2 | `Tutorial.unity` | 新手引导 |
+| 3 | `MainMenu.unity` | 第一关（历史命名，非 SDK 菜单） |
+
+---
+
+## TikTok SDK 参考工程
 
 > ## 📦 SDK 下载
 >
@@ -24,21 +62,20 @@
 
 | 路径 | 用途 |
 | --- | --- |
-| `com.tiktok.minigame@1.1.1-Release.unitypackage` | 可直接导入的 SDK 包（TTSDK v1.1.1），拖进任意 Unity 2022.3 工程即可。 |
-| `Assets/Plugins/com.tiktok.minigame/` | 本工程已导入的 SDK 副本。 |
-| `Assets/Bordy/Scripts/BordyNav.cs` | 场景导航——`StartGame()`（主页→游戏）与 `BackToHome()`（游戏→主页）。 |
-| `Assets/Bordy/Scripts/BordyMainMenu.cs` | 运行时菜单——可折叠分类、每个 `TT.*` 接口一个按钮、日志面板。 |
-| `Assets/Bordy/Editor/BordyHomeSceneBuilder.cs` | 用代码重建主页 `Home.unity`（菜单：**Bordy → Rebuild Home Scene**）。 |
-| `Assets/Bordy/Editor/BordySceneBuilder.cs` | 用代码重建 `MainMenu.unity`（菜单：**Bordy → Rebuild MainMenu Scene**）。 |
-| `Assets/Bordy/Editor/BordySetup.cs` | 一键完成 PlayerSettings + 两个场景 + 切到 WebGL（菜单：**Bordy → Run Full Setup**）。 |
-| `Assets/Bordy/Scenes/Home.unity` | 主页/开始场景——标题 + **开始游戏** 按钮。Build Settings **0** 号入口场景。 |
-| `Assets/Bordy/Scenes/MainMenu.unity` | 游戏场景（Bordy 面板），由 **开始游戏** 进入；头部 **←** 返回主页。Build Settings **1** 号场景。 |
+| `docs/` | 游戏玩法、阶段总结、协作指南 |
+| `com.tiktok.minigame@1.1.1-Release.unitypackage` | 可直接导入的 SDK 包（TTSDK v1.1.1） |
+| `Assets/Plugins/com.tiktok.minigame/` | 本工程已导入的 SDK 副本 |
+| `Assets/Bordy/Scripts/` | 谜题玩法：`BordyBoardController`、`BordyTutorialGuide` 等 |
+| `Assets/Bordy/Scripts/BordyNav.cs` | 场景导航（主页 / 选关 / 教程 / 第一关） |
+| `Assets/Bordy/Scripts/BordyMainMenu.cs` | **SDK 演示**（未挂到当前游戏场景） |
+| `Assets/Bordy/Editor/` | 代码驱动场景构建 + `Run Full Setup` |
+| `Assets/Bordy/Scenes/` | `Home` · `LevelSelect` · `Tutorial` · `MainMenu`（第一关） |
 
 ---
 
 ## 环境要求
 
-- Unity **2022.3.34f1**（2022.3.x LTS 任一小版本都行）。**不要**使用团结引擎（Tuanjie）
+- Unity **2022.3.62f3c1**（2022.3.x LTS）。**不要**使用团结引擎（Tuanjie）
   分支——SDK 的 `asmdef` 会冲突。
 - TTSDK **1.1.1** 或更新版本。v1.1.1 起额外提供 `ttsdk-editor.dll`，在 Unity Editor
   内能直接走 Mock 实现，不会再抛"不支持的平台"。
@@ -46,32 +83,7 @@
 
 ---
 
-## 快速上手
-
-```bash
-git clone <本仓库>
-cd Bordy
-# 用 Unity Hub → Add project → 选 2022.3.34f1 打开
-```
-
-进入 Unity 之后：
-
-1. 等首次资源导入完成。
-2. 先跑一次菜单 **Bordy → Run Full Setup**。它会生成两个场景（`Home.unity`、
-   `MainMenu.unity`）、接好按钮，并把它们登记进 Build Settings，主页作为 0 号场景。
-3. 打开 `Assets/Bordy/Scenes/Home.unity` 并 Play。点 **开始游戏** 进入游戏；点头部
-   **←** 返回主页。
-
-导航流程：
-
-```
-Home.unity ──[开始游戏]──▶ MainMenu.unity
-     ▲                          │
-     └──────────[←]─────────────┘
-```
-
-任意场景改坏了，随时可用 **Bordy → Rebuild Home Scene** 或
-**Bordy → Rebuild MainMenu Scene** 一键重建。
+> 游戏快速上手见文首 **[游戏快速上手](#游戏快速上手)**。下方为 SDK 集成与 API 演示说明。
 
 ---
 
@@ -295,21 +307,23 @@ SDK 自带构建管线，会产出 WebGL 包 + 抖音开发者工具需要的元
 
 ```
 .
-├── com.tiktok.minigame@1.1.1-Release.unitypackage   # SDK 包，可拖到其他工程
+├── docs/
+│   ├── GAMEPLAY.zh.md          # 玩法与架构（中文）
+│   ├── GAMEPLAY.md             # Gameplay guide (EN)
+│   ├── PHASE-SUMMARY.md        # 本阶段开发总结
+│   └── CONTRIBUTING.md         # 协作指南
+├── com.tiktok.minigame@1.1.1-Release.unitypackage
 ├── Assets/
 │   ├── Bordy/
-│   │   ├── Editor/
-│   │   │   ├── BordyHomeSceneBuilder.cs              # 代码驱动的主页场景重建
-│   │   │   ├── BordySceneBuilder.cs                  # 代码驱动的游戏场景重建
-│   │   │   └── BordySetup.cs                         # 一键配置入口
+│   │   ├── Editor/             # 场景构建、Play 入口、Run Full Setup
 │   │   ├── Scenes/
-│   │   │   ├── Home.unity                           # 主页/开始场景（Build Settings 第 0 个）
-│   │   │   └── MainMenu.unity                       # 游戏场景（Build Settings 第 1 个）
-│   │   └── Scripts/
-│   │       ├── BordyNav.cs                          # 开始/返回 场景导航
-│   │       └── BordyMainMenu.cs                      # 运行时菜单 + 接口接线
-│   └── Plugins/com.tiktok.minigame/                 # 已导入的 SDK（请勿修改）
-├── docs/screenshots/                                # README 配图
-├── Packages/manifest.json                           # Unity 包列表
-├── ProjectSettings/                                 # Unity 工程设置
-└── README.md / READ
+│   │   │   ├── Home.unity
+│   │   │   ├── LevelSelect.unity
+│   │   │   ├── Tutorial.unity
+│   │   │   └── MainMenu.unity  # 第一关（6×6）
+│   │   └── Scripts/            # 棋盘、引导、选关、导航、计时、棋子
+│   └── Plugins/com.tiktok.minigame/
+├── docs/screenshots/             # SDK 演示 README 配图
+├── Packages/manifest.json
+├── ProjectSettings/
+└── README.md / README.zh.md

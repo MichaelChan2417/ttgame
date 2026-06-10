@@ -21,6 +21,8 @@ namespace Bordy.EditorTools
     public static class BordyHomeSceneBuilder
     {
         public const string HomeScenePath = "Assets/Bordy/Scenes/Home.unity";
+        public const string LevelSelectScenePath = "Assets/Bordy/Scenes/LevelSelect.unity";
+        public const string TutorialScenePath = "Assets/Bordy/Scenes/Tutorial.unity";
         public const string GameScenePath = "Assets/Bordy/Scenes/MainMenu.unity";
 
         // Palette — shared look with the gameplay scene. / 调色板——与游戏场景统一。
@@ -46,15 +48,16 @@ namespace Bordy.EditorTools
         }
 
         /// <summary>
-        /// Register Home (index 0) and the gameplay scene (index 1) in Build Settings so
-        /// <see cref="BordyNav"/> can load them by name.
-        /// 在 Build Settings 中登记主页(0)与游戏(1)，供 <see cref="BordyNav"/> 按名加载。
+        /// Register all four scenes in Build Settings (Home → LevelSelect → Tutorial → Level1).
+        /// 在 Build Settings 登记四个场景，供 <see cref="BordyNav"/> 按名加载。
         /// </summary>
         public static void RegisterBuildScenes()
         {
             EditorBuildSettings.scenes = new[]
             {
                 new EditorBuildSettingsScene(HomeScenePath, true),
+                new EditorBuildSettingsScene(LevelSelectScenePath, true),
+                new EditorBuildSettingsScene(TutorialScenePath, true),
                 new EditorBuildSettingsScene(GameScenePath, true),
             };
         }
@@ -76,6 +79,7 @@ namespace Bordy.EditorTools
             var nav = canvasGo.AddComponent<BordyNav>();
 
             var bg = CreatePanel("Background", canvasGo.transform, ColPageBg);
+            bg.raycastTarget = false;
             Stretch(bg.rectTransform);
 
             // Title. / 标题。

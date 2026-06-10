@@ -1,0 +1,96 @@
+using System.Collections.Generic;
+
+namespace Bordy
+{
+    /// <summary>All playable levels and the tutorial puzzle. / 所有可玩关卡与新手谜题。</summary>
+    public static class BordyLevelCatalog
+    {
+        public const string TutorialId = "tutorial";
+        public const string Level1Id = "level1";
+
+        public const string TutorialScene = "Tutorial";
+        public const string Level1Scene = "MainMenu";
+        public const string LevelSelectScene = "LevelSelect";
+        public const string HomeScene = "Home";
+
+        private static readonly Dictionary<string, BordyPuzzleData> Levels = new Dictionary<string, BordyPuzzleData>
+        {
+            { TutorialId, BuildTutorial() },
+            { Level1Id, BuildLevel1() },
+        };
+
+        public static BordyPuzzleData Get(string id) => Levels[id];
+
+        public static bool TryGet(string id, out BordyPuzzleData puzzle) => Levels.TryGetValue(id, out puzzle);
+
+        private static BordyPuzzleData BuildTutorial()
+        {
+            const int s = BordyPuzzleData.Sun;
+            const int m = BordyPuzzleData.Moon;
+
+            var solution = new[,]
+            {
+                { m, s, m, s },
+                { s, m, s, m },
+                { m, s, m, s },
+                { s, m, s, m },
+            };
+
+            var givens = new[,]
+            {
+                { true,  true,  false, false },
+                { true,  false, false, false },
+                { false, false, false, true  },
+                { false, false, false, false },
+            };
+
+            var edges = new[]
+            {
+                new EdgeConstraint(0, 0, true,  false),
+                new EdgeConstraint(0, 1, false, false),
+                new EdgeConstraint(1, 1, true,  true),
+                new EdgeConstraint(2, 0, false, false),
+            };
+
+            return new BordyPuzzleData(TutorialId, "新手引导", solution, givens, edges);
+        }
+
+        private static BordyPuzzleData BuildLevel1()
+        {
+            const int s = BordyPuzzleData.Sun;
+            const int m = BordyPuzzleData.Moon;
+
+            var solution = new[,]
+            {
+                { m, m, s, m, s, s },
+                { s, m, m, s, m, s },
+                { m, s, s, m, s, m },
+                { s, s, m, s, m, m },
+                { s, m, m, s, m, s },
+                { m, s, s, m, s, m },
+            };
+
+            var givens = new[,]
+            {
+                { true,  false, true,  false, false, true  },
+                { true,  false, false, true,  false, false },
+                { false, true,  false, false, true,  false },
+                { true,  false, false, true,  true,  false },
+                { false, false, true,  false, false, true  },
+                { false, true,  true,  false, false, true  },
+            };
+
+            var edges = new[]
+            {
+                new EdgeConstraint(0, 3, true,  false),
+                new EdgeConstraint(0, 4, false, false),
+                new EdgeConstraint(1, 4, false, false),
+                new EdgeConstraint(3, 1, false, false),
+                new EdgeConstraint(4, 1, false, false),
+                new EdgeConstraint(5, 1, true,  true),
+            };
+
+            return new BordyPuzzleData(Level1Id, "第一关", solution, givens, edges);
+        }
+    }
+}

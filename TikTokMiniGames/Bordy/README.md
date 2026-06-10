@@ -1,6 +1,44 @@
-# Bordy · TikTok Mini Game (Unity SDK reference)
+# Bordy · TikTok Mini Game
 
 **English** · [中文](README.zh.md)
+
+This repo contains two things:
+
+1. **Bordy logic puzzle game** (sun/moon grid; playable tutorial + level 1)
+2. **TikTok Mini Game SDK reference** (`BordyMainMenu.cs` demos every `TT.*` API)
+
+Game docs: **[docs/GAMEPLAY.md](docs/GAMEPLAY.md)** · Phase summary: **[docs/PHASE-SUMMARY.md](docs/PHASE-SUMMARY.md)** · Contributing: **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)**
+
+---
+
+## Game quick start
+
+```bash
+git clone <this repo>
+cd Bordy
+# Unity Hub → Add project → 2022.3.62f3c1
+```
+
+1. Wait for the initial import.
+2. Run **Bordy → Run Full Setup** (builds four scenes + Build Settings).
+3. **Bordy → Open Home Scene**, then Play.
+4. **开始游戏** → level select → complete **tutorial** (4×4) → unlock **level 1** (6×6).
+
+```
+Home ──[Start]──▶ LevelSelect ──[Tutorial]──▶ Tutorial (4×4)
+                            └──[Level 1]────▶ MainMenu (6×6)
+```
+
+| Build | Scene | Role |
+|-------|-------|------|
+| 0 | `Home.unity` | Entry |
+| 1 | `LevelSelect.unity` | Level picker |
+| 2 | `Tutorial.unity` | Guided tutorial |
+| 3 | `MainMenu.unity` | Level 1 (historical name) |
+
+---
+
+## TikTok SDK reference project
 
 > ## 📦 Get the SDK
 >
@@ -25,21 +63,20 @@ inside the real Douyin (TikTok) mini-game container.
 
 | Path | Purpose |
 | --- | --- |
-| `com.tiktok.minigame@1.1.1-Release.unitypackage` | Ready-to-import SDK package (TTSDK v1.1.1). Drag-and-drop into any Unity 2022.3 project. |
-| `Assets/Plugins/com.tiktok.minigame/` | The SDK already imported into this project. |
-| `Assets/Bordy/Scripts/BordyNav.cs` | Scene navigation — `StartGame()` (home → game) and `BackToHome()` (game → home). |
-| `Assets/Bordy/Scripts/BordyMainMenu.cs` | Runtime menu — accordion-style category list, one button per `TT.*` API, log panel. |
-| `Assets/Bordy/Editor/BordyHomeSceneBuilder.cs` | Rebuilds the `Home.unity` start scene from code (menu: **Bordy → Rebuild Home Scene**). |
-| `Assets/Bordy/Editor/BordySceneBuilder.cs` | Rebuilds `MainMenu.unity` from code (menu: **Bordy → Rebuild MainMenu Scene**). |
-| `Assets/Bordy/Editor/BordySetup.cs` | One-click PlayerSettings + both scenes + WebGL switch (menu: **Bordy → Run Full Setup**). |
-| `Assets/Bordy/Scenes/Home.unity` | Home / start scene — title + **开始游戏** button. Build Settings scene **0** (entry point). |
-| `Assets/Bordy/Scenes/MainMenu.unity` | Gameplay scene (Bordy board), entered via **开始游戏**; the header **←** returns home. Build Settings scene **1**. |
+| `docs/` | Gameplay guides, phase summary, contributing |
+| `com.tiktok.minigame@1.1.1-Release.unitypackage` | Ready-to-import SDK package (TTSDK v1.1.1) |
+| `Assets/Plugins/com.tiktok.minigame/` | SDK imported into this project |
+| `Assets/Bordy/Scripts/` | Puzzle gameplay: `BordyBoardController`, `BordyTutorialGuide`, etc. |
+| `Assets/Bordy/Scripts/BordyNav.cs` | Scene navigation (home / level select / tutorial / level 1) |
+| `Assets/Bordy/Scripts/BordyMainMenu.cs` | **SDK demo only** (not wired into active game scenes) |
+| `Assets/Bordy/Editor/` | Code-driven scene builders + `Run Full Setup` |
+| `Assets/Bordy/Scenes/` | `Home` · `LevelSelect` · `Tutorial` · `MainMenu` (level 1) |
 
 ---
 
 ## Requirements
 
-- Unity **2022.3.34f1** (any 2022.3.x LTS should work). Do **not** use the Tuanjie / 团结引擎
+- Unity **2022.3.62f3c1** (2022.3.x LTS). Do **not** use the Tuanjie / 团结引擎
   fork — the SDK's `asmdef` will collide.
 - TTSDK **1.1.1** or newer. v1.1.1 ships a separate `ttsdk-editor.dll` so the Mock
   implementation runs inside Unity Editor without throwing.
@@ -47,33 +84,7 @@ inside the real Douyin (TikTok) mini-game container.
 
 ---
 
-## Quick start
-
-```bash
-git clone <this repo>
-cd Bordy
-# Open the folder via Unity Hub → Add project → 2022.3.34f1
-```
-
-Inside Unity:
-
-1. Wait for the initial asset import to finish.
-2. Run **menu: Bordy → Run Full Setup** once. It builds both scenes (`Home.unity`,
-   `MainMenu.unity`), wires the buttons, and registers them in Build Settings with
-   Home as scene 0.
-3. Open `Assets/Bordy/Scenes/Home.unity` and press Play. Tap **开始游戏** to enter the
-   game; tap the header **←** to come back to the home page.
-
-Navigation flow:
-
-```
-Home.unity ──[开始游戏]──▶ MainMenu.unity
-     ▲                          │
-     └──────────[←]─────────────┘
-```
-
-If anything looks off, rebuild either scene at any time via **Bordy → Rebuild Home Scene**
-or **Bordy → Rebuild MainMenu Scene**.
+> For the puzzle game, see **[Game quick start](#game-quick-start)** above. Below is SDK integration and API demo documentation.
 
 ---
 
@@ -300,21 +311,23 @@ produce the `tt-minigame/` layout the container expects.
 
 ```
 .
-├── com.tiktok.minigame@1.1.1-Release.unitypackage   # SDK package, drop into other projects
+├── docs/
+│   ├── GAMEPLAY.md             # Gameplay guide (EN)
+│   ├── GAMEPLAY.zh.md          # 玩法与架构（中文）
+│   ├── PHASE-SUMMARY.md        # Phase delivery summary
+│   └── CONTRIBUTING.md         # Collaboration guide
+├── com.tiktok.minigame@1.1.1-Release.unitypackage
 ├── Assets/
 │   ├── Bordy/
-│   │   ├── Editor/
-│   │   │   ├── BordyHomeSceneBuilder.cs              # Code-driven Home scene rebuild
-│   │   │   ├── BordySceneBuilder.cs                  # Code-driven gameplay scene rebuild
-│   │   │   └── BordySetup.cs                         # One-click setup pipeline
+│   │   ├── Editor/             # Scene builders, play entry, Run Full Setup
 │   │   ├── Scenes/
-│   │   │   ├── Home.unity                           # Home / start scene (built scene 0)
-│   │   │   └── MainMenu.unity                       # Gameplay scene (built scene 1)
-│   │   └── Scripts/
-│   │       ├── BordyNav.cs                          # Start / back scene navigation
-│   │       └── BordyMainMenu.cs                      # Runtime menu + API wiring
-│   └── Plugins/com.tiktok.minigame/                 # Imported SDK (do not edit)
-├── docs/screenshots/                                # README assets
-├── Packages/manifest.json                           # Unity package list
-├── ProjectSettings/                                 # Unity project settings
-└── README.m
+│   │   │   ├── Home.unity
+│   │   │   ├── LevelSelect.unity
+│   │   │   ├── Tutorial.unity
+│   │   │   └── MainMenu.unity  # Level 1 (6×6)
+│   │   └── Scripts/            # Board, tutorial, level select, nav, timer, tokens
+│   └── Plugins/com.tiktok.minigame/
+├── docs/screenshots/             # SDK demo README screenshots
+├── Packages/manifest.json
+├── ProjectSettings/
+└── README.md / README.zh.md
