@@ -43,14 +43,31 @@ namespace Bordy
 
         private void Update()
         {
-            if (_board == null || _step < 1 || _step > 2)
+            if (_board == null)
                 return;
 
-            int targetRow = 0;
-            int targetCol = _step == 1 ? 2 : 3;
-            int expected = _step == 1 ? BordyPuzzleData.Moon : BordyPuzzleData.Sun;
-            if (_board.GetCellState(targetRow, targetCol) == expected)
-                EnterStep(_step + 1);
+            const int Sun = BordyPuzzleData.Sun;
+            const int Moon = BordyPuzzleData.Moon;
+
+            switch (_step)
+            {
+                case 1: // tap (0,2) until Sun / 把第三格点成太阳
+                    if (_board.GetCellState(0, 2) == Sun)
+                        EnterStep(2);
+                    break;
+                case 2: // tap (0,3) until Moon / 把第四格点成月亮
+                    if (_board.GetCellState(0, 3) == Moon)
+                        EnterStep(3);
+                    break;
+                case 4: // "=" lesson: the two cells must MATCH / “=”教学：两格必须相同
+                    if (_board.GetCellState(1, 1) == Moon && _board.GetCellState(1, 2) == Moon)
+                        EnterStep(5);
+                    break;
+                case 5: // "×" lesson: the two cells must DIFFER / “×”教学：两格必须不同
+                    if (_board.GetCellState(2, 0) == Sun && _board.GetCellState(3, 0) == Moon)
+                        EnterStep(6);
+                    break;
+            }
         }
 
         private void BuildOverlay()
@@ -121,6 +138,7 @@ namespace Bordy
         {
             _step = step;
             _board.ClearGuideHighlights();
+            _board.ClearStatusPin();
             _board.CanTapCell = null;
 
             switch (step)
@@ -139,33 +157,50 @@ namespace Bordy
                     ShowOverlay(false);
                     _board.SetGuideHighlight(0, 2, true);
                     _board.CanTapCell = (r, c) => r == 0 && c == 2;
-                    _board.SetStatus("引导：点击高亮格，填入月亮");
+                    _board.PinStatus("引导：点击高亮格，直到变成太阳");
                     break;
 
                 case 2:
                     ShowOverlay(false);
                     _board.SetGuideHighlight(0, 3, true);
                     _board.CanTapCell = (r, c) => r == 0 && c == 3;
-                    _board.SetStatus("引导：再点击下一格，填入太阳");
+                    _board.PinStatus("引导：再点击下一格，直到变成月亮");
                     break;
 
                 case 3:
                     ShowOverlay(true);
                     _message.text =
-                        "× 表示相邻两格必须相反；= 表示相邻两格必须相同。\n\n" +
-                        "每行、每列的太阳和月亮数量要相等，且不能连续出现 3 个相同图案。";
+                        "格子之间会出现 = 和 × 两种符号：\n\n" +
+                        "= 表示相邻两格必须相同；× 表示相邻两格必须相反。\n\n" +
+                        "下面来分别试一下。";
                     _actionLabel.text = "继续";
                     _actionButton.onClick.RemoveAllListeners();
                     _actionButton.onClick.AddListener(() => EnterStep(4));
                     break;
 
-                case 4:
+                case 4: // "=" lesson — make the two highlighted cells the same.
+                    ShowOverlay(false);
+                    _board.SetGuideHighlight(1, 1, true);
+                    _board.SetGuideHighlight(1, 2, true);
+                    _board.CanTapCell = (r, c) => r == 1 && (c == 1 || c == 2);
+                    _board.PinStatus("= 号：两侧必须相同，把这两格都点成月亮");
+                    break;
+
+                case 5: // "×" lesson — make the two highlighted cells differ.
+                    ShowOverlay(false);
+                    _board.SetGuideHighlight(2, 0, true);
+                    _board.SetGuideHighlight(3, 0, true);
+                    _board.CanTapCell = (r, c) => c == 0 && (r == 2 || r == 3);
+                    _board.PinStatus("× 号：两侧必须不同，让这两格一个太阳、一个月亮");
+                    break;
+
+                case 6:
                     ShowOverlay(false);
                     _board.CanTapCell = null;
                     _board.SetStatus("完成剩余格子，通关后即可解锁正式关卡");
                     break;
 
-                case 5:
+                case 7:
                     ShowOverlay(true);
                     _message.text = "恭喜完成新手引导！\n\n正式关卡已解锁，去挑战 6×6 棋盘吧。";
                     _actionLabel.text = "关卡选择";
@@ -178,7 +213,7 @@ namespace Bordy
         private void OnBoardWon()
         {
             BordyProgress.TutorialCompleted = true;
-            EnterStep(5);
+            EnterStep(7);
         }
 
         private void ShowOverlay(bool show)

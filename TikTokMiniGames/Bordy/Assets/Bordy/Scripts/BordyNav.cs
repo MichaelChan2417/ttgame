@@ -11,7 +11,20 @@ namespace Bordy
         [SerializeField] private string tutorialSceneName = BordyLevelCatalog.TutorialScene;
         [SerializeField] private string level1SceneName = BordyLevelCatalog.Level1Scene;
 
-        public void StartGame() => SceneManager.LoadScene(levelSelectSceneName);
+        /// <summary>
+        /// Entry from Home. Records the session, then routes: a first-time player (tutorial
+        /// not completed) is forced into the tutorial; returning players go to level select.
+        /// 从主页进入：记录本次会话后路由——首次玩家（教程未完成）强制进新手教程，
+        /// 老玩家进关卡选择。
+        /// </summary>
+        public void StartGame()
+        {
+            BordyUserService.NoteGameEntered();
+            bool firstTime = BordyUserService.IsFirstTimePlayer;
+            string target = firstTime ? tutorialSceneName : levelSelectSceneName;
+            Debug.Log($"[BordyNav] StartGame firstTime={firstTime} (tutorialDone={BordyProgress.TutorialCompleted}) → {target}");
+            SceneManager.LoadScene(target);
+        }
 
         public void BackToHome() => SceneManager.LoadScene(homeSceneName);
 

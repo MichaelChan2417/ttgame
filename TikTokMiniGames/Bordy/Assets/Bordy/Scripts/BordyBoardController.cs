@@ -29,6 +29,7 @@ namespace Bordy
         private Text _statusLabel;
         private Transform _boardRoot;
         private bool _won;
+        private string _pinnedStatus;
 
         public event Action BoardWon;
         public Func<int, int, bool> CanTapCell { get; set; }
@@ -186,7 +187,7 @@ namespace Bordy
                 }
             }
 
-            SetStatus("点击空格填入太阳或月亮");
+            SetTransientStatus("点击空格填入太阳或月亮");
         }
 
         public void SetGuideHighlight(int row, int col, bool on)
@@ -298,14 +299,14 @@ namespace Bordy
 
             if (!IsBoardComplete())
             {
-                SetStatus("点击空格填入太阳或月亮");
+                SetTransientStatus("点击空格填入太阳或月亮");
                 return;
             }
 
             if (!IsBoardValid())
             {
                 HighlightViolations();
-                SetStatus("还有规则未满足，请检查标红的格子");
+                SetTransientStatus("还有规则未满足，请检查标红的格子");
                 return;
             }
 
@@ -504,10 +505,33 @@ namespace Bordy
             return true;
         }
 
+        /// <summary>Set the status text directly (one-off). / 直接设置状态文字（一次性）。</summary>
         public void SetStatus(string message)
         {
             if (_statusLabel != null)
                 _statusLabel.text = message;
+        }
+
+        /// <summary>
+        /// Pin a status message so the board's own evaluation messages won't overwrite it.
+        /// Used by the tutorial guide to keep its hint visible while the player taps.
+        /// 钉住一条状态文字，棋盘自身的校验提示不会再覆盖它；新手引导用它在玩家点击时保持提示常驻。
+        /// </summary>
+        public void PinStatus(string message)
+        {
+            _pinnedStatus = message;
+            SetStatus(message);
+        }
+
+        /// <summary>Release the pinned status so evaluation messages show again. / 取消钉住。</summary>
+        public void ClearStatusPin() => _pinnedStatus = null;
+
+        /// <summary>Status from board evaluation — suppressed while a status is pinned. / 校验提示，在钉住期间被抑制。</summary>
+        private void SetTransientStatus(string message)
+        {
+            if (!string.IsNullOrEmpty(_pinnedStatus))
+                return;
+            SetStatus(message);
         }
 
         private readonly struct MoveRecord
