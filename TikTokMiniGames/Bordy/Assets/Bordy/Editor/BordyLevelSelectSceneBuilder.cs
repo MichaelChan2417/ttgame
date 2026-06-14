@@ -18,6 +18,7 @@ namespace Bordy.EditorTools
         private static readonly Color ColMuted = new Color(0.45f, 0.45f, 0.48f);
         private static readonly Color ColAccent = new Color(1.00f, 0.66f, 0.10f);
         private static readonly Color ColPill = new Color(0.92f, 0.91f, 0.88f);
+        private static readonly Color ColDaily = new Color(0.22f, 0.48f, 0.92f);
 
         [MenuItem("Bordy/Rebuild Level Select Scene")]
         public static void BuildAndSave()
@@ -76,19 +77,52 @@ namespace Bordy.EditorTools
             hint.alignment = TextAnchor.MiddleCenter;
             hint.color = ColMuted;
 
-            var tutorialBtn = CreateLevelButton("TutorialButton", canvasGo.transform, "新手引导", "4×4 教学关卡", ColAccent, Color.white, -620);
-            var level1Btn = CreateLevelButton("Level1Button", canvasGo.transform, "第一关", "6×6 正式挑战", ColPill, ColInk, -860);
-            tutorialBtn.gameObject.AddComponent<Button>().targetGraphic = tutorialBtn;
-            level1Btn.gameObject.AddComponent<Button>().targetGraphic = level1Btn;
+            BuildLevelCards(canvasGo.transform);
         }
 
-        private static Image CreateLevelButton(string name, Transform parent, string title, string subtitle, Color fill, Color textColor, float y)
+        // One row per level button. Add / remove entries here and the cards auto-distribute.
+        // 每个关卡按钮一行。在这里增删条目，卡片会自动均匀分布。
+        private static readonly (string Name, string Title, string Subtitle, bool Accent)[] Cards =
+        {
+            ("TutorialButton", "新手引导", "4×4 教学关卡",   true),
+            ("DailyButton",    "每日挑战", "每日一题 · 全球同题", true),
+            ("Level1Button",   "第一关",   "6×6 正式挑战",   false),
+        };
+
+        /// <summary>
+        /// Lay the level cards out evenly down the screen so any number of cards (3, 4, …) stays
+        /// balanced with comfortable spacing — no hand-tuned positions.
+        /// 把关卡卡片在屏幕上均匀竖向分布，无论几张（3、4…）都保持平衡、间距舒适，无需手调坐标。
+        /// </summary>
+        private static void BuildLevelCards(Transform parent)
+        {
+            const float bandTop = -470f;     // just under the hint banner / 提示语下方
+            const float bandBottom = -1770f; // leave room above the bottom edge / 给底部留白
+            const float cardW = 840f;
+            const float cardH = 200f;
+
+            int n = Cards.Length;
+            float available = bandTop - bandBottom;            // total vertical span / 总竖向跨度
+            float gap = (available - n * cardH) / (n + 1);     // equal gaps incl. both ends / 含两端的等间距
+
+            for (int i = 0; i < n; i++)
+            {
+                float topY = bandTop - gap * (i + 1) - cardH * i;
+                var def = Cards[i];
+                Color fill = def.Accent ? (def.Name == "DailyButton" ? ColDaily : ColAccent) : ColPill;
+                Color text = def.Accent ? Color.white : ColInk;
+                var card = CreateLevelButton(def.Name, parent, def.Title, def.Subtitle, fill, text, topY, cardW, cardH);
+                card.gameObject.AddComponent<Button>().targetGraphic = card;
+            }
+        }
+
+        private static Image CreateLevelButton(string name, Transform parent, string title, string subtitle, Color fill, Color textColor, float y, float width, float height)
         {
             var card = CreatePanel(name, parent, fill);
             card.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
             card.type = Image.Type.Sliced;
             Anchor(card.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
-            card.rectTransform.sizeDelta = new Vector2(760, 180);
+            card.rectTransform.sizeDelta = new Vector2(width, height);
             card.rectTransform.anchoredPosition = new Vector2(0, y);
 
             var titleText = CreateText("Title", card.transform, title, 44, FontStyle.Bold);

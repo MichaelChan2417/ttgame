@@ -31,7 +31,9 @@ namespace Bordy
         {
             if (levelId == BordyLevelCatalog.TutorialId)
                 return true;
-            if (levelId == BordyLevelCatalog.Level1Id)
+            // Daily and Level 1 both open once the tutorial is done.
+            // 每日挑战与第一关都在完成新手引导后开放。
+            if (levelId == BordyLevelCatalog.DailyId || levelId == BordyLevelCatalog.Level1Id)
                 return TutorialCompleted;
             return false;
         }

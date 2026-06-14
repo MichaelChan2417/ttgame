@@ -166,6 +166,7 @@ namespace Bordy
         {
             BordyStore.DeleteKey(ProfileKey);
             BordyProgress.Reset();
+            BordyDaily.Reset();
             Profile = null;
             EnsureProfileLoaded();
             Debug.Log("[BordyUser] Player data reset — next StartGame will be treated as first-time.");

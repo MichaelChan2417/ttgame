@@ -15,6 +15,11 @@ namespace Bordy.EditorTools
         // Keys must match BordyUserService.ProfileKey / BordyProgress.TutorialKey.
         private const string ProfileKey = "bordy.user.profile";
         private const string TutorialKey = "bordy.tutorial.done";
+        private static readonly string[] DailyKeys =
+        {
+            "bordy.daily.date", "bordy.daily.seconds", "bordy.daily.board",
+            "bordy.daily.prog.date", "bordy.daily.prog.board", "bordy.daily.prog.seconds",
+        };
 
         [MenuItem("Bordy/Reset Player Data")]
         public static void ResetPlayerData()
@@ -29,9 +34,23 @@ namespace Bordy.EditorTools
                 // 编辑模式下 SDK 未初始化，清掉 Unity 回退存储。
                 PlayerPrefs.DeleteKey(ProfileKey);
                 PlayerPrefs.DeleteKey(TutorialKey);
+                foreach (var k in DailyKeys) PlayerPrefs.DeleteKey(k);
                 PlayerPrefs.Save();
             }
             Debug.Log("[Bordy] Player data reset. Next 开始游戏 will route to the tutorial (first-time).");
+        }
+
+        [MenuItem("Bordy/Reset Daily Challenge")]
+        public static void ResetDaily()
+        {
+            if (Application.isPlaying)
+                BordyDaily.Reset();
+            else
+            {
+                foreach (var k in DailyKeys) PlayerPrefs.DeleteKey(k);
+                PlayerPrefs.Save();
+            }
+            Debug.Log("[Bordy] Daily challenge reset — playable again today.");
         }
 
         [MenuItem("Bordy/Print Player Profile")]

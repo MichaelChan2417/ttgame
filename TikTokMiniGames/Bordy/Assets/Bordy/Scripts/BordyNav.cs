@@ -32,6 +32,17 @@ namespace Bordy
 
         public void OpenTutorial() => SceneManager.LoadScene(tutorialSceneName);
 
-        public void OpenLevel1() => SceneManager.LoadScene(level1SceneName);
+        public void OpenLevel1()
+        {
+            BordyBoardController.RequestedLevelId = BordyLevelCatalog.Level1Id;
+            SceneManager.LoadScene(level1SceneName);
+        }
+
+        /// <summary>Daily challenge — reuses the 6×6 scene with the daily puzzle. / 每日挑战，复用 6×6 场景。</summary>
+        public void OpenDaily()
+        {
+            BordyBoardController.RequestedLevelId = BordyLevelCatalog.DailyId;
+            SceneManager.LoadScene(BordyLevelCatalog.DailyScene);
+        }
     }
 }

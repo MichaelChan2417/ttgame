@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -19,6 +20,14 @@ namespace Bordy
 
         [SerializeField] private string _levelId = BordyLevelCatalog.Level1Id;
 
+        /// <summary>
+        /// Set by <see cref="BordyNav"/> before loading the shared 6×6 scene to pick which
+        /// puzzle to load (Level 1 vs Daily, which share the same scene). Consumed once.
+        /// 由 <see cref="BordyNav"/> 在加载共享 6×6 场景前设置，用于选择载入哪个谜题
+        /// （第一关 / 每日挑战共用同一场景）。用后即清。
+        /// </summary>
+        public static string RequestedLevelId;
+
         private BordyPuzzleData _puzzle;
         private int _size;
         private int[,] _state = new int[0, 0];
@@ -29,6 +38,7 @@ namespace Bordy
         private Text _statusLabel;
         private Transform _boardRoot;
         private bool _won;
+        private bool _reviewMode; // read-only view of a finished daily / 每日挑战的只读结算视图
         private string _pinnedStatus;
 
         public event Action BoardWon;
@@ -62,11 +72,84 @@ namespace Bordy
 
             WireActionButtons();
             EnsureStatusLabel();
-            ResetPuzzle();
+            ApplyHeaderTitle();
+
+            // Daily already solved today → show the saved result, read-only.
+            // 今天已解出每日挑战 → 显示保存的成绩，只读。
+            if (_levelId == BordyLevelCatalog.DailyId && BordyDaily.CompletedToday)
+            {
+                EnterReviewMode();
+            }
+            else if (_levelId == BordyLevelCatalog.DailyId && BordyDaily.HasProgressToday)
+            {
+                // Daily, not yet solved, has today's snapshot → resume board + clock.
+                // 每日挑战未解出且有今天存档 → 续上盘面与计时。
+                ResetPuzzle();
+                RestoreDailyProgress();
+            }
+            else
+            {
+                // Fresh attempt → start the clock from zero, then lay out the board.
+                // 全新一局 → 计时从 0 开始，再铺好棋盘。
+                BordyTimer.ResetClock();
+                ResetPuzzle();
+            }
+        }
+
+        private void OnDisable() => SaveDailyProgressIfNeeded();
+
+        private void OnApplicationPause(bool paused)
+        {
+            if (paused)
+                SaveDailyProgressIfNeeded();
+        }
+
+        /// <summary>Snapshot the in-progress daily so the player can resume later. / 快照进行中的每日挑战，便于之后续玩。</summary>
+        private void SaveDailyProgressIfNeeded()
+        {
+            if (_puzzle == null || _size == 0)
+                return;
+            if (_levelId != BordyLevelCatalog.DailyId || _reviewMode || _won)
+                return;
+            BordyDaily.SaveProgress(BordyTimer.ElapsedSeconds, EncodeState());
+        }
+
+        /// <summary>Load today's saved in-progress board and resume the gameplay clock. / 载入今天的进行中盘面并续上计时。</summary>
+        private void RestoreDailyProgress()
+        {
+            string board = BordyDaily.ProgressBoard;
+            if (board.Length == _size * _size)
+            {
+                for (int r = 0; r < _size; r++)
+                {
+                    for (int c = 0; c < _size; c++)
+                    {
+                        if (_puzzle.IsGiven(r, c))
+                            continue; // givens already set by ResetPuzzle / 给定格已由 ResetPuzzle 设好
+                        char ch = board[r * _size + c];
+                        _state[r, c] = ch == '1' ? BordyPuzzleData.Moon
+                                     : ch == '0' ? BordyPuzzleData.Sun
+                                     : BordyPuzzleData.Empty;
+                        RefreshCell(r, c, animate: false);
+                    }
+                }
+            }
+
+            BordyTimer.Resume(BordyDaily.ProgressSeconds);
+            EvaluateBoard();
         }
 
         private void ResolveLevelIdFromScene()
         {
+            // An explicit request (e.g. Daily) wins over scene-name resolution. Consumed once.
+            // 显式请求（如每日挑战）优先于按场景名解析，用后即清。
+            if (!string.IsNullOrEmpty(RequestedLevelId))
+            {
+                _levelId = RequestedLevelId;
+                RequestedLevelId = null;
+                return;
+            }
+
             string sceneName = gameObject.scene.name;
             if (sceneName == BordyLevelCatalog.TutorialScene)
                 _levelId = BordyLevelCatalog.TutorialId;
@@ -119,7 +202,7 @@ namespace Bordy
         {
             WirePill("UndoButton", Undo);
             WirePill("HintButton", Hint);
-            WirePill("ResetPill", ResetPuzzle);
+            WirePill("ResetPill", OnResetPressed);
         }
 
         private void WirePill(string name, UnityEngine.Events.UnityAction action)
@@ -138,6 +221,19 @@ namespace Bordy
 
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(action);
+        }
+
+        /// <summary>
+        /// Override the header title with the current puzzle's title at runtime, so the shared
+        /// 6×6 scene shows "第一关" for Level 1 and "每日挑战" for the daily.
+        /// 运行时用当前谜题标题覆盖头部标题，使共用的 6×6 场景在第一关显示“第一关”、
+        /// 每日挑战显示“每日挑战”。
+        /// </summary>
+        private void ApplyHeaderTitle()
+        {
+            var titleLabel = transform.Find("Title")?.GetComponent<Text>();
+            if (titleLabel != null)
+                titleLabel.text = _puzzle.Title;
         }
 
         private void EnsureStatusLabel()
@@ -168,11 +264,29 @@ namespace Bordy
             _statusLabel.text = "点击空格填入太阳或月亮";
         }
 
+        /// <summary>
+        /// The Reset button: clears this board back to its givens (and, for the daily, drops the
+        /// saved in-progress snapshot so it truly restarts — it does NOT exit or forfeit the day).
+        /// 重置按钮：把本盘清回给定格（每日挑战还会丢弃进行中存档以真正重开）——不会退出、也不算放弃当天。
+        /// </summary>
+        public void OnResetPressed()
+        {
+            if (_reviewMode)
+                return;
+            ResetPuzzle();
+            // Daily: persist the cleared board with the UNCHANGED time, so resuming keeps the timer.
+            // 每日挑战：把清空后的盘面与“不变的时间”一起存档，续玩时计时不丢。
+            if (_levelId == BordyLevelCatalog.DailyId)
+                SaveDailyProgressIfNeeded();
+        }
+
         public void ResetPuzzle()
         {
+            if (_reviewMode) // a finished daily is read-only / 已完成的每日挑战只读
+                return;
+
             _undo.Clear();
             _won = false;
-            BordyTimer.ResetClock();
 
             for (int r = 0; r < _size; r++)
             {
@@ -187,7 +301,51 @@ namespace Bordy
                 }
             }
 
+            // Reset only clears the board — the timer keeps running (it is NOT reset here).
+            // 重置只清棋盘——计时继续，不在这里清零。
+            BordyTimer.Continue();
             SetTransientStatus("点击空格填入太阳或月亮");
+        }
+
+        /// <summary>
+        /// Show the saved daily result: load the finished board, freeze the recorded time, and
+        /// lock all interaction so the player can only look and go back.
+        /// 显示保存的每日成绩：载入完成时的盘面、冻结记录的用时，并锁定所有交互，玩家只能看和返回。
+        /// </summary>
+        private void EnterReviewMode()
+        {
+            _reviewMode = true;
+            _won = true; // blocks taps / undo / hint
+            _undo.Clear();
+
+            string board = BordyDaily.CompletedBoard;
+            bool valid = board != null && board.Length == _size * _size;
+
+            for (int r = 0; r < _size; r++)
+            {
+                for (int c = 0; c < _size; c++)
+                {
+                    if (valid)
+                        _state[r, c] = board[r * _size + c] == '1' ? BordyPuzzleData.Moon : BordyPuzzleData.Sun;
+                    else
+                        _state[r, c] = _puzzle.Solution[r, c]; // fallback / 兜底
+                    RefreshCell(r, c, animate: false);
+                }
+            }
+
+            BordyTimer.ShowFrozen(BordyDaily.CompletedSeconds);
+            PinStatus($"今日已完成 · 用时 {BordyTimer.Format(BordyDaily.CompletedSeconds)}（只能查看，明天再来）");
+        }
+
+        /// <summary>Encode the board row-major: '0'=sun, '1'=moon, '2'=empty. / 把盘面编码：'0'太阳 '1'月亮 '2'空。</summary>
+        private string EncodeState()
+        {
+            var sb = new StringBuilder(_size * _size);
+            for (int r = 0; r < _size; r++)
+                for (int c = 0; c < _size; c++)
+                    sb.Append(_state[r, c] == BordyPuzzleData.Moon ? '1'
+                            : _state[r, c] == BordyPuzzleData.Sun ? '0' : '2');
+            return sb.ToString();
         }
 
         public void SetGuideHighlight(int row, int col, bool on)
@@ -227,6 +385,7 @@ namespace Bordy
             _undo.Push(new MoveRecord(row, col, previous));
             RefreshCell(row, col, animate: true);
             EvaluateBoard();
+            SaveDailyProgressIfNeeded();
         }
 
         private static int CycleToken(int value)
@@ -250,6 +409,7 @@ namespace Bordy
             _state[move.Row, move.Col] = move.Previous;
             RefreshCell(move.Row, move.Col, animate: true);
             EvaluateBoard();
+            SaveDailyProgressIfNeeded();
         }
 
         public void Hint()
@@ -311,7 +471,23 @@ namespace Bordy
             }
 
             _won = true;
-            SetStatus("恭喜通关！");
+            BordyTimer.Stop(); // freeze the timer on solve / 通关即停表
+
+            if (_levelId == BordyLevelCatalog.DailyId)
+            {
+                // Record today's result and lock the board into the read-only result view.
+                // 记录今天的成绩，并把棋盘锁定为只读结算视图。
+                int seconds = BordyTimer.ElapsedSeconds;
+                BordyDaily.SaveResult(seconds, EncodeState());
+                BordyDaily.ClearProgress(); // solved → no in-progress snapshot needed / 已解出，无需进行中存档
+                _reviewMode = true;
+                PinStatus($"恭喜完成每日挑战！用时 {BordyTimer.Format(seconds)}（只能查看）");
+            }
+            else
+            {
+                SetStatus("恭喜通关！");
+            }
+
             BoardWon?.Invoke();
         }
 
