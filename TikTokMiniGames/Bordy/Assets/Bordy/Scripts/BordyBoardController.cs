@@ -52,7 +52,21 @@ namespace Bordy
         private void Start()
         {
             ResolveLevelIdFromScene();
-            if (!BordyLevelCatalog.TryGet(_levelId, out _puzzle))
+
+            if (_levelId == BordyLevelCatalog.DailyId)
+            {
+                // Daily template comes from the server (cached locally). It must already be ready —
+                // the level-select screen fetches it before entering.
+                // 每日题目来自服务器（本地缓存），进入前由关卡选择页拉取好。
+                _puzzle = BordyDailyService.GetTodayPuzzleOrNull();
+                if (_puzzle == null)
+                {
+                    Debug.LogError("[BordyBoardController] Daily template not available (fetch first).");
+                    enabled = false;
+                    return;
+                }
+            }
+            else if (!BordyLevelCatalog.TryGet(_levelId, out _puzzle))
             {
                 Debug.LogError($"[BordyBoardController] Unknown level id: {_levelId}");
                 enabled = false;
@@ -70,6 +84,7 @@ namespace Bordy
                 return;
             }
 
+            BuildEdgeSymbols();   // draw = / × from puzzle data (supports server-driven dailies)
             WireActionButtons();
             EnsureStatusLabel();
             ApplyHeaderTitle();
@@ -234,6 +249,60 @@ namespace Bordy
             var titleLabel = transform.Find("Title")?.GetComponent<Text>();
             if (titleLabel != null)
                 titleLabel.text = _puzzle.Title;
+        }
+
+        /// <summary>
+        /// Draw the = / × edge symbols from the puzzle data at runtime (removing any baked into
+        /// the scene). This lets the shared 6×6 scene display server-driven dailies whose edges
+        /// differ from the built-in Level 1.
+        /// 运行时按题目数据绘制 = / × 边符号（并移除场景里烘焙的），使共用的 6×6 场景能显示
+        /// 边约束各不相同的服务器每日题。
+        /// </summary>
+        private void BuildEdgeSymbols()
+        {
+            if (_boardRoot == null)
+                return;
+
+            // Remove baked edge labels.
+            var stale = new List<GameObject>();
+            foreach (Transform child in _boardRoot)
+                if (child.name.StartsWith("Edge_"))
+                    stale.Add(child.gameObject);
+            foreach (var go in stale)
+                Destroy(go);
+
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            foreach (var e in _puzzle.Edges)
+            {
+                int r2 = e.Horizontal ? e.Row : e.Row + 1;
+                int c2 = e.Horizontal ? e.Col + 1 : e.Col;
+                if (e.Row < 0 || e.Col < 0 || r2 >= _size || c2 >= _size)
+                    continue;
+
+                Vector2 mid = (_cells[e.Row, e.Col].rectTransform.anchoredPosition +
+                               _cells[r2, c2].rectTransform.anchoredPosition) * 0.5f;
+                string symbol = e.MustMatch ? "=" : "×";
+
+                var go = new GameObject($"Edge_{e.Row}_{e.Col}_{(e.Horizontal ? "H" : "V")}",
+                    typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                go.transform.SetParent(_boardRoot, false);
+                var t = go.GetComponent<Text>();
+                t.text = symbol;
+                t.font = font;
+                t.fontSize = symbol == "=" ? 44 : 40;
+                t.fontStyle = FontStyle.Bold;
+                t.alignment = TextAnchor.MiddleCenter;
+                t.color = new Color(0.16f, 0.16f, 0.18f);
+                t.raycastTarget = false;
+                t.horizontalOverflow = HorizontalWrapMode.Overflow;
+                t.verticalOverflow = VerticalWrapMode.Overflow;
+
+                var rt = t.rectTransform;
+                rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.sizeDelta = new Vector2(48, 48);
+                rt.anchoredPosition = mid;
+            }
         }
 
         private void EnsureStatusLabel()

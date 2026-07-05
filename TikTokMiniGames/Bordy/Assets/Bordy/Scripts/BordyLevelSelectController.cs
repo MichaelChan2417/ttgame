@@ -7,6 +7,8 @@ namespace Bordy
     public class BordyLevelSelectController : MonoBehaviour
     {
         private Text _hintLabel;
+        private Text _dailySubtitle;
+        private bool _dailyLoading;
 
         private void OnEnable()
         {
@@ -44,25 +46,50 @@ namespace Bordy
             if (image != null)
                 button.targetGraphic = image;
 
-            // Always enterable once unlocked — after completion it opens a read-only result page.
-            // 解锁后始终可进入——完成后进入的是只读结算页。
+            // Always enterable once unlocked — the tap first fetches today's template, then enters
+            // (or opens the read-only result page if already completed).
+            // 解锁后始终可点——点击先拉取当天题目再进入（已完成则进只读结算页）。
             button.interactable = unlocked;
             button.onClick.RemoveAllListeners();
             if (unlocked)
-                button.onClick.AddListener(GetComponent<BordyNav>().OpenDaily);
+                button.onClick.AddListener(OnDailyPressed);
 
             // Update the card's subtitle to reflect today's state.
             // 更新卡片副标题以反映今天的状态。
-            var subtitle = tr.Find("Subtitle")?.GetComponent<Text>();
-            if (subtitle != null)
+            _dailySubtitle = tr.Find("Subtitle")?.GetComponent<Text>();
+            if (_dailySubtitle != null && !_dailyLoading)
             {
                 if (!unlocked)
-                    subtitle.text = "Unlocks after the tutorial";
+                    _dailySubtitle.text = "Unlocks after the tutorial";
                 else if (BordyDaily.CompletedToday)
-                    subtitle.text = $"Done today · Time {BordyTimer.Format(BordyDaily.CompletedSeconds)} · Tap to view";
+                    _dailySubtitle.text = $"Done today · Time {BordyTimer.Format(BordyDaily.CompletedSeconds)} · Tap to view";
                 else
-                    subtitle.text = "One puzzle a day · Same for everyone · Play today";
+                    _dailySubtitle.text = "One puzzle a day · Same for everyone · Play today";
             }
+        }
+
+        private void OnDailyPressed()
+        {
+            if (_dailyLoading)
+                return;
+
+            var nav = GetComponent<BordyNav>();
+            _dailyLoading = true;
+            if (_dailySubtitle != null)
+                _dailySubtitle.text = "Loading today's puzzle…";
+
+            BordyDailyService.EnsureToday(this,
+                onReady: () =>
+                {
+                    _dailyLoading = false;
+                    nav.OpenDaily();
+                },
+                onError: err =>
+                {
+                    _dailyLoading = false;
+                    if (_dailySubtitle != null)
+                        _dailySubtitle.text = "Couldn't load today's puzzle — tap to retry";
+                });
         }
 
         private void WireButton(string name, string levelId, bool unlocked)
