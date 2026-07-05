@@ -64,13 +64,13 @@ namespace Bordy.EditorTools
             backBtn.targetGraphic = back;
             UnityEventTools.AddPersistentListener(backBtn.onClick, nav.BackToHome);
 
-            var title = CreateText("Title", canvasGo.transform, "选择关卡", 72, FontStyle.Bold);
+            var title = CreateText("Title", canvasGo.transform, "Select Level", 72, FontStyle.Bold);
             Anchor(title.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             title.rectTransform.sizeDelta = new Vector2(900, 100);
             title.rectTransform.anchoredPosition = new Vector2(0, -280);
             title.alignment = TextAnchor.MiddleCenter;
 
-            var hint = CreateText("HintBanner", canvasGo.transform, "请先完成新手引导，解锁正式关卡", 30, FontStyle.Normal);
+            var hint = CreateText("HintBanner", canvasGo.transform, "Finish the tutorial to unlock the main levels", 30, FontStyle.Normal);
             Anchor(hint.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             hint.rectTransform.sizeDelta = new Vector2(900, 60);
             hint.rectTransform.anchoredPosition = new Vector2(0, -400);
@@ -84,9 +84,9 @@ namespace Bordy.EditorTools
         // 每个关卡按钮一行。在这里增删条目，卡片会自动均匀分布。
         private static readonly (string Name, string Title, string Subtitle, bool Accent)[] Cards =
         {
-            ("TutorialButton", "新手引导", "4×4 教学关卡",   true),
-            ("DailyButton",    "每日挑战", "每日一题 · 全球同题", true),
-            ("Level1Button",   "第一关",   "6×6 正式挑战",   false),
+            ("TutorialButton", "Tutorial",        "4×4 lesson",                 true),
+            ("DailyButton",    "Daily Challenge", "One puzzle a day · Same for all", true),
+            ("Level1Button",   "Level 1",         "6×6 challenge",              false),
         };
 
         /// <summary>

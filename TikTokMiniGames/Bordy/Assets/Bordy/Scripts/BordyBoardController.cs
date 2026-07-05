@@ -261,7 +261,7 @@ namespace Bordy
             _statusLabel.alignment = TextAnchor.MiddleCenter;
             _statusLabel.color = new Color(0.16f, 0.55f, 0.28f);
             _statusLabel.raycastTarget = false;
-            _statusLabel.text = "点击空格填入太阳或月亮";
+            _statusLabel.text = "Tap an empty cell to place a sun or moon";
         }
 
         /// <summary>
@@ -304,7 +304,7 @@ namespace Bordy
             // Reset only clears the board — the timer keeps running (it is NOT reset here).
             // 重置只清棋盘——计时继续，不在这里清零。
             BordyTimer.Continue();
-            SetTransientStatus("点击空格填入太阳或月亮");
+            SetTransientStatus("Tap an empty cell to place a sun or moon");
         }
 
         /// <summary>
@@ -334,7 +334,7 @@ namespace Bordy
             }
 
             BordyTimer.ShowFrozen(BordyDaily.CompletedSeconds);
-            PinStatus($"今日已完成 · 用时 {BordyTimer.Format(BordyDaily.CompletedSeconds)}（只能查看，明天再来）");
+            PinStatus($"Done today · Time {BordyTimer.Format(BordyDaily.CompletedSeconds)} (view only — come back tomorrow)");
         }
 
         /// <summary>Encode the board row-major: '0'=sun, '1'=moon, '2'=empty. / 把盘面编码：'0'太阳 '1'月亮 '2'空。</summary>
@@ -434,7 +434,7 @@ namespace Bordy
                 }
             }
 
-            SetStatus("没有可提示的格子了");
+            SetStatus("No cells left to hint");
         }
 
         public int GetCellState(int row, int col) => _state[row, col];
@@ -459,14 +459,14 @@ namespace Bordy
 
             if (!IsBoardComplete())
             {
-                SetTransientStatus("点击空格填入太阳或月亮");
+                SetTransientStatus("Tap an empty cell to place a sun or moon");
                 return;
             }
 
             if (!IsBoardValid())
             {
                 HighlightViolations();
-                SetTransientStatus("还有规则未满足，请检查标红的格子");
+                SetTransientStatus("Some rules aren't satisfied — check the cells in red");
                 return;
             }
 
@@ -481,11 +481,11 @@ namespace Bordy
                 BordyDaily.SaveResult(seconds, EncodeState());
                 BordyDaily.ClearProgress(); // solved → no in-progress snapshot needed / 已解出，无需进行中存档
                 _reviewMode = true;
-                PinStatus($"恭喜完成每日挑战！用时 {BordyTimer.Format(seconds)}（只能查看）");
+                PinStatus($"Daily Challenge complete! Time {BordyTimer.Format(seconds)} (view only)");
             }
             else
             {
-                SetStatus("恭喜通关！");
+                SetStatus("Puzzle solved!");
             }
 
             BoardWon?.Invoke();

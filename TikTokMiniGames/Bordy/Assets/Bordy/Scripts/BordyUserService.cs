@@ -47,6 +47,9 @@ namespace Bordy
         public static bool SdkInited { get; private set; }
         public static string LastLoginCode { get; private set; }
 
+        /// <summary>True when this launch created a brand-new profile (no saved data found). / 本次启动新建了档案（存储里没有旧数据）时为 true。</summary>
+        public static bool IsNewUser { get; private set; }
+
         /// <summary>The brand-new player check used for routing. / 路由用的首次玩家判断。</summary>
         public static bool IsFirstTimePlayer => !BordyProgress.TutorialCompleted;
 
@@ -58,24 +61,59 @@ namespace Bordy
             if (_booted) return;
             _booted = true;
 
-            EnsureProfileLoaded();
-
-            // InitSDK must succeed before Login. In the Editor (SDK >= 1.1.1) this runs the mock.
-            // InitSDK 必须先成功才能 Login。Editor 下（SDK >= 1.1.1）走 mock。
+            // IMPORTANT: do NOT read storage here. At BeforeSceneLoad the container's persistent
+            // store (TT.PlayerPrefs / IndexedDB) isn't ready yet, so reading the profile would come
+            // back empty and every returning user would look "new". Load the profile only AFTER
+            // InitSDK succeeds (or in the Editor fallback below).
+            // 重要：这里不要读存储。BeforeSceneLoad 时容器的持久化存储（TT.PlayerPrefs / IndexedDB）
+            // 还没就绪，此刻读档案会读到空，导致老用户被误判为新用户。要等 InitSDK 成功后再读。
             try
             {
                 TT.InitSDK((code, env) =>
                 {
                     SdkInited = code == 0;
                     Debug.Log($"[BordyUser] InitSDK code={code} inited={SdkInited}");
+                    LoadProfileAndReport();   // storage is reliable only now / 现在存储才可靠
                     if (SdkInited)
                         SilentLogin();
                 });
             }
             catch (Exception e)
             {
+                // Editor without the SDK, or an old SDK: storage still works locally, so proceed.
+                // Editor 无 SDK 或旧 SDK：本地存储仍可用，继续。
                 Debug.LogWarning($"[BordyUser] InitSDK threw (continuing with local profile): {e.Message}");
+                LoadProfileAndReport();
             }
+        }
+
+        /// <summary>
+        /// Load (or create) the profile and print the NEW/RETURNING banner. Called after storage
+        /// is ready so the new-user check is accurate.
+        /// 读取/新建档案并打印 新/老用户 横幅。在存储就绪后调用，保证新用户判断准确。
+        /// </summary>
+        private static void LoadProfileAndReport()
+        {
+            EnsureProfileLoaded();
+
+            if (IsNewUser)
+                Debug.Log(
+                    "\n========== BORDY USER ==========\n" +
+                    "🆕 NEW USER (first time ever)\n" +
+                    $"   基于：存储里没有档案（key='{ProfileKey}'），刚新建\n" +
+                    $"   userId={Profile.userId}\n" +
+                    "================================");
+            else
+                Debug.Log(
+                    "\n========== BORDY USER ==========\n" +
+                    "↩️ RETURNING USER\n" +
+                    $"   基于：存储里读到已有档案（key='{ProfileKey}'）\n" +
+                    $"   userId={Profile.userId}  playCount={Profile.playCount}\n" +
+                    "================================");
+
+            // Separate from identity: which puzzle to route to (tutorial gates the rest).
+            // 与身份区分：进游戏时路由到哪（教程决定后续解锁）。
+            Debug.Log($"[BordyUser] Route as first-time player (tutorial not done)? {IsFirstTimePlayer} (tutorialDone={BordyProgress.TutorialCompleted})");
         }
 
         /// <summary>
@@ -141,7 +179,11 @@ namespace Bordy
                     playCount = 0,
                 };
                 SaveProfile();
-                Debug.Log("[BordyUser] New profile created (first launch).");
+                IsNewUser = true;   // no saved profile existed → brand-new user / 存储里没有档案 → 全新用户
+            }
+            else
+            {
+                IsNewUser = false;  // a saved profile was loaded → returning user / 读到了旧档案 → 老用户
             }
         }
 

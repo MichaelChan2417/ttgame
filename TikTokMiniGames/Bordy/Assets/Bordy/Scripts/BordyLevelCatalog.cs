@@ -62,7 +62,7 @@ namespace Bordy
                 new EdgeConstraint(2, 0, false, false),
             };
 
-            return new BordyPuzzleData(TutorialId, "新手引导", solution, givens, edges);
+            return new BordyPuzzleData(TutorialId, "Tutorial", solution, givens, edges);
         }
 
         private static BordyPuzzleData BuildLevel1()
@@ -100,7 +100,7 @@ namespace Bordy
                 new EdgeConstraint(5, 1, true,  true),
             };
 
-            return new BordyPuzzleData(Level1Id, "第一关", solution, givens, edges);
+            return new BordyPuzzleData(Level1Id, "Level 1", solution, givens, edges);
         }
 
         // -----------------------------------------------------------------
@@ -154,7 +154,7 @@ namespace Bordy
                 new EdgeConstraint(5, 1, true,  true),
             };
 
-            return new BordyPuzzleData(DailyId, "每日挑战", solution, givens, edges);
+            return new BordyPuzzleData(DailyId, "Daily Challenge", solution, givens, edges);
         }
     }
 }

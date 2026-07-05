@@ -27,6 +27,19 @@ namespace Bordy
             EnsureEventSystem();
             DisableDecorativeRaycasts();
 
+            // Home: attach the hidden 5-tap debug reset (no-op when BordyDebugReset.Enabled is false).
+            // 主页：挂上隐藏的连点 5 次调试重置（BordyDebugReset.Enabled 为 false 时不生效）。
+            if (scene.name == BordyLevelCatalog.HomeScene)
+            {
+                if (BordyDebugReset.Enabled)
+                {
+                    var homeCanvas = Object.FindObjectOfType<Canvas>();
+                    if (homeCanvas != null && homeCanvas.GetComponent<BordyDebugReset>() == null)
+                        homeCanvas.gameObject.AddComponent<BordyDebugReset>();
+                }
+                return;
+            }
+
             if (scene.name == BordyLevelCatalog.LevelSelectScene)
             {
                 var canvas = Object.FindObjectOfType<Canvas>();

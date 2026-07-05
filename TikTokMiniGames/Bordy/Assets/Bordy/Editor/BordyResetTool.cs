@@ -37,7 +37,7 @@ namespace Bordy.EditorTools
                 foreach (var k in DailyKeys) PlayerPrefs.DeleteKey(k);
                 PlayerPrefs.Save();
             }
-            Debug.Log("[Bordy] Player data reset. Next 开始游戏 will route to the tutorial (first-time).");
+            Debug.Log("[Bordy] Player data reset. Next Play will route to the tutorial (first-time).");
         }
 
         [MenuItem("Bordy/Reset Daily Challenge")]

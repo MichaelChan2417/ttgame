@@ -91,7 +91,7 @@ namespace Bordy.EditorTools
             title.color = ColInk;
 
             // Subtitle. / 副标题。
-            var sub = CreateText("Subtitle", canvasGo.transform, "逻辑谜题", 44, FontStyle.Normal);
+            var sub = CreateText("Subtitle", canvasGo.transform, "Logic Puzzle", 44, FontStyle.Normal);
             Anchor(sub.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             sub.rectTransform.sizeDelta = new Vector2(900, 80);
             sub.rectTransform.anchoredPosition = new Vector2(0, -730);
@@ -99,7 +99,7 @@ namespace Bordy.EditorTools
             sub.color = ColMuted;
 
             // Start button — loads the gameplay scene. / 开始按钮——加载游戏场景。
-            var btnImg = CreatePill("StartButton", canvasGo.transform, "开始游戏", ColAccent, Color.white, 50);
+            var btnImg = CreatePill("StartButton", canvasGo.transform, "Play", ColAccent, Color.white, 50);
             Anchor(btnImg.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
             btnImg.rectTransform.sizeDelta = new Vector2(560, 150);
             btnImg.rectTransform.anchoredPosition = new Vector2(0, -80);
@@ -111,7 +111,7 @@ namespace Bordy.EditorTools
             UnityEventTools.AddPersistentListener(btn.onClick, nav.StartGame);
 
             // Footer hint. / 底部提示。
-            var foot = CreateText("Footer", canvasGo.transform, "轻触按钮开始游戏", 30, FontStyle.Normal);
+            var foot = CreateText("Footer", canvasGo.transform, "Tap the button to play", 30, FontStyle.Normal);
             Anchor(foot.rectTransform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0));
             foot.rectTransform.sizeDelta = new Vector2(800, 60);
             foot.rectTransform.anchoredPosition = new Vector2(0, 160);

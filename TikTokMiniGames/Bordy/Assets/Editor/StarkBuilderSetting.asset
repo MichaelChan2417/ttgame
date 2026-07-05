@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tag: 0
   wasmResourceUrl: 
-  OutputDir: 
+  OutputDir: C:\Users\MSI_NB\Desktop\ttgame\TikTokMiniGames\Bordy\tt-minigame
   useByteAudioAPI: 0
   wasmMemorySize: 128
   isWebGL2: 0
@@ -52,10 +52,10 @@ MonoBehaviour:
   NativeWhiteListRegex:
   - com.bytedance.starksdk
   - _Backup~
-  _appId: 
+  _appId: 7647437535525996565
   version: 
   autoVersion: 0
-  _webglPackagePath: 
+  _webglPackagePath: C:\Users\MSI_NB\Desktop\ttgame\TikTokMiniGames\Bordy\tt-minigame\tt-minigame
   _orientation: 0
   _iOSPerformancePlus: 1
   _menuButtonStyle: 0

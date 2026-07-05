@@ -86,7 +86,7 @@ namespace Bordy.EditorTools
             timer.color = ColInk;
             timer.gameObject.AddComponent<BordyTimer>();
 
-            var reset = CreateClickablePill("ResetPill", parent, "重置", ColPill, ColMuted);
+            var reset = CreateClickablePill("ResetPill", parent, "Reset", ColPill, ColMuted);
             Anchor(reset.rectTransform, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1));
             reset.rectTransform.sizeDelta = new Vector2(180, 76);
             reset.rectTransform.anchoredPosition = new Vector2(-60, -228);
@@ -151,13 +151,13 @@ namespace Bordy.EditorTools
 
         private static void BuildActionRow(Transform parent, BordyBoardController board, float actionTopY, float actionH)
         {
-            var undo = CreateClickablePill("UndoButton", parent, "撤销", ColPill, ColMuted);
+            var undo = CreateClickablePill("UndoButton", parent, "Undo", ColPill, ColMuted);
             Anchor(undo.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             undo.rectTransform.sizeDelta = new Vector2(440, actionH);
             undo.rectTransform.anchoredPosition = new Vector2(-235, -actionTopY);
             UnityEventTools.AddPersistentListener(undo.GetComponent<Button>().onClick, board.Undo);
 
-            var hint = CreateClickablePill("HintButton", parent, "提示", ColPill, ColMuted);
+            var hint = CreateClickablePill("HintButton", parent, "Hint", ColPill, ColMuted);
             Anchor(hint.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             hint.rectTransform.sizeDelta = new Vector2(440, actionH);
             hint.rectTransform.anchoredPosition = new Vector2(235, -actionTopY);
@@ -173,7 +173,7 @@ namespace Bordy.EditorTools
             cardRT.sizeDelta = new Vector2(-48, rulesH);
             cardRT.anchoredPosition = new Vector2(0, -rulesTopY);
 
-            var heading = CreateText("RulesHeading", card.transform, tutorialMode ? "引导提示" : "游戏玩法", 40, FontStyle.Bold);
+            var heading = CreateText("RulesHeading", card.transform, tutorialMode ? "Guide" : "How to Play", 40, FontStyle.Bold);
             Anchor(heading.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1));
             heading.rectTransform.sizeDelta = new Vector2(-48, 70);
             heading.rectTransform.anchoredPosition = new Vector2(28, -24);
@@ -181,8 +181,8 @@ namespace Bordy.EditorTools
             heading.color = ColInk;
 
             string rules = tutorialMode
-                ? "•  跟随底部卡片完成教学步骤。\n•  4×4 棋盘每行/列各 2 个太阳、2 个月亮。\n•  × 要相反，= 要相同，不能连出 3 个一样。"
-                : "•  填充网格，使每个格子都有一个太阳或一个月亮。\n•  每行（和每列）最多 2 个相同图案相邻，且太阳与月亮数量相等。\n•  由 = 分隔的格子必须相同；由 × 分隔的格子必须相反。";
+                ? "•  Follow the cards at the bottom to complete the lesson.\n•  Each row / column on the 4×4 board has 2 suns and 2 moons.\n•  × means opposite, = means same; never 3 identical in a row."
+                : "•  Fill the grid so every cell holds a sun or a moon.\n•  Each row (and column) has equal suns and moons, with at most 2 identical symbols adjacent.\n•  Cells split by = must match; cells split by × must differ.";
 
             var body = CreateText("RulesBody", card.transform, rules, 28, FontStyle.Normal);
             Anchor(body.rectTransform, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 1));

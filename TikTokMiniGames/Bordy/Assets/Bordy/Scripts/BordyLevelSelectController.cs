@@ -24,8 +24,8 @@ namespace Bordy
             if (_hintLabel != null)
             {
                 _hintLabel.text = BordyProgress.TutorialCompleted
-                    ? "选择一个关卡开始挑战"
-                    : "请先完成新手引导，解锁正式关卡";
+                    ? "Pick a level to start"
+                    : "Finish the tutorial to unlock the main levels";
             }
         }
 
@@ -57,11 +57,11 @@ namespace Bordy
             if (subtitle != null)
             {
                 if (!unlocked)
-                    subtitle.text = "完成新手引导后开放";
+                    subtitle.text = "Unlocks after the tutorial";
                 else if (BordyDaily.CompletedToday)
-                    subtitle.text = $"今日已完成 · 用时 {BordyTimer.Format(BordyDaily.CompletedSeconds)} · 点击查看";
+                    subtitle.text = $"Done today · Time {BordyTimer.Format(BordyDaily.CompletedSeconds)} · Tap to view";
                 else
-                    subtitle.text = "每日一题 · 全球同题 · 今日可挑战";
+                    subtitle.text = "One puzzle a day · Same for everyone · Play today";
             }
         }
 

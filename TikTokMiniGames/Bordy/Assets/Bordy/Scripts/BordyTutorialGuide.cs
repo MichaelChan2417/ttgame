@@ -111,7 +111,7 @@ namespace Bordy
             btnGo.transform.SetParent(card.transform, false);
             var btnImg = btnGo.GetComponent<Image>();
             btnImg.color = new Color(1f, 0.66f, 0.10f);
-            btnImg.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            btnImg.sprite = BordyUi.Rounded(); // runtime sprite — builtin UISprite fails on device / 运行时生成，避免内置资源真机报错
             btnImg.type = Image.Type.Sliced;
             _actionButton = btnGo.GetComponent<Button>();
             _actionButton.targetGraphic = btnImg;
@@ -146,9 +146,9 @@ namespace Bordy
                 case 0:
                     ShowOverlay(true);
                     _message.text =
-                        "欢迎来到 Bordy！\n\n" +
-                        "这是一个太阳 / 月亮逻辑谜题。点击空格可以在「空 → 太阳 → 月亮」之间切换。";
-                    _actionLabel.text = "开始";
+                        "Welcome to Bordy!\n\n" +
+                        "This is a sun / moon logic puzzle. Tap an empty cell to cycle Empty → Sun → Moon.";
+                    _actionLabel.text = "Start";
                     _actionButton.onClick.RemoveAllListeners();
                     _actionButton.onClick.AddListener(() => EnterStep(1));
                     break;
@@ -157,23 +157,23 @@ namespace Bordy
                     ShowOverlay(false);
                     _board.SetGuideHighlight(0, 2, true);
                     _board.CanTapCell = (r, c) => r == 0 && c == 2;
-                    _board.PinStatus("引导：点击高亮格，直到变成太阳");
+                    _board.PinStatus("Guide: tap the highlighted cell until it becomes a Sun");
                     break;
 
                 case 2:
                     ShowOverlay(false);
                     _board.SetGuideHighlight(0, 3, true);
                     _board.CanTapCell = (r, c) => r == 0 && c == 3;
-                    _board.PinStatus("引导：再点击下一格，直到变成月亮");
+                    _board.PinStatus("Guide: tap the next cell until it becomes a Moon");
                     break;
 
                 case 3:
                     ShowOverlay(true);
                     _message.text =
-                        "格子之间会出现 = 和 × 两种符号：\n\n" +
-                        "= 表示相邻两格必须相同；× 表示相邻两格必须相反。\n\n" +
-                        "下面来分别试一下。";
-                    _actionLabel.text = "继续";
+                        "Two symbols appear between cells:\n\n" +
+                        "= means the two cells must match;  × means they must differ.\n\n" +
+                        "Let's try each one below.";
+                    _actionLabel.text = "Continue";
                     _actionButton.onClick.RemoveAllListeners();
                     _actionButton.onClick.AddListener(() => EnterStep(4));
                     break;
@@ -183,7 +183,7 @@ namespace Bordy
                     _board.SetGuideHighlight(1, 1, true);
                     _board.SetGuideHighlight(1, 2, true);
                     _board.CanTapCell = (r, c) => r == 1 && (c == 1 || c == 2);
-                    _board.PinStatus("= 号：两侧必须相同，把这两格都点成月亮");
+                    _board.PinStatus("= : both sides must match — make both cells Moons");
                     break;
 
                 case 5: // "×" lesson — make the two highlighted cells differ.
@@ -191,19 +191,19 @@ namespace Bordy
                     _board.SetGuideHighlight(2, 0, true);
                     _board.SetGuideHighlight(3, 0, true);
                     _board.CanTapCell = (r, c) => c == 0 && (r == 2 || r == 3);
-                    _board.PinStatus("× 号：两侧必须不同，让这两格一个太阳、一个月亮");
+                    _board.PinStatus("× : both sides must differ — make one Sun and one Moon");
                     break;
 
                 case 6:
                     ShowOverlay(false);
                     _board.CanTapCell = null;
-                    _board.SetStatus("完成剩余格子，通关后即可解锁正式关卡");
+                    _board.SetStatus("Fill the remaining cells — solve it to unlock the main levels");
                     break;
 
                 case 7:
                     ShowOverlay(true);
-                    _message.text = "恭喜完成新手引导！\n\n正式关卡已解锁，去挑战 6×6 棋盘吧。";
-                    _actionLabel.text = "关卡选择";
+                    _message.text = "Tutorial complete!\n\nThe main levels are unlocked — go try the 6×6 board.";
+                    _actionLabel.text = "Level Select";
                     _actionButton.onClick.RemoveAllListeners();
                     _actionButton.onClick.AddListener(() => _nav.BackToLevelSelect());
                     break;
