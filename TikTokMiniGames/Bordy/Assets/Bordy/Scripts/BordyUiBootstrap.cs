@@ -20,22 +20,45 @@ namespace Bordy
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
             SceneManager.sceneLoaded += OnSceneLoaded;
+            BordyLocale.Changed -= OnLocaleChanged;
+            BordyLocale.Changed += OnLocaleChanged;
+        }
+
+        private static void OnLocaleChanged()
+        {
+            var scene = SceneManager.GetActiveScene();
+            if (!scene.isLoaded)
+                return;
+
+            BordyLocalization.ApplyScene(scene);
+
+            var levelSelect = Object.FindObjectOfType<BordyLevelSelectController>();
+            if (levelSelect != null)
+                levelSelect.Refresh();
+
+            var tutorial = Object.FindObjectOfType<BordyTutorialGuide>();
+            if (tutorial != null)
+                tutorial.RefreshLocale();
+
+            var board = Object.FindObjectOfType<BordyBoardController>();
+            if (board != null)
+                board.RefreshLocale();
         }
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             EnsureEventSystem();
             DisableDecorativeRaycasts();
+            BordyLocalization.ApplyScene(scene);
 
-            // Home: attach the hidden 5-tap debug reset (no-op when BordyDebugReset.Enabled is false).
-            // 主页：挂上隐藏的连点 5 次调试重置（BordyDebugReset.Enabled 为 false 时不生效）。
             if (scene.name == BordyLevelCatalog.HomeScene)
             {
-                if (BordyDebugReset.Enabled)
+                var homeCanvas = Object.FindObjectOfType<Canvas>();
+                if (homeCanvas != null)
                 {
-                    var homeCanvas = Object.FindObjectOfType<Canvas>();
-                    if (homeCanvas != null && homeCanvas.GetComponent<BordyDebugReset>() == null)
+                    if (BordyDebugReset.Enabled && homeCanvas.GetComponent<BordyDebugReset>() == null)
                         homeCanvas.gameObject.AddComponent<BordyDebugReset>();
+                    BordyHomeGate.EnsureOn(homeCanvas.transform);
                 }
                 return;
             }

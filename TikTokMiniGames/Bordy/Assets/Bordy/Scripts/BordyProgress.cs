@@ -13,11 +13,14 @@ namespace Bordy
         public static bool TutorialCompleted
         {
             get => BordyStore.GetBool(TutorialKey, false);
-            set
-            {
-                BordyStore.SetBool(TutorialKey, value);
-                BordyStore.Save();
-            }
+            set => SetTutorialCompleted(value);
+        }
+
+        public static void SetTutorialCompleted(bool value)
+        {
+            BordyStore.SetBool(TutorialKey, value);
+            BordyStore.Save();
+            BordyCloudSync.PushNow();
         }
 
         /// <summary>Wipe progress flags (testing). / 清空进度标记（测试用）。</summary>

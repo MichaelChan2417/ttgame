@@ -1,0 +1,15 @@
+{
+  "orientation": "VERTICAL",
+  "navbar": {
+    "bgColorLight": "#F5F0E8",
+    "bgColorDark": "#1A1A2E"
+  },
+  "dev": {
+    "host": "localhost",
+    "port": 3000
+  },
+  "build": {
+    "outputDir": "dist",
+    "htmlEntry": "index.html"
+  }
+}

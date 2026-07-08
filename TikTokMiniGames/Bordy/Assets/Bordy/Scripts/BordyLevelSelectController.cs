@@ -26,8 +26,8 @@ namespace Bordy
             if (_hintLabel != null)
             {
                 _hintLabel.text = BordyProgress.TutorialCompleted
-                    ? "Pick a level to start"
-                    : "Finish the tutorial to unlock the main levels";
+                    ? BordyStrings.Get(BordyStrings.Keys.LevelSelectHintUnlocked)
+                    : BordyStrings.Get(BordyStrings.Keys.LevelSelectHintLocked);
             }
         }
 
@@ -60,11 +60,12 @@ namespace Bordy
             if (_dailySubtitle != null && !_dailyLoading)
             {
                 if (!unlocked)
-                    _dailySubtitle.text = "Unlocks after the tutorial";
+                    _dailySubtitle.text = BordyStrings.Get(BordyStrings.Keys.LevelDailySubtitleLocked);
                 else if (BordyDaily.CompletedToday)
-                    _dailySubtitle.text = $"Done today · Time {BordyTimer.Format(BordyDaily.CompletedSeconds)} · Tap to view";
+                    _dailySubtitle.text = BordyStrings.Format(BordyStrings.Keys.LevelDailySubtitleDone,
+                        BordyTimer.Format(BordyDaily.CompletedSeconds));
                 else
-                    _dailySubtitle.text = "One puzzle a day · Same for everyone · Play today";
+                    _dailySubtitle.text = BordyStrings.Get(BordyStrings.Keys.LevelDailySubtitleOpen);
             }
         }
 
@@ -76,7 +77,7 @@ namespace Bordy
             var nav = GetComponent<BordyNav>();
             _dailyLoading = true;
             if (_dailySubtitle != null)
-                _dailySubtitle.text = "Loading today's puzzle…";
+                _dailySubtitle.text = BordyStrings.Get(BordyStrings.Keys.LevelDailyLoading);
 
             BordyDailyService.EnsureToday(this,
                 onReady: () =>
@@ -88,7 +89,7 @@ namespace Bordy
                 {
                     _dailyLoading = false;
                     if (_dailySubtitle != null)
-                        _dailySubtitle.text = "Couldn't load today's puzzle — tap to retry";
+                        _dailySubtitle.text = BordyStrings.Get(BordyStrings.Keys.LevelDailyLoadError);
                 });
         }
 

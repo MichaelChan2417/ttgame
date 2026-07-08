@@ -143,7 +143,7 @@ namespace Bordy.EditorTools
         private static Image CreatePill(string name, Transform parent, string label, Color fill, Color textColor, int fontSize)
         {
             var img = CreatePanel(name, parent, fill);
-            img.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            img.sprite = BordyUi.Rounded();
             img.type = Image.Type.Sliced;
 
             var t = CreateText("Text", img.transform, label, fontSize, FontStyle.Bold);

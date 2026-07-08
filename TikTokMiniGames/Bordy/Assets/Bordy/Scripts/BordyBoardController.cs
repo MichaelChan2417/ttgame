@@ -40,6 +40,9 @@ namespace Bordy
         private bool _won;
         private bool _reviewMode; // read-only view of a finished daily / 每日挑战的只读结算视图
         private string _pinnedStatus;
+        private string _pinnedStatusKey;
+        private object[] _pinnedStatusArgs;
+        private string _transientStatusKey = BordyStrings.Keys.StatusTap;
 
         public event Action BoardWon;
         public Func<int, int, bool> CanTapCell { get; set; }
@@ -247,8 +250,46 @@ namespace Bordy
         private void ApplyHeaderTitle()
         {
             var titleLabel = transform.Find("Title")?.GetComponent<Text>();
-            if (titleLabel != null)
-                titleLabel.text = _puzzle.Title;
+            if (titleLabel == null || _puzzle == null)
+                return;
+
+            // English: keep partner's baked puzzle title (e.g. CDN daily). Chinese: localized label.
+            titleLabel.text = BordyLocale.Current == BordyLanguage.En
+                ? _puzzle.Title
+                : BordyStrings.LevelTitle(_levelId);
+        }
+
+        /// <summary>Re-apply localized labels after a language change. / 切换语言后刷新文案。</summary>
+        public void RefreshLocale()
+        {
+            if (_puzzle == null)
+                return;
+
+            ApplyHeaderTitle();
+            BordyLocalization.ApplyGameplay(transform, _levelId == BordyLevelCatalog.TutorialId);
+
+            if (_reviewMode)
+            {
+                PinStatusKey(BordyStrings.Keys.StatusDailyDone, BordyTimer.Format(BordyDaily.CompletedSeconds));
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(_pinnedStatusKey))
+            {
+                PinStatusKey(_pinnedStatusKey, _pinnedStatusArgs);
+                return;
+            }
+
+            if (_won)
+            {
+                if (_levelId == BordyLevelCatalog.DailyId)
+                    PinStatusKey(BordyStrings.Keys.StatusDailyWin, BordyTimer.Format(BordyTimer.ElapsedSeconds));
+                else
+                    SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
+                return;
+            }
+
+            SetTransientStatusKey(_transientStatusKey);
         }
 
         /// <summary>
@@ -330,7 +371,7 @@ namespace Bordy
             _statusLabel.alignment = TextAnchor.MiddleCenter;
             _statusLabel.color = new Color(0.16f, 0.55f, 0.28f);
             _statusLabel.raycastTarget = false;
-            _statusLabel.text = "Tap an empty cell to place a sun or moon";
+            _statusLabel.text = BordyStrings.Get(BordyStrings.Keys.StatusTap);
         }
 
         /// <summary>
@@ -373,7 +414,7 @@ namespace Bordy
             // Reset only clears the board — the timer keeps running (it is NOT reset here).
             // 重置只清棋盘——计时继续，不在这里清零。
             BordyTimer.Continue();
-            SetTransientStatus("Tap an empty cell to place a sun or moon");
+            SetTransientStatusKey(BordyStrings.Keys.StatusTap);
         }
 
         /// <summary>
@@ -403,7 +444,7 @@ namespace Bordy
             }
 
             BordyTimer.ShowFrozen(BordyDaily.CompletedSeconds);
-            PinStatus($"Done today · Time {BordyTimer.Format(BordyDaily.CompletedSeconds)} (view only — come back tomorrow)");
+            PinStatusKey(BordyStrings.Keys.StatusDailyDone, BordyTimer.Format(BordyDaily.CompletedSeconds));
         }
 
         /// <summary>Encode the board row-major: '0'=sun, '1'=moon, '2'=empty. / 把盘面编码：'0'太阳 '1'月亮 '2'空。</summary>
@@ -503,7 +544,7 @@ namespace Bordy
                 }
             }
 
-            SetStatus("No cells left to hint");
+            SetTransientStatusKey(BordyStrings.Keys.StatusNoHint);
         }
 
         public int GetCellState(int row, int col) => _state[row, col];
@@ -528,14 +569,14 @@ namespace Bordy
 
             if (!IsBoardComplete())
             {
-                SetTransientStatus("Tap an empty cell to place a sun or moon");
+                SetTransientStatusKey(BordyStrings.Keys.StatusTap);
                 return;
             }
 
             if (!IsBoardValid())
             {
                 HighlightViolations();
-                SetTransientStatus("Some rules aren't satisfied — check the cells in red");
+                SetTransientStatusKey(BordyStrings.Keys.StatusErrors);
                 return;
             }
 
@@ -550,11 +591,11 @@ namespace Bordy
                 BordyDaily.SaveResult(seconds, EncodeState());
                 BordyDaily.ClearProgress(); // solved → no in-progress snapshot needed / 已解出，无需进行中存档
                 _reviewMode = true;
-                PinStatus($"Daily Challenge complete! Time {BordyTimer.Format(seconds)} (view only)");
+                PinStatusKey(BordyStrings.Keys.StatusDailyWin, BordyTimer.Format(seconds));
             }
             else
             {
-                SetStatus("Puzzle solved!");
+                SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
             }
 
             BoardWon?.Invoke();
@@ -764,19 +805,34 @@ namespace Bordy
         /// </summary>
         public void PinStatus(string message)
         {
+            _pinnedStatusKey = null;
+            _pinnedStatusArgs = null;
             _pinnedStatus = message;
             SetStatus(message);
         }
 
-        /// <summary>Release the pinned status so evaluation messages show again. / 取消钉住。</summary>
-        public void ClearStatusPin() => _pinnedStatus = null;
-
-        /// <summary>Status from board evaluation — suppressed while a status is pinned. / 校验提示，在钉住期间被抑制。</summary>
-        private void SetTransientStatus(string message)
+        public void PinStatusKey(string key, params object[] args)
         {
+            _pinnedStatusKey = key;
+            _pinnedStatusArgs = args;
+            _pinnedStatus = BordyStrings.Format(key, args);
+            SetStatus(_pinnedStatus);
+        }
+
+        /// <summary>Release the pinned status so evaluation messages show again. / 取消钉住。</summary>
+        public void ClearStatusPin()
+        {
+            _pinnedStatus = null;
+            _pinnedStatusKey = null;
+            _pinnedStatusArgs = null;
+        }
+
+        private void SetTransientStatusKey(string key)
+        {
+            _transientStatusKey = key;
             if (!string.IsNullOrEmpty(_pinnedStatus))
                 return;
-            SetStatus(message);
+            SetStatus(BordyStrings.Get(key));
         }
 
         private readonly struct MoveRecord

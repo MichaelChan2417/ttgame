@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Bordy
 {
@@ -44,6 +45,28 @@ namespace Bordy
                 tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f),
                 100f, 0, SpriteMeshType.FullRect, new Vector4(radius, radius, radius, radius));
             return _rounded;
+        }
+
+        /// <summary>Assign runtime-safe 9-slice sprite (WebGL / TikTok container).</summary>
+        public static void ApplySliced(Image image)
+        {
+            if (image == null)
+                return;
+            image.sprite = Rounded();
+            image.type = Image.Type.Sliced;
+        }
+
+        /// <summary>Repair Images whose built-in Editor sprites did not survive a build.</summary>
+        public static void FixMissingSprites(GameObject root)
+        {
+            if (root == null)
+                return;
+
+            foreach (var image in root.GetComponentsInChildren<Image>(true))
+            {
+                if (image.sprite == null)
+                    ApplySliced(image);
+            }
         }
 
         private static bool Inside(int x, int y, int size, int r)

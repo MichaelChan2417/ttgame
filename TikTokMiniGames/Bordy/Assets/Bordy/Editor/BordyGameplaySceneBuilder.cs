@@ -60,16 +60,7 @@ namespace Bordy.EditorTools
 
         private static void BuildHeader(Transform parent, BordyNav nav, BordyBoardController board, string title)
         {
-            var back = CreateText("Back", parent, "←", 56, FontStyle.Normal);
-            Anchor(back.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1));
-            back.rectTransform.sizeDelta = new Vector2(90, 80);
-            back.rectTransform.anchoredPosition = new Vector2(40, -120);
-            back.alignment = TextAnchor.MiddleCenter;
-            back.color = ColInk;
-            back.raycastTarget = true;
-            var backBtn = back.gameObject.AddComponent<Button>();
-            backBtn.targetGraphic = back;
-            UnityEventTools.AddPersistentListener(backBtn.onClick, nav.BackToLevelSelect);
+            BordyEditorUi.CreateBackButton(parent, nav.BackToLevelSelect);
 
             var titleLabel = CreateText("Title", parent, title, 52, FontStyle.Bold);
             Anchor(titleLabel.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
@@ -223,7 +214,7 @@ namespace Bordy.EditorTools
         private static Image CreatePill(string name, Transform parent, string label, Color fill, Color textColor)
         {
             var img = CreatePanel(name, parent, fill);
-            img.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            img.sprite = BordyUi.Rounded();
             img.type = Image.Type.Sliced;
             var t = CreateText("Text", img.transform, label, 30, FontStyle.Normal);
             t.alignment = TextAnchor.MiddleCenter;

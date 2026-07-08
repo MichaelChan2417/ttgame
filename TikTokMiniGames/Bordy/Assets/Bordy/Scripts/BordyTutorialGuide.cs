@@ -145,10 +145,8 @@ namespace Bordy
             {
                 case 0:
                     ShowOverlay(true);
-                    _message.text =
-                        "Welcome to Bordy!\n\n" +
-                        "This is a sun / moon logic puzzle. Tap an empty cell to cycle Empty → Sun → Moon.";
-                    _actionLabel.text = "Start";
+                    _message.text = BordyStrings.Get(BordyStrings.Keys.TutorialWelcome);
+                    _actionLabel.text = BordyStrings.Get(BordyStrings.Keys.TutorialStart);
                     _actionButton.onClick.RemoveAllListeners();
                     _actionButton.onClick.AddListener(() => EnterStep(1));
                     break;
@@ -157,58 +155,58 @@ namespace Bordy
                     ShowOverlay(false);
                     _board.SetGuideHighlight(0, 2, true);
                     _board.CanTapCell = (r, c) => r == 0 && c == 2;
-                    _board.PinStatus("Guide: tap the highlighted cell until it becomes a Sun");
+                    _board.PinStatusKey(BordyStrings.Keys.TutorialGuideSun);
                     break;
 
                 case 2:
                     ShowOverlay(false);
                     _board.SetGuideHighlight(0, 3, true);
                     _board.CanTapCell = (r, c) => r == 0 && c == 3;
-                    _board.PinStatus("Guide: tap the next cell until it becomes a Moon");
+                    _board.PinStatusKey(BordyStrings.Keys.TutorialGuideMoon);
                     break;
 
                 case 3:
                     ShowOverlay(true);
-                    _message.text =
-                        "Two symbols appear between cells:\n\n" +
-                        "= means the two cells must match;  × means they must differ.\n\n" +
-                        "Let's try each one below.";
-                    _actionLabel.text = "Continue";
+                    _message.text = BordyStrings.Get(BordyStrings.Keys.TutorialSymbols);
+                    _actionLabel.text = BordyStrings.Get(BordyStrings.Keys.TutorialContinue);
                     _actionButton.onClick.RemoveAllListeners();
                     _actionButton.onClick.AddListener(() => EnterStep(4));
                     break;
 
-                case 4: // "=" lesson — make the two highlighted cells the same.
+                case 4:
                     ShowOverlay(false);
                     _board.SetGuideHighlight(1, 1, true);
                     _board.SetGuideHighlight(1, 2, true);
                     _board.CanTapCell = (r, c) => r == 1 && (c == 1 || c == 2);
-                    _board.PinStatus("= : both sides must match — make both cells Moons");
+                    _board.PinStatusKey(BordyStrings.Keys.TutorialEquals);
                     break;
 
-                case 5: // "×" lesson — make the two highlighted cells differ.
+                case 5:
                     ShowOverlay(false);
                     _board.SetGuideHighlight(2, 0, true);
                     _board.SetGuideHighlight(3, 0, true);
                     _board.CanTapCell = (r, c) => c == 0 && (r == 2 || r == 3);
-                    _board.PinStatus("× : both sides must differ — make one Sun and one Moon");
+                    _board.PinStatusKey(BordyStrings.Keys.TutorialCross);
                     break;
 
                 case 6:
                     ShowOverlay(false);
                     _board.CanTapCell = null;
-                    _board.SetStatus("Fill the remaining cells — solve it to unlock the main levels");
+                    _board.SetStatus(BordyStrings.Get(BordyStrings.Keys.TutorialFinishRest));
                     break;
 
                 case 7:
                     ShowOverlay(true);
-                    _message.text = "Tutorial complete!\n\nThe main levels are unlocked — go try the 6×6 board.";
-                    _actionLabel.text = "Level Select";
+                    _message.text = BordyStrings.Get(BordyStrings.Keys.TutorialComplete);
+                    _actionLabel.text = BordyStrings.Get(BordyStrings.Keys.TutorialToLevelSelect);
                     _actionButton.onClick.RemoveAllListeners();
                     _actionButton.onClick.AddListener(() => _nav.BackToLevelSelect());
                     break;
             }
         }
+
+        /// <summary>Re-apply tutorial copy after language change. / 切换语言后刷新引导文案。</summary>
+        public void RefreshLocale() => EnterStep(_step);
 
         private void OnBoardWon()
         {

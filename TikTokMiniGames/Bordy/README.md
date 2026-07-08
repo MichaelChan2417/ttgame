@@ -7,7 +7,7 @@ This repo contains two things:
 1. **Bordy logic puzzle game** (sun/moon grid; playable tutorial + level 1)
 2. **TikTok Mini Game SDK reference** (`BordyMainMenu.cs` demos every `TT.*` API)
 
-Game docs: **[docs/GAMEPLAY.md](docs/GAMEPLAY.md)** · Phase summary: **[docs/PHASE-SUMMARY.md](docs/PHASE-SUMMARY.md)** · Contributing: **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)**
+Game docs: **[docs/GAMEPLAY.md](docs/GAMEPLAY.md)** · Dev guide (中文): **[docs/DEV-GUIDE.zh.md](docs/DEV-GUIDE.zh.md)**
 
 ---
 
@@ -312,10 +312,9 @@ produce the `tt-minigame/` layout the container expects.
 ```
 .
 ├── docs/
+│   ├── DEV-GUIDE.zh.md         # Dev, build, upload, troubleshoot (中文)
 │   ├── GAMEPLAY.md             # Gameplay guide (EN)
-│   ├── GAMEPLAY.zh.md          # 玩法与架构（中文）
-│   ├── PHASE-SUMMARY.md        # Phase delivery summary
-│   └── CONTRIBUTING.md         # Collaboration guide
+│   └── GAMEPLAY.zh.md          # 玩法与架构（中文）
 ├── com.tiktok.minigame@1.1.1-Release.unitypackage
 ├── Assets/
 │   ├── Bordy/

@@ -11,6 +11,9 @@ namespace Bordy.EditorTools
     /// </summary>
     public static class BordySetup
     {
+        [MenuItem("Bordy/Fix Build Output Paths")]
+        public static void FixBuildOutputPathsMenu() => BordyStarkBuilderPaths.EnsureLocalPaths();
+
         /// <summary>
         /// Editor menu entry — runs the whole setup pipeline.
         /// 编辑器菜单入口——一次性把整套配置跑完。
@@ -21,6 +24,9 @@ namespace Bordy.EditorTools
             try
             {
                 ConfigurePlayerSettings();
+                BordyStarkBuilderPaths.EnsureLocalPaths();
+                if (Resources.Load<Font>("Bordy/BordyUI") == null && Application.platform == RuntimePlatform.OSXEditor)
+                    Debug.LogWarning("[BordySetup] No CJK UI font — run Bordy → Import UI Font (macOS) for 简体中文.");
                 BordyHomeSceneBuilder.BuildAndSave();
                 BordyLevelSelectSceneBuilder.BuildAndSave();
                 BordyTutorialSceneBuilder.BuildAndSave();
@@ -30,10 +36,11 @@ namespace Bordy.EditorTools
             }
             catch (Exception e)
             {
-                // EN: When running in headless / batch mode we exit so CI fails fast.
-                // ZH: headless / 批处理模式下抛错就退出，方便 CI 失败立刻可见。
                 Debug.LogError($"[BordySetup] failed: {e}");
-                EditorApplication.Exit(2);
+                if (Application.isBatchMode)
+                    EditorApplication.Exit(2);
+                else
+                    EditorUtility.DisplayDialog("Bordy Setup Failed", e.Message, "OK");
                 return;
             }
             AssetDatabase.SaveAssets();
@@ -54,6 +61,11 @@ namespace Bordy.EditorTools
             // EN: TT minigame requires IL2CPP for WebGL — Mono fallback is not supported.
             // ZH: TT 小游戏 WebGL 必须用 IL2CPP，Mono 不被支持。
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.WebGL, ScriptingImplementation.IL2CPP);
+
+            // Release-friendly WebGL: smaller wasm, faster first compile in TikTok container.
+            PlayerSettings.WebGL.debugSymbolMode = WebGLDebugSymbolMode.Off;
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.WebGL, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLES2 });
+
             Debug.Log("[BordySetup] Player settings configured.");
         }
 

@@ -44,6 +44,7 @@ namespace Bordy
             BordyStore.SetInt(TimeKey, seconds);
             BordyStore.SetString(BoardKey, board);
             BordyStore.Save();
+            BordyCloudSync.PushNow();
         }
 
         // --- In-progress snapshot (resume) ---
@@ -63,6 +64,7 @@ namespace Bordy
             BordyStore.SetString(ProgBoardKey, board);
             BordyStore.SetInt(ProgTimeKey, seconds);
             BordyStore.Save();
+            BordyCloudSync.PushDebounced();
         }
 
         /// <summary>Drop the in-progress snapshot (on reset or after solving). / 清掉进行中存档（重置或通关后）。</summary>
@@ -72,6 +74,35 @@ namespace Bordy
             BordyStore.DeleteKey(ProgBoardKey);
             BordyStore.DeleteKey(ProgTimeKey);
             BordyStore.Save();
+            BordyCloudSync.PushDebounced();
+        }
+
+        /// <summary>Apply server daily fields to local store. / 把云端每日数据写入本地。</summary>
+        public static void ApplyFromCloud(BordyCloudDailySave cloud)
+        {
+            if (cloud == null) return;
+
+            BordyStore.SetString(DateKey, cloud.completedDate ?? "");
+            BordyStore.SetInt(TimeKey, cloud.completedSeconds);
+            BordyStore.SetString(BoardKey, cloud.completedBoard ?? "");
+            BordyStore.SetString(ProgDateKey, cloud.progressDate ?? "");
+            BordyStore.SetString(ProgBoardKey, cloud.progressBoard ?? "");
+            BordyStore.SetInt(ProgTimeKey, cloud.progressSeconds);
+            BordyStore.Save();
+        }
+
+        /// <summary>Snapshot for cloud upload. / 采集每日数据用于上传。</summary>
+        public static BordyCloudDailySave CaptureForCloud()
+        {
+            return new BordyCloudDailySave
+            {
+                completedDate = BordyStore.GetString(DateKey, ""),
+                completedSeconds = BordyStore.GetInt(TimeKey, 0),
+                completedBoard = BordyStore.GetString(BoardKey, ""),
+                progressDate = BordyStore.GetString(ProgDateKey, ""),
+                progressBoard = BordyStore.GetString(ProgBoardKey, ""),
+                progressSeconds = BordyStore.GetInt(ProgTimeKey, 0),
+            };
         }
 
         /// <summary>Clear all daily records (testing). / 清除全部每日记录（测试用）。</summary>

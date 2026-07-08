@@ -19,6 +19,18 @@ namespace Bordy
         /// </summary>
         public void StartGame()
         {
+            if (BordyUserService.CloudEnabled && !BordyUserService.IsReady)
+            {
+                Debug.LogWarning("[BordyNav] StartGame blocked — cloud login not ready.");
+                return;
+            }
+
+            if (BordyUserService.CloudEnabled && BordyUserService.CloudLoginFailed)
+            {
+                Debug.LogWarning("[BordyNav] StartGame blocked — cloud login failed.");
+                return;
+            }
+
             BordyUserService.NoteGameEntered();
             bool firstTime = BordyUserService.IsFirstTimePlayer;
             string target = firstTime ? tutorialSceneName : levelSelectSceneName;

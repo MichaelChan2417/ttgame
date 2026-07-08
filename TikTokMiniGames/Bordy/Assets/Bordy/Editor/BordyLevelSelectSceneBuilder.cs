@@ -53,16 +53,7 @@ namespace Bordy.EditorTools
             bg.raycastTarget = false;
             Stretch(bg.rectTransform);
 
-            var back = CreateText("Back", canvasGo.transform, "←", 56, FontStyle.Normal);
-            Anchor(back.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1));
-            back.rectTransform.sizeDelta = new Vector2(90, 80);
-            back.rectTransform.anchoredPosition = new Vector2(40, -120);
-            back.alignment = TextAnchor.MiddleCenter;
-            back.color = ColInk;
-            back.raycastTarget = true;
-            var backBtn = back.gameObject.AddComponent<Button>();
-            backBtn.targetGraphic = back;
-            UnityEventTools.AddPersistentListener(backBtn.onClick, nav.BackToHome);
+            BordyEditorUi.CreateBackButton(canvasGo.transform, nav.BackToHome);
 
             var title = CreateText("Title", canvasGo.transform, "Select Level", 72, FontStyle.Bold);
             Anchor(title.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
@@ -119,7 +110,7 @@ namespace Bordy.EditorTools
         private static Image CreateLevelButton(string name, Transform parent, string title, string subtitle, Color fill, Color textColor, float y, float width, float height)
         {
             var card = CreatePanel(name, parent, fill);
-            card.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            card.sprite = BordyUi.Rounded();
             card.type = Image.Type.Sliced;
             Anchor(card.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             card.rectTransform.sizeDelta = new Vector2(width, height);

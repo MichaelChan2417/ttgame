@@ -1,0 +1,13 @@
+name = "bordy-api"
+main = "src/index.ts"
+compatibility_date = "2024-08-01"
+
+# After first deploy, create KV and paste the id here:
+#   wrangler kv namespace create BORDY_KV
+[[kv_namespaces]]
+binding = "BORDY_KV"
+id = "3d65dfc1a9dd4220b9bb94ce5f02b127"
+
+# Secrets (never commit):
+#   wrangler secret put TIKTOK_CLIENT_KEY
+#   wrangler secret put TIKTOK_CLIENT_SECRET

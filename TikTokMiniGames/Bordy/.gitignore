@@ -58,6 +58,10 @@ crashlytics-build.properties
 # ============================================================
 /tt-minigame/
 
+# TTSDK build settings — machine-local paths (see BordyStarkBuilderPaths.cs)
+/[Aa]ssets/[Ee]ditor/StarkBuilderSetting.asset
+/[Aa]ssets/[Ee]ditor/StarkBuilderSetting.asset.meta
+
 # ============================================================
 # Local debug screenshots / scratch files at repo root
 # ============================================================
