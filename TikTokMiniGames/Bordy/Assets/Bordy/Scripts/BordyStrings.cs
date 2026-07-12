@@ -39,6 +39,16 @@ namespace Bordy
             public const string Level1Title = "level.level1.title";
             public const string Level1Subtitle = "level.level1.subtitle";
 
+            public const string CampaignTitle = "campaign.title";
+            public const string CampaignHint = "campaign.hint";
+            public const string CampaignEmpty = "campaign.empty";
+            public const string CampaignHubTitle = "campaign.hub.title";
+            public const string CampaignHubSubtitle = "campaign.hub.subtitle";
+            public const string CampaignLevelTitleFmt = "campaign.level.title_fmt";
+            public const string CampaignLevelOpen = "campaign.level.open";
+            public const string CampaignLevelLocked = "campaign.level.locked";
+            public const string CampaignLevelDone = "campaign.level.done";
+
             public const string GameplayReset = "gameplay.reset";
             public const string GameplayUndo = "gameplay.undo";
             public const string GameplayHint = "gameplay.hint";
@@ -49,6 +59,13 @@ namespace Bordy
 
             public const string StatusTap = "gameplay.status.tap";
             public const string StatusNoHint = "gameplay.status.no_hint";
+            public const string StatusHintLoadingAd = "gameplay.status.hint_loading_ad";
+            public const string StatusHintAdFailed = "gameplay.status.hint_ad_failed";
+            public const string StatusHintEditorBlocked = "gameplay.status.hint_editor_blocked";
+            public const string StatusHintSdkNotReady = "gameplay.status.hint_sdk_not_ready";
+            public const string StatusHintAdNotConfigured = "gameplay.status.hint_ad_not_configured";
+            public const string StatusHintFreeLeft = "gameplay.status.hint_free_left";
+            public const string StatusHintWatchAd = "gameplay.status.hint_watch_ad";
             public const string StatusErrors = "gameplay.status.errors";
             public const string StatusWin = "gameplay.status.win";
             public const string StatusDailyDone = "gameplay.status.daily_done";
@@ -100,6 +117,16 @@ namespace Bordy
             { Keys.Level1Title, "第一关" },
             { Keys.Level1Subtitle, "6×6 正式挑战" },
 
+            { Keys.CampaignTitle, "闯关模式" },
+            { Keys.CampaignHint, "按顺序通关解锁下一关" },
+            { Keys.CampaignEmpty, "暂无关卡，请在 Unity 运行 Bordy → Generate Campaign Levels" },
+            { Keys.CampaignHubTitle, "闯关模式" },
+            { Keys.CampaignHubSubtitle, "主线关卡 · 难度递增" },
+            { Keys.CampaignLevelTitleFmt, "第 {0} 关" },
+            { Keys.CampaignLevelOpen, "{0}×{1} · 点击开始" },
+            { Keys.CampaignLevelLocked, "{0}×{1} · 未解锁" },
+            { Keys.CampaignLevelDone, "{0}×{1} · 已完成" },
+
             { Keys.GameplayReset, "重置" },
             { Keys.GameplayUndo, "撤销" },
             { Keys.GameplayHint, "提示" },
@@ -110,6 +137,13 @@ namespace Bordy
 
             { Keys.StatusTap, "点击空格填入太阳或月亮" },
             { Keys.StatusNoHint, "没有可提示的格子了" },
+            { Keys.StatusHintLoadingAd, "正在加载广告…" },
+            { Keys.StatusHintAdFailed, "广告暂时不可用，请稍后再试" },
+            { Keys.StatusHintEditorBlocked, "需观看激励视频获得提示（Editor 未开启广告模拟）" },
+            { Keys.StatusHintSdkNotReady, "广告加载中，请稍后再试" },
+            { Keys.StatusHintAdNotConfigured, "广告位未配置，请在后台创建激励视频并填入 Ad Unit ID" },
+            { Keys.StatusHintFreeLeft, "剩余免费提示 {0} 次" },
+            { Keys.StatusHintWatchAd, "免费提示已用完，观看广告获得提示" },
             { Keys.StatusErrors, "还有规则未满足，请检查标红的格子" },
             { Keys.StatusWin, "恭喜通关！" },
             { Keys.StatusDailyDone, "今日已完成 · 用时 {0}（只能查看，明天再来）" },
@@ -123,8 +157,8 @@ namespace Bordy
             { Keys.TutorialContinue, "继续" },
             { Keys.TutorialEquals, "= 号：两侧必须相同，把这两格都点成月亮" },
             { Keys.TutorialCross, "× 号：两侧必须不同，让这两格一个太阳、一个月亮" },
-            { Keys.TutorialFinishRest, "完成剩余格子，通关后即可解锁正式关卡" },
-            { Keys.TutorialComplete, "恭喜完成新手引导！\n\n正式关卡已解锁，去挑战 6×6 棋盘吧。" },
+            { Keys.TutorialFinishRest, "完成剩余格子，通关后即可解锁闯关模式" },
+            { Keys.TutorialComplete, "恭喜完成新手引导！\n\n闯关模式和每日挑战已解锁。" },
             { Keys.TutorialToLevelSelect, "关卡选择" },
         };
 
@@ -161,6 +195,16 @@ namespace Bordy
             { Keys.Level1Title, "Level 1" },
             { Keys.Level1Subtitle, "6×6 challenge" },
 
+            { Keys.CampaignTitle, "Campaign" },
+            { Keys.CampaignHint, "Clear levels in order to unlock the next" },
+            { Keys.CampaignEmpty, "No levels loaded — run Bordy → Generate Campaign Levels in Unity" },
+            { Keys.CampaignHubTitle, "Campaign" },
+            { Keys.CampaignHubSubtitle, "Story levels · easy → hard" },
+            { Keys.CampaignLevelTitleFmt, "Level {0}" },
+            { Keys.CampaignLevelOpen, "{0}×{1} · tap to play" },
+            { Keys.CampaignLevelLocked, "{0}×{1} · locked" },
+            { Keys.CampaignLevelDone, "{0}×{1} · completed" },
+
             { Keys.GameplayReset, "Reset" },
             { Keys.GameplayUndo, "Undo" },
             { Keys.GameplayHint, "Hint" },
@@ -171,6 +215,13 @@ namespace Bordy
 
             { Keys.StatusTap, "Tap an empty cell to place a sun or moon" },
             { Keys.StatusNoHint, "No cells left to hint" },
+            { Keys.StatusHintLoadingAd, "Loading ad…" },
+            { Keys.StatusHintAdFailed, "Ad unavailable — try again later" },
+            { Keys.StatusHintEditorBlocked, "Watch a rewarded ad for a hint (Editor ad sim is off)" },
+            { Keys.StatusHintSdkNotReady, "Ads are still loading — try again in a moment" },
+            { Keys.StatusHintAdNotConfigured, "Ad unit not configured — create a rewarded placement in the developer portal" },
+            { Keys.StatusHintFreeLeft, "{0} free hint(s) left" },
+            { Keys.StatusHintWatchAd, "No free hints left — watch an ad for a hint" },
             { Keys.StatusErrors, "Some rules aren't satisfied — check the cells in red" },
             { Keys.StatusWin, "Puzzle solved!" },
             { Keys.StatusDailyDone, "Done today · Time {0} (view only — come back tomorrow)" },
@@ -184,8 +235,8 @@ namespace Bordy
             { Keys.TutorialContinue, "Continue" },
             { Keys.TutorialEquals, "= : both sides must match — make both cells Moons" },
             { Keys.TutorialCross, "× : both sides must differ — make one Sun and one Moon" },
-            { Keys.TutorialFinishRest, "Fill the remaining cells — solve it to unlock the main levels" },
-            { Keys.TutorialComplete, "Tutorial complete!\n\nThe main levels are unlocked — go try the 6×6 board." },
+            { Keys.TutorialFinishRest, "Fill the remaining cells — solve it to unlock Campaign mode" },
+            { Keys.TutorialComplete, "Tutorial complete!\n\nCampaign and Daily Challenge are unlocked." },
             { Keys.TutorialToLevelSelect, "Level Select" },
         };
 
@@ -207,7 +258,40 @@ namespace Bordy
             if (levelId == BordyLevelCatalog.TutorialId) return Get(Keys.LevelTutorialTitle);
             if (levelId == BordyLevelCatalog.DailyId) return Get(Keys.LevelDailyTitle);
             if (levelId == BordyLevelCatalog.Level1Id) return Get(Keys.Level1Title);
+            if (BordyCampaignCatalog.IsCampaignId(levelId) && BordyCampaignCatalog.TryGetEntry(levelId, out var entry))
+                return CampaignLevelTitle(entry.Index);
             return levelId;
+        }
+
+        public static string CampaignLevelTitle(int index) => Format(Keys.CampaignLevelTitleFmt, index);
+
+        public static string CampaignTierLabel(string tier)
+        {
+            if (string.IsNullOrEmpty(tier))
+                return "";
+
+            if (BordyLocale.Current == BordyLanguage.En)
+            {
+                switch (tier)
+                {
+                    case "easy":
+                    case "hook": return "Easy";
+                    case "medium": return "Medium";
+                    case "hard": return "Hard";
+                    case "brutal": return "Extreme";
+                    default: return tier;
+                }
+            }
+
+            switch (tier)
+            {
+                case "easy":
+                case "hook": return "简单";
+                case "medium": return "中等";
+                case "hard": return "偏难";
+                case "brutal": return "极难";
+                default: return tier;
+            }
         }
     }
 }

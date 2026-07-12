@@ -22,7 +22,9 @@ namespace Bordy.EditorTools
     {
         public const string HomeScenePath = "Assets/Bordy/Scenes/Home.unity";
         public const string LevelSelectScenePath = "Assets/Bordy/Scenes/LevelSelect.unity";
+        public const string CampaignSelectScenePath = "Assets/Bordy/Scenes/CampaignSelect.unity";
         public const string TutorialScenePath = "Assets/Bordy/Scenes/Tutorial.unity";
+        public const string PlayScenePath = "Assets/Bordy/Scenes/Play.unity";
         public const string GameScenePath = "Assets/Bordy/Scenes/MainMenu.unity";
 
         // Palette — shared look with the gameplay scene. / 调色板——与游戏场景统一。
@@ -57,8 +59,10 @@ namespace Bordy.EditorTools
             {
                 new EditorBuildSettingsScene(HomeScenePath, true),
                 new EditorBuildSettingsScene(LevelSelectScenePath, true),
+                new EditorBuildSettingsScene(CampaignSelectScenePath, true),
                 new EditorBuildSettingsScene(TutorialScenePath, true),
-                new EditorBuildSettingsScene(GameScenePath, true),
+                new EditorBuildSettingsScene(PlayScenePath, true),
+                new EditorBuildSettingsScene(GameScenePath, false),
             };
         }
 

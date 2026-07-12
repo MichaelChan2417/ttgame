@@ -81,6 +81,7 @@ namespace Bordy
                     if (SdkInited)
                     {
                         BordyLocale.ReloadFromStore();
+                        BordyAdsService.NotifySdkReady();
                         BeginCloudOrLocalLogin();
                     }
                     else

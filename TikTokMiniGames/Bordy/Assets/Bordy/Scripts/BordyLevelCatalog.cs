@@ -8,12 +8,13 @@ namespace Bordy
         public const string TutorialId = "tutorial";
         public const string DailyId = "daily";
         public const string Level1Id = "level1";
+        public const string CampaignModeId = "campaign";
 
         public const string TutorialScene = "Tutorial";
         public const string Level1Scene = "MainMenu";
-        // Daily reuses the 6×6 gameplay scene (same baked board + edge symbols as Level 1).
-        // 每日挑战复用 6×6 游戏场景（与第一关相同的烘焙棋盘与边符号）。
-        public const string DailyScene = "MainMenu";
+        public const string DailyScene = BordyCampaignCatalog.PlayScene;
+        public const string CampaignSelectScene = BordyCampaignCatalog.CampaignSelectScene;
+        public const string PlayScene = BordyCampaignCatalog.PlayScene;
         public const string LevelSelectScene = "LevelSelect";
         public const string HomeScene = "Home";
 

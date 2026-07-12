@@ -32,7 +32,27 @@ namespace Bordy
         {
             if (text == null)
                 return;
-            text.font = Ui;
+
+            if (NeedsCjkFont(text.text) && HasCjk)
+                text.font = Ui;
+            else
+                text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        }
+
+        private static bool NeedsCjkFont(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return false;
+
+            foreach (char ch in value)
+            {
+                if (ch >= 0x2E80 && ch <= 0x9FFF)
+                    return true;
+                if (ch >= 0xF900 && ch <= 0xFAFF)
+                    return true;
+            }
+
+            return false;
         }
 
         public static void ApplyAllUnder(Transform root)

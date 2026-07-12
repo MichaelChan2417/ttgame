@@ -26,9 +26,13 @@ namespace Bordy
                 case BordyLevelCatalog.LevelSelectScene:
                     ApplyLevelSelect(canvas.transform);
                     break;
+                case BordyLevelCatalog.CampaignSelectScene:
+                    ApplyCampaignSelect(canvas.transform);
+                    break;
                 case BordyLevelCatalog.TutorialScene:
                     ApplyGameplay(canvas.transform, tutorial: true);
                     break;
+                case BordyLevelCatalog.PlayScene:
                 case BordyLevelCatalog.Level1Scene:
                     ApplyGameplay(canvas.transform, tutorial: false);
                     break;
@@ -49,10 +53,18 @@ namespace Bordy
             SetCardTitle(root, "TutorialButton", BordyStrings.Keys.LevelTutorialTitle);
             SetCardSubtitle(root, "TutorialButton", BordyStrings.Keys.LevelTutorialSubtitle);
             SetCardTitle(root, "DailyButton", BordyStrings.Keys.LevelDailyTitle);
-            SetCardTitle(root, "Level1Button", BordyStrings.Keys.Level1Title);
-            SetCardSubtitle(root, "Level1Button", BordyStrings.Keys.Level1Subtitle);
+            SetCardTitle(root, "CampaignButton", BordyStrings.Keys.CampaignHubTitle);
+            SetCardSubtitle(root, "CampaignButton", BordyStrings.Keys.CampaignHubSubtitle);
 
             var controller = root.GetComponent<BordyLevelSelectController>();
+            controller?.Refresh();
+        }
+
+        private static void ApplyCampaignSelect(Transform root)
+        {
+            BordyUiChrome.RefreshBackLabel(root);
+            SetText(root, "Title", BordyStrings.Keys.CampaignTitle);
+            var controller = root.GetComponent<BordyCampaignLevelSelectController>();
             controller?.Refresh();
         }
 

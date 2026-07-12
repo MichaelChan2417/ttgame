@@ -29,7 +29,9 @@ namespace Bordy.EditorTools
                     Debug.LogWarning("[BordySetup] No CJK UI font — run Bordy → Import UI Font (macOS) for 简体中文.");
                 BordyHomeSceneBuilder.BuildAndSave();
                 BordyLevelSelectSceneBuilder.BuildAndSave();
+                BordyCampaignLevelSelectSceneBuilder.BuildAndSave();
                 BordyTutorialSceneBuilder.BuildAndSave();
+                BordyPlaySceneBuilder.BuildAndSave();
                 BordySceneBuilder.BuildAndSave();
                 SwitchToWebGL();
                 Debug.Log("[BordySetup] Done.");

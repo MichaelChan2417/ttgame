@@ -36,6 +36,10 @@ namespace Bordy
             if (levelSelect != null)
                 levelSelect.Refresh();
 
+            var campaignSelect = Object.FindObjectOfType<BordyCampaignLevelSelectController>();
+            if (campaignSelect != null)
+                campaignSelect.Refresh();
+
             var tutorial = Object.FindObjectOfType<BordyTutorialGuide>();
             if (tutorial != null)
                 tutorial.RefreshLocale();
@@ -71,7 +75,18 @@ namespace Bordy
                 return;
             }
 
-            if (scene.name != BordyLevelCatalog.Level1Scene && scene.name != BordyLevelCatalog.TutorialScene)
+            if (scene.name == BordyLevelCatalog.CampaignSelectScene)
+            {
+                var canvas = Object.FindObjectOfType<Canvas>();
+                if (canvas != null && canvas.GetComponent<BordyCampaignLevelSelectController>() == null)
+                    canvas.gameObject.AddComponent<BordyCampaignLevelSelectController>();
+                FixCampaignScrollMask(canvas);
+                return;
+            }
+
+            if (scene.name != BordyLevelCatalog.Level1Scene
+                && scene.name != BordyLevelCatalog.TutorialScene
+                && scene.name != BordyLevelCatalog.PlayScene)
                 return;
 
             var gameCanvas = Object.FindObjectOfType<Canvas>();
@@ -152,6 +167,55 @@ namespace Bordy
             var image = go.GetComponent<Image>();
             if (image != null)
                 image.raycastTarget = false;
+        }
+
+        private static void FixCampaignScrollMask(Canvas canvas)
+        {
+            if (canvas == null)
+                return;
+
+            var viewport = canvas.transform.Find("ScrollViewport");
+            if (viewport == null)
+                return;
+
+            var legacyMask = viewport.GetComponent<Mask>();
+            if (legacyMask != null)
+                Object.Destroy(legacyMask);
+
+            if (viewport.GetComponent<RectMask2D>() == null)
+                viewport.gameObject.AddComponent<RectMask2D>();
+
+            // Migrate old vertical list container to grid.
+            var legacyList = viewport.Find("LevelList");
+            if (legacyList != null)
+                Object.Destroy(legacyList.gameObject);
+
+            if (viewport.Find("LevelGrid") == null)
+            {
+                var gridGo = new GameObject("LevelGrid", typeof(RectTransform));
+                gridGo.transform.SetParent(viewport, false);
+                var gridRt = gridGo.GetComponent<RectTransform>();
+                gridRt.anchorMin = new Vector2(0, 1);
+                gridRt.anchorMax = new Vector2(1, 1);
+                gridRt.pivot = new Vector2(0.5f, 1);
+                gridRt.anchoredPosition = Vector2.zero;
+                gridRt.sizeDelta = new Vector2(0, 400);
+
+                var grid = gridGo.AddComponent<GridLayoutGroup>();
+                grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                grid.constraintCount = 4;
+                grid.cellSize = new Vector2(160, 160);
+                grid.spacing = new Vector2(16, 16);
+                grid.padding = new RectOffset(12, 12, 8, 24);
+                grid.childAlignment = TextAnchor.UpperCenter;
+
+                var fitter = gridGo.AddComponent<ContentSizeFitter>();
+                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                var scroll = viewport.GetComponent<ScrollRect>();
+                if (scroll != null)
+                    scroll.content = gridRt;
+            }
         }
     }
 }

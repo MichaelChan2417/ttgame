@@ -6,17 +6,15 @@ namespace Bordy
     /// <summary>Scene navigation helpers used by UI buttons. / 场景跳转。</summary>
     public class BordyNav : MonoBehaviour
     {
+        /// <summary>Backup level id if <see cref="BordyBoardController.RequestedLevelId"/> is lost on load.</summary>
+        public static string PendingPlayLevelId;
+
         [SerializeField] private string homeSceneName = BordyLevelCatalog.HomeScene;
         [SerializeField] private string levelSelectSceneName = BordyLevelCatalog.LevelSelectScene;
         [SerializeField] private string tutorialSceneName = BordyLevelCatalog.TutorialScene;
-        [SerializeField] private string level1SceneName = BordyLevelCatalog.Level1Scene;
+        [SerializeField] private string campaignSelectSceneName = BordyLevelCatalog.CampaignSelectScene;
+        [SerializeField] private string playSceneName = BordyLevelCatalog.PlayScene;
 
-        /// <summary>
-        /// Entry from Home. Records the session, then routes: a first-time player (tutorial
-        /// not completed) is forced into the tutorial; returning players go to level select.
-        /// 从主页进入：记录本次会话后路由——首次玩家（教程未完成）强制进新手教程，
-        /// 老玩家进关卡选择。
-        /// </summary>
         public void StartGame()
         {
             if (BordyUserService.CloudEnabled && !BordyUserService.IsReady)
@@ -34,7 +32,7 @@ namespace Bordy
             BordyUserService.NoteGameEntered();
             bool firstTime = BordyUserService.IsFirstTimePlayer;
             string target = firstTime ? tutorialSceneName : levelSelectSceneName;
-            Debug.Log($"[BordyNav] StartGame firstTime={firstTime} (tutorialDone={BordyProgress.TutorialCompleted}) → {target}");
+            Debug.Log($"[BordyNav] StartGame firstTime={firstTime} → {target}");
             SceneManager.LoadScene(target);
         }
 
@@ -42,19 +40,32 @@ namespace Bordy
 
         public void BackToLevelSelect() => SceneManager.LoadScene(levelSelectSceneName);
 
+        public void BackToCampaignSelect() => SceneManager.LoadScene(campaignSelectSceneName);
+
         public void OpenTutorial() => SceneManager.LoadScene(tutorialSceneName);
 
+        public void OpenCampaign() => SceneManager.LoadScene(campaignSelectSceneName);
+
+        public void OpenCampaignLevel(string levelId)
+        {
+            PendingPlayLevelId = levelId;
+            BordyBoardController.RequestedLevelId = levelId;
+            SceneManager.LoadScene(playSceneName);
+        }
+
+        /// <summary>Daily challenge — uses Play scene with runtime board. / 每日挑战，Play 场景运行时建盘。</summary>
+        public void OpenDaily()
+        {
+            PendingPlayLevelId = BordyLevelCatalog.DailyId;
+            BordyBoardController.RequestedLevelId = BordyLevelCatalog.DailyId;
+            SceneManager.LoadScene(playSceneName);
+        }
+
+        // Legacy Level 1 entry (dev only). / 旧第一关入口（仅开发兼容）。
         public void OpenLevel1()
         {
             BordyBoardController.RequestedLevelId = BordyLevelCatalog.Level1Id;
-            SceneManager.LoadScene(level1SceneName);
-        }
-
-        /// <summary>Daily challenge — reuses the 6×6 scene with the daily puzzle. / 每日挑战，复用 6×6 场景。</summary>
-        public void OpenDaily()
-        {
-            BordyBoardController.RequestedLevelId = BordyLevelCatalog.DailyId;
-            SceneManager.LoadScene(BordyLevelCatalog.DailyScene);
+            SceneManager.LoadScene(BordyLevelCatalog.Level1Scene);
         }
     }
 }

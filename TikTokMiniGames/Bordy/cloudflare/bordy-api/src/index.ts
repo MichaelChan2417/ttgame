@@ -28,6 +28,7 @@ interface UserSave {
   lastSeenAt: number;
   playCount: number;
   tutorialCompleted: boolean;
+  campaignHighestUnlocked: number;
   locale: string;
   daily: DailySave;
 }
@@ -63,6 +64,7 @@ function defaultSave(openId: string): UserSave {
     lastSeenAt: now,
     playCount: 0,
     tutorialCompleted: false,
+    campaignHighestUnlocked: 1,
     locale: "en",
     daily: {
       completedDate: "",
@@ -218,6 +220,8 @@ async function handlePutSave(request: Request, env: Env): Promise<Response> {
     lastSeenAt: incoming.lastSeenAt ?? Math.floor(Date.now() / 1000),
     playCount: incoming.playCount ?? existing.playCount ?? 0,
     tutorialCompleted: incoming.tutorialCompleted ?? existing.tutorialCompleted ?? false,
+    campaignHighestUnlocked:
+      incoming.campaignHighestUnlocked ?? existing.campaignHighestUnlocked ?? 1,
     locale: incoming.locale ?? existing.locale ?? "en",
     daily: {
       completedDate: incoming.daily?.completedDate ?? existing.daily?.completedDate ?? "",

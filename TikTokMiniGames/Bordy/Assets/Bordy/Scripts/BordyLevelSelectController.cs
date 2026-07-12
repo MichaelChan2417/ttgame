@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Bordy
 {
-    /// <summary>Level select screen: tutorial + unlocked stages. / 关卡选择界面。</summary>
+    /// <summary>Main hub: tutorial, campaign, daily. / 主选关：教程、闯关、每日。</summary>
     public class BordyLevelSelectController : MonoBehaviour
     {
         private Text _hintLabel;
@@ -21,7 +21,7 @@ namespace Bordy
         {
             WireButton("TutorialButton", BordyLevelCatalog.TutorialId, true);
             WireDailyButton();
-            WireButton("Level1Button", BordyLevelCatalog.Level1Id, BordyProgress.IsLevelUnlocked(BordyLevelCatalog.Level1Id));
+            WireButton("CampaignButton", BordyLevelCatalog.CampaignModeId, BordyProgress.IsLevelUnlocked(BordyLevelCatalog.CampaignModeId));
 
             if (_hintLabel != null)
             {
@@ -46,16 +46,11 @@ namespace Bordy
             if (image != null)
                 button.targetGraphic = image;
 
-            // Always enterable once unlocked — the tap first fetches today's template, then enters
-            // (or opens the read-only result page if already completed).
-            // 解锁后始终可点——点击先拉取当天题目再进入（已完成则进只读结算页）。
             button.interactable = unlocked;
             button.onClick.RemoveAllListeners();
             if (unlocked)
                 button.onClick.AddListener(OnDailyPressed);
 
-            // Update the card's subtitle to reflect today's state.
-            // 更新卡片副标题以反映今天的状态。
             _dailySubtitle = tr.Find("Subtitle")?.GetComponent<Text>();
             if (_dailySubtitle != null && !_dailyLoading)
             {
@@ -115,8 +110,8 @@ namespace Bordy
             var nav = GetComponent<BordyNav>();
             if (levelId == BordyLevelCatalog.TutorialId)
                 button.onClick.AddListener(nav.OpenTutorial);
-            else if (levelId == BordyLevelCatalog.Level1Id)
-                button.onClick.AddListener(nav.OpenLevel1);
+            else if (levelId == BordyLevelCatalog.CampaignModeId)
+                button.onClick.AddListener(nav.OpenCampaign);
         }
     }
 }

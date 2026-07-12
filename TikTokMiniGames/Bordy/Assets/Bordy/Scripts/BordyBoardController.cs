@@ -43,6 +43,10 @@ namespace Bordy
         private string _pinnedStatusKey;
         private object[] _pinnedStatusArgs;
         private string _transientStatusKey = BordyStrings.Keys.StatusTap;
+        private int _hintsUsedThisSession;
+        /// <summary><c>-1</c> = unlimited free hints (non-campaign levels).</summary>
+        private int _freeHintBudget = -1;
+        private bool _hintAdInFlight;
 
         public event Action BoardWon;
         public Func<int, int, bool> CanTapCell { get; set; }
@@ -56,22 +60,8 @@ namespace Bordy
         {
             ResolveLevelIdFromScene();
 
-            if (_levelId == BordyLevelCatalog.DailyId)
+            if (!TryLoadPuzzle(out _puzzle))
             {
-                // Daily template comes from the server (cached locally). It must already be ready —
-                // the level-select screen fetches it before entering.
-                // 每日题目来自服务器（本地缓存），进入前由关卡选择页拉取好。
-                _puzzle = BordyDailyService.GetTodayPuzzleOrNull();
-                if (_puzzle == null)
-                {
-                    Debug.LogError("[BordyBoardController] Daily template not available (fetch first).");
-                    enabled = false;
-                    return;
-                }
-            }
-            else if (!BordyLevelCatalog.TryGet(_levelId, out _puzzle))
-            {
-                Debug.LogError($"[BordyBoardController] Unknown level id: {_levelId}");
                 enabled = false;
                 return;
             }
@@ -81,37 +71,66 @@ namespace Bordy
             _tokenViews = new BordyTokenView[_size, _size];
             _cells = new Image[_size, _size];
 
+            if (NeedsRuntimeBoard())
+                BordyBoardViewBuilder.EnsureBoard(transform, _puzzle);
+
             if (!CacheBoardViews())
             {
+                Debug.LogError("[BordyBoardController] Board cells missing — rebuild Play scene or run Full Setup.");
                 enabled = false;
                 return;
             }
 
-            BuildEdgeSymbols();   // draw = / × from puzzle data (supports server-driven dailies)
+            BuildEdgeSymbols();
             WireActionButtons();
             EnsureStatusLabel();
             ApplyHeaderTitle();
+            WireBackButton();
+            InitHintBudget();
 
-            // Daily already solved today → show the saved result, read-only.
-            // 今天已解出每日挑战 → 显示保存的成绩，只读。
             if (_levelId == BordyLevelCatalog.DailyId && BordyDaily.CompletedToday)
             {
                 EnterReviewMode();
             }
             else if (_levelId == BordyLevelCatalog.DailyId && BordyDaily.HasProgressToday)
             {
-                // Daily, not yet solved, has today's snapshot → resume board + clock.
-                // 每日挑战未解出且有今天存档 → 续上盘面与计时。
                 ResetPuzzle();
                 RestoreDailyProgress();
             }
             else
             {
-                // Fresh attempt → start the clock from zero, then lay out the board.
-                // 全新一局 → 计时从 0 开始，再铺好棋盘。
                 BordyTimer.ResetClock();
                 ResetPuzzle();
             }
+        }
+
+        private bool TryLoadPuzzle(out BordyPuzzleData puzzle)
+        {
+            puzzle = null;
+            if (_levelId == BordyLevelCatalog.DailyId)
+            {
+                puzzle = BordyDailyService.GetTodayPuzzleOrNull();
+                if (puzzle == null)
+                    Debug.LogError("[BordyBoardController] Daily template not available (fetch first).");
+                return puzzle != null;
+            }
+
+            if (BordyCampaignCatalog.IsCampaignId(_levelId) && BordyCampaignCatalog.TryGet(_levelId, out puzzle))
+                return true;
+
+            if (BordyLevelCatalog.TryGet(_levelId, out puzzle))
+                return true;
+
+            Debug.LogError($"[BordyBoardController] Unknown level id: {_levelId}");
+            return false;
+        }
+
+        private bool NeedsRuntimeBoard()
+        {
+            string sceneName = gameObject.scene.name;
+            return sceneName == BordyLevelCatalog.PlayScene
+                || _levelId == BordyLevelCatalog.DailyId
+                || BordyCampaignCatalog.IsCampaignId(_levelId);
         }
 
         private void OnDisable() => SaveDailyProgressIfNeeded();
@@ -165,6 +184,13 @@ namespace Bordy
             {
                 _levelId = RequestedLevelId;
                 RequestedLevelId = null;
+                BordyNav.PendingPlayLevelId = _levelId;
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(BordyNav.PendingPlayLevelId))
+            {
+                _levelId = BordyNav.PendingPlayLevelId;
                 return;
             }
 
@@ -257,6 +283,22 @@ namespace Bordy
             titleLabel.text = BordyLocale.Current == BordyLanguage.En
                 ? _puzzle.Title
                 : BordyStrings.LevelTitle(_levelId);
+        }
+
+        private void WireBackButton()
+        {
+            var back = transform.Find("Back")?.GetComponent<Button>();
+            var nav = GetComponent<BordyNav>();
+            if (back == null || nav == null)
+                return;
+
+            back.onClick.RemoveAllListeners();
+            if (_levelId == BordyLevelCatalog.DailyId)
+                back.onClick.AddListener(nav.BackToLevelSelect);
+            else if (BordyCampaignCatalog.IsCampaignId(_levelId))
+                back.onClick.AddListener(nav.BackToCampaignSelect);
+            else
+                back.onClick.AddListener(nav.BackToLevelSelect);
         }
 
         /// <summary>Re-apply localized labels after a language change. / 切换语言后刷新文案。</summary>
@@ -524,9 +566,107 @@ namespace Bordy
 
         public void Hint()
         {
-            if (_won)
+            if (_won || _reviewMode)
                 return;
 
+            if (!HasHintableCell())
+            {
+                SetTransientStatusKey(BordyStrings.Keys.StatusNoHint);
+                return;
+            }
+
+            if (NeedsRewardedAdForHint())
+            {
+                RequestHintViaAd();
+                return;
+            }
+
+            if (ApplyHintInternal())
+            {
+                _hintsUsedThisSession++;
+                UpdateHintStatus();
+            }
+        }
+
+        private void InitHintBudget()
+        {
+            _hintsUsedThisSession = 0;
+            if (BordyCampaignCatalog.TryGetEntry(_levelId, out var entry))
+                _freeHintBudget = BordyHintPolicy.ResolveBudget(_levelId, entry.Tier);
+            else
+                _freeHintBudget = BordyHintPolicy.ResolveBudget(_levelId, null);
+        }
+
+        private bool NeedsRewardedAdForHint()
+            => _freeHintBudget >= 0 && _hintsUsedThisSession >= _freeHintBudget;
+
+        private void RequestHintViaAd()
+        {
+            if (_hintAdInFlight)
+                return;
+
+            _hintAdInFlight = true;
+            SetTransientStatusKey(BordyStrings.Keys.StatusHintLoadingAd);
+            BordyAdsService.ShowRewarded(
+                () =>
+                {
+                    _hintAdInFlight = false;
+                    if (ApplyHintInternal())
+                    {
+                        _hintsUsedThisSession++;
+                        UpdateHintStatus();
+                    }
+                },
+                reason =>
+                {
+                    _hintAdInFlight = false;
+                    SetTransientStatusKey(MapAdFailReason(reason));
+                });
+        }
+
+        private static string MapAdFailReason(string reason)
+        {
+            switch (reason)
+            {
+                case "editor_no_sim":
+                    return BordyStrings.Keys.StatusHintEditorBlocked;
+                case "sdk_not_ready":
+                    return BordyStrings.Keys.StatusHintSdkNotReady;
+                case "not_configured":
+                    return BordyStrings.Keys.StatusHintAdNotConfigured;
+                default:
+                    return BordyStrings.Keys.StatusHintAdFailed;
+            }
+        }
+
+        private void UpdateHintStatus()
+        {
+            if (_freeHintBudget < 0)
+                return;
+
+            int remaining = Mathf.Max(0, _freeHintBudget - _hintsUsedThisSession);
+            if (remaining > 0)
+                SetTransientStatusKey(BordyStrings.Keys.StatusHintFreeLeft, remaining);
+            else
+                SetTransientStatusKey(BordyStrings.Keys.StatusHintWatchAd);
+        }
+
+        private bool HasHintableCell()
+        {
+            for (int r = 0; r < _size; r++)
+            {
+                for (int c = 0; c < _size; c++)
+                {
+                    if (!_puzzle.IsGiven(r, c) && _state[r, c] != _puzzle.Solution[r, c])
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool ApplyHintInternal()
+        {
             for (int r = 0; r < _size; r++)
             {
                 for (int c = 0; c < _size; c++)
@@ -540,11 +680,12 @@ namespace Bordy
                     _undo.Push(new MoveRecord(r, c, previous));
                     RefreshCell(r, c, animate: true);
                     EvaluateBoard();
-                    return;
+                    return true;
                 }
             }
 
             SetTransientStatusKey(BordyStrings.Keys.StatusNoHint);
+            return false;
         }
 
         public int GetCellState(int row, int col) => _state[row, col];
@@ -592,6 +733,16 @@ namespace Bordy
                 BordyDaily.ClearProgress(); // solved → no in-progress snapshot needed / 已解出，无需进行中存档
                 _reviewMode = true;
                 PinStatusKey(BordyStrings.Keys.StatusDailyWin, BordyTimer.Format(seconds));
+            }
+            else if (BordyCampaignCatalog.IsCampaignId(_levelId))
+            {
+                if (BordyCampaignCatalog.TryGetEntry(_levelId, out var entry))
+                {
+                    BordyProgress.CompleteCampaignLevel(_levelId, entry.Index);
+                    if (entry.Tier == "brutal")
+                        BordyAdsService.TryShowInterstitial();
+                }
+                SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
             }
             else
             {
@@ -833,6 +984,14 @@ namespace Bordy
             if (!string.IsNullOrEmpty(_pinnedStatus))
                 return;
             SetStatus(BordyStrings.Get(key));
+        }
+
+        private void SetTransientStatusKey(string key, params object[] args)
+        {
+            _transientStatusKey = key;
+            if (!string.IsNullOrEmpty(_pinnedStatus))
+                return;
+            SetStatus(BordyStrings.Format(key, args));
         }
 
         private readonly struct MoveRecord

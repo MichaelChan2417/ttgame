@@ -23,6 +23,7 @@ namespace Bordy
         public long lastSeenAt;
         public int playCount;
         public bool tutorialCompleted;
+        public int campaignHighestUnlocked = 1;
         public string locale = "en";
         public BordyCloudDailySave daily = new BordyCloudDailySave();
 
@@ -35,6 +36,7 @@ namespace Bordy
             try
             {
                 BordyProgress.SetTutorialCompleted(save.tutorialCompleted);
+                BordyProgress.SetCampaignHighestUnlocked(save.campaignHighestUnlocked);
                 BordyDaily.ApplyFromCloud(save.daily);
                 if (!string.IsNullOrEmpty(save.locale))
                     BordyLocale.ApplyFromCloud(save.locale);
@@ -55,6 +57,7 @@ namespace Bordy
                 lastSeenAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 playCount = BordyUserService.Profile?.playCount ?? 0,
                 tutorialCompleted = BordyProgress.TutorialCompleted,
+                campaignHighestUnlocked = BordyProgress.CampaignHighestUnlocked,
                 locale = BordyLocale.ToCode(BordyLocale.Current),
                 daily = daily,
             };

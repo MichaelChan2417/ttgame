@@ -62,6 +62,10 @@ crashlytics-build.properties
 /[Aa]ssets/[Ee]ditor/StarkBuilderSetting.asset
 /[Aa]ssets/[Ee]ditor/StarkBuilderSetting.asset.meta
 
+# Unity Package Manager — machine-local (registry mirror unity.com vs unity.cn)
+/Packages/packages-lock.json
+/ProjectSettings/PackageManagerSettings.asset
+
 # ============================================================
 # Local debug screenshots / scratch files at repo root
 # ============================================================

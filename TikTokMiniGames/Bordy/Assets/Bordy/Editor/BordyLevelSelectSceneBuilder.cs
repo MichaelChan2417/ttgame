@@ -77,7 +77,7 @@ namespace Bordy.EditorTools
         {
             ("TutorialButton", "Tutorial",        "4×4 lesson",                 true),
             ("DailyButton",    "Daily Challenge", "One puzzle a day · Same for all", true),
-            ("Level1Button",   "Level 1",         "6×6 challenge",              false),
+            ("CampaignButton", "Campaign",        "Story levels · easy → hard", false),
         };
 
         /// <summary>
