@@ -26,7 +26,10 @@ namespace Bordy
         /// TikTok mini-game request whitelist in the developer console.
         /// 你的 CDN 基址，以 '/' 结尾。留空=本地开发模式。注意：域名需加入 TikTok 小游戏后台的 request 合法域名。
         /// </summary>
-        public static string BaseUrl = "";
+        public static string BaseUrl =
+            string.IsNullOrEmpty(BordyAppConfig.ApiBaseUrl)
+                ? ""
+                : BordyAppConfig.ApiBaseUrl.TrimEnd('/') + "/api/daily/";
 
         private const string TemplateKey = "bordy.daily.template";       // cached JSON text
         private const string TemplateDateKey = "bordy.daily.template.date"; // yyyyMMdd of the cache

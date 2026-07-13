@@ -237,6 +237,26 @@ async function handlePutSave(request: Request, env: Env): Promise<Response> {
   return json({ ok: true, save: merged });
 }
 
+async function handleGetDaily(env: Env, path: string): Promise<Response> {
+  // path looks like: /api/daily/20260613.json
+  const file = path.slice("/api/daily/".length); // "20260613.json"
+  const date = file.replace(/\.json$/, ""); // "20260613"
+  if (!/^\d{8}$/.test(date)) return error("Bad date (expected YYYYMMDD)", 400);
+
+  const json = await env.BORDY_KV.get(`daily:${date}`);
+  if (!json) return error("Daily not found for " + date, 404);
+
+  // Return the stored JSON verbatim (already the BordyDailyDto shape) + CORS + cache.
+  return new Response(json, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=3600",
+      ...CORS_HEADERS,
+    },
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === "OPTIONS") {
@@ -270,6 +290,10 @@ export default {
 
       if (request.method === "PUT" && path === "/api/save") {
         return await handlePutSave(request, env);
+      }
+
+      if (request.method === "GET" && path.startsWith("/api/daily/")) {
+        return await handleGetDaily(env, path);
       }
 
       return error("Not found", 404);
