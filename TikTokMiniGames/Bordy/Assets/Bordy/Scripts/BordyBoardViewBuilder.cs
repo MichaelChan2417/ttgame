@@ -44,7 +44,10 @@ namespace Bordy
             float actionTopY = boardBotY + 28f;
             float actionH = 84f;
             float rulesTopY = actionTopY + actionH + 24f;
-            float rulesH = Mathf.Max(220f, 1080f - rulesTopY - 40f);
+            // Fill down toward the bottom of the 1080×1920 reference canvas (was mistakenly 1080 =
+            // the width, which left the card too short and the text cramped).
+            // 向 1080×1920 参考画布的底部延伸（之前误用了 1080=宽度，导致卡片太矮、文字发挤）。
+            float rulesH = Mathf.Max(220f, 1920f - rulesTopY - 40f);
 
             return new LayoutMetrics
             {

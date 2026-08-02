@@ -647,7 +647,7 @@ PlayerSettings:
   webGLNameFilesAsHashes: 0
   webGLShowDiagnostics: 0
   webGLDataCaching: 0
-  webGLDebugSymbols: 1
+  webGLDebugSymbols: 0
   webGLEmscriptenArgs: ' -s TOTAL_MEMORY=128MB'
   webGLModulesDirectory: 
   webGLTemplate: APPLICATION:Default

@@ -102,6 +102,8 @@ namespace Bordy
                 BordyTimer.ResetClock();
                 ResetPuzzle();
             }
+
+            NoteActivity(); // start the idle-hint clock from when the board is ready / 从进入棋盘起算空闲
         }
 
         private bool TryLoadPuzzle(out BordyPuzzleData puzzle)
@@ -139,6 +141,34 @@ namespace Bordy
         {
             if (paused)
                 SaveDailyProgressIfNeeded();
+        }
+
+        // Idle "obvious mistake" hint: after the last move, if the player is idle for a few
+        // seconds, highlight clear mistakes (3-in-a-row, too many of one symbol in a line,
+        // and = / × violations). Not real-time — only fires once per idle period.
+        // 空闲提醒：最后一次操作后空闲几秒，就把明显错误标红（连续3个、某行列同符号过多、= / × 违反）。
+        // 非实时，每个空闲周期只提醒一次。
+        private const float IdleHintSeconds = 3f;
+        private float _lastActivityTime;
+        private bool _idleHintShown;
+
+        private void NoteActivity()
+        {
+            _lastActivityTime = Time.unscaledTime;
+            _idleHintShown = false;
+        }
+
+        private void Update()
+        {
+            if (_puzzle == null || _size == 0 || _won || _reviewMode || _idleHintShown)
+                return;
+            if (!string.IsNullOrEmpty(_pinnedStatus)) // don't fight a pinned status (e.g. tutorial)
+                return;
+            if (Time.unscaledTime - _lastActivityTime < IdleHintSeconds)
+                return;
+
+            _idleHintShown = true;
+            HighlightObviousErrors();
         }
 
         /// <summary>Snapshot the in-progress daily so the player can resume later. / 快照进行中的每日挑战，便于之后续玩。</summary>
@@ -188,17 +218,28 @@ namespace Bordy
                 return;
             }
 
-            if (!string.IsNullOrEmpty(BordyNav.PendingPlayLevelId))
+            // Fixed scenes ALWAYS resolve by their own name — never inherit a stale play level id
+            // (otherwise entering the tutorial after the daily would load the daily board).
+            // 固定场景一律按场景名解析，绝不继承残留的 play 关卡 id（否则玩过每日后进教程会加载成每日盘）。
+            string sceneName = gameObject.scene.name;
+            if (sceneName == BordyLevelCatalog.TutorialScene)
             {
-                _levelId = BordyNav.PendingPlayLevelId;
+                _levelId = BordyLevelCatalog.TutorialId;
+                return;
+            }
+            if (sceneName == BordyLevelCatalog.Level1Scene)
+            {
+                _levelId = BordyLevelCatalog.Level1Id;
                 return;
             }
 
-            string sceneName = gameObject.scene.name;
-            if (sceneName == BordyLevelCatalog.TutorialScene)
-                _levelId = BordyLevelCatalog.TutorialId;
-            else if (sceneName == BordyLevelCatalog.Level1Scene)
-                _levelId = BordyLevelCatalog.Level1Id;
+            // Only the generic Play scene uses the pending id as a backup (if RequestedLevelId
+            // was lost during scene load).
+            // 只有通用 Play 场景才用 pending id 兜底（当 RequestedLevelId 在加载中丢失时）。
+            if (sceneName == BordyLevelCatalog.PlayScene && !string.IsNullOrEmpty(BordyNav.PendingPlayLevelId))
+            {
+                _levelId = BordyNav.PendingPlayLevelId;
+            }
         }
 
         private bool CacheBoardViews()
@@ -706,6 +747,7 @@ namespace Bordy
 
         private void EvaluateBoard()
         {
+            NoteActivity(); // any move resets the idle-hint timer / 任何操作重置空闲提醒计时
             ClearErrorHighlights();
 
             if (!IsBoardComplete())
@@ -733,6 +775,10 @@ namespace Bordy
                 BordyDaily.ClearProgress(); // solved → no in-progress snapshot needed / 已解出，无需进行中存档
                 _reviewMode = true;
                 PinStatusKey(BordyStrings.Keys.StatusDailyWin, BordyTimer.Format(seconds));
+
+                // First-completion celebration popup (time + congrats; ranks added later).
+                // 首次通关的祝贺弹窗（用时 + 祝贺；排名之后加）。
+                BordyDailyResultPopup.Show(transform, seconds);
             }
             else if (BordyCampaignCatalog.IsCampaignId(_levelId))
             {
@@ -780,6 +826,60 @@ namespace Bordy
                         _cells[r, c].color = ColErrorCell;
                 }
             }
+        }
+
+        /// <summary>
+        /// Highlight clearly-wrong cells during play on a partial board: 3 identical in a row/col,
+        /// a line holding more than half of one symbol, and = / × edge violations. Empties ignored.
+        /// 游玩中在未填满的盘上标出明显错误：连续3个相同、某行/列同一符号超过一半、= / × 违反；忽略空格。
+        /// </summary>
+        private void HighlightObviousErrors()
+        {
+            ClearErrorHighlights();
+
+            var bad = new bool[_size, _size];
+            MarkRunViolations(bad);       // 3 in a row / 连续三个
+            MarkOverflowViolations(bad);  // > half of one symbol in a line / 某行列同符号过半
+            MarkEdgeViolations(bad);      // = / × / 边约束
+
+            int count = 0;
+            for (int r = 0; r < _size; r++)
+                for (int c = 0; c < _size; c++)
+                    if (bad[r, c] && !_puzzle.IsGiven(r, c))
+                    {
+                        _cells[r, c].color = ColErrorCell;
+                        count++;
+                    }
+
+            if (count > 0)
+                SetTransientStatusKey(BordyStrings.Keys.StatusErrors);
+        }
+
+        private void MarkOverflowViolations(bool[,] bad)
+        {
+            int target = _size / 2;
+            for (int r = 0; r < _size; r++)
+                MarkOverflowLine(bad, r, true, target);
+            for (int c = 0; c < _size; c++)
+                MarkOverflowLine(bad, c, false, target);
+        }
+
+        private void MarkOverflowLine(bool[,] bad, int index, bool horizontal, int target)
+        {
+            int sun = 0, moon = 0;
+            for (int i = 0; i < _size; i++)
+            {
+                int v = ReadState(index, i, horizontal);
+                if (v == BordyPuzzleData.Sun) sun++;
+                else if (v == BordyPuzzleData.Moon) moon++;
+            }
+            if (sun <= target && moon <= target)
+                return;
+
+            int over = sun > target ? BordyPuzzleData.Sun : BordyPuzzleData.Moon;
+            for (int i = 0; i < _size; i++)
+                if (ReadState(index, i, horizontal) == over)
+                    Mark(index, i, bad, horizontal);
         }
 
         private void MarkRunViolations(bool[,] bad)

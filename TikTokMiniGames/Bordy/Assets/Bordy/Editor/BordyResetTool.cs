@@ -19,6 +19,7 @@ namespace Bordy.EditorTools
         {
             "bordy.daily.date", "bordy.daily.seconds", "bordy.daily.board",
             "bordy.daily.prog.date", "bordy.daily.prog.board", "bordy.daily.prog.seconds",
+            "bordy.daily.template", "bordy.daily.template.date",
         };
 
         [MenuItem("Bordy/Reset Player Data")]

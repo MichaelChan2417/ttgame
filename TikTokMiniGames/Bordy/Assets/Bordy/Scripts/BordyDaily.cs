@@ -112,6 +112,7 @@ namespace Bordy
             BordyStore.DeleteKey(TimeKey);
             BordyStore.DeleteKey(BoardKey);
             ClearProgress();
+            BordyDailyService.ClearCache(); // force a fresh cloud download next time / 下次强制重新联网拉取
         }
     }
 }

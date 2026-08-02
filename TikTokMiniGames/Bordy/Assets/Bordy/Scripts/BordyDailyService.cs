@@ -50,13 +50,14 @@ namespace Bordy
             var cached = LoadCachedForToday();
             if (cached != null)
             {
+                Debug.Log("[BordyDaily] source = LOCAL CACHE (no download this run).");
                 TodayPuzzle = cached;
                 return TodayPuzzle;
             }
 
             if (string.IsNullOrEmpty(BaseUrl))
             {
-                // Dev mode: use the built-in template.
+                Debug.Log("[BordyDaily] source = DEV built-in template (BaseUrl empty).");
                 TodayPuzzle = BordyLevelCatalog.Get(BordyLevelCatalog.DailyId);
                 return TodayPuzzle;
             }
@@ -106,9 +107,18 @@ namespace Bordy
                 BordyStore.SetString(TemplateKey, req.downloadHandler.text);
                 BordyStore.SetString(TemplateDateKey, date);
                 BordyStore.Save();
-                Debug.Log($"[BordyDaily] template loaded for {date}.");
+                Debug.Log($"[BordyDaily] source = CLOUD download OK for {date} ({url}).");
                 onReady?.Invoke();
             }
+        }
+
+        /// <summary>Drop the cached template + in-memory puzzle so the next entry re-downloads. / 清掉缓存模板与内存题目，下次进入重新下载。</summary>
+        public static void ClearCache()
+        {
+            TodayPuzzle = null;
+            BordyStore.DeleteKey(TemplateKey);
+            BordyStore.DeleteKey(TemplateDateKey);
+            BordyStore.Save();
         }
 
         private static BordyPuzzleData LoadCachedForToday()
