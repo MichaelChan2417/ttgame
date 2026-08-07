@@ -7,6 +7,8 @@
  * GET  /api/health
  */
 
+import { TERMS_HTML, PRIVACY_HTML } from "./legal";
+
 export interface Env {
   BORDY_KV: KVNamespace;
   TIKTOK_CLIENT_KEY: string;
@@ -257,6 +259,17 @@ async function handleGetDaily(env: Env, path: string): Promise<Response> {
   });
 }
 
+function handleGetLegal(html: string): Response {
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, max-age=3600",
+      ...CORS_HEADERS,
+    },
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === "OPTIONS") {
@@ -272,7 +285,7 @@ export default {
           ok: true,
           service: "bordy-api",
           hint: "Use GET /api/health for health check",
-          endpoints: ["/api/health", "/api/auth/login", "/api/save"],
+          endpoints: ["/api/health", "/api/auth/login", "/api/save", "/api/daily/<YYYYMMDD>.json", "/terms", "/privacy"],
         });
       }
 
@@ -294,6 +307,14 @@ export default {
 
       if (request.method === "GET" && path.startsWith("/api/daily/")) {
         return await handleGetDaily(env, path);
+      }
+
+      if (request.method === "GET" && (path === "/terms" || path === "/terms.html")) {
+        return handleGetLegal(TERMS_HTML);
+      }
+
+      if (request.method === "GET" && (path === "/privacy" || path === "/privacy.html")) {
+        return handleGetLegal(PRIVACY_HTML);
       }
 
       return error("Not found", 404);
