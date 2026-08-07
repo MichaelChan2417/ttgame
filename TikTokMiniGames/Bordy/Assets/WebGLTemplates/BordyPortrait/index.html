@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #1b1b1f;           /* dark letterbox around the phone frame */
+      overflow: hidden;
+      font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    #wrap {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /*
+      Portrait "phone" frame. Fills the window height and keeps a 9:16 ratio
+      (the game's design ratio). On narrow screens it caps to the window width.
+      改比例：把下面四处的 9 / 16 一起换成想要的比例（例如 iPhone 细长版用 9 / 19.5）。
+    */
+    #unity-canvas {
+      height: 100vh;
+      width: calc(100vh * 9 / 16);
+      max-width: 100vw;
+      max-height: calc(100vw * 16 / 9);
+      display: block;
+      background: #f4f3ee;           /* matches the game's page background */
+      touch-action: none;
+    }
+    #unity-loading {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      color: #cfcfd4;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1"></canvas>
+  </div>
+  <div id="unity-loading">Loading…</div>
+
+  <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+  <script>
+    var canvas = document.querySelector("#unity-canvas");
+    var loading = document.querySelector("#unity-loading");
+
+    createUnityInstance(canvas, {
+      dataUrl: "Build/{{{ DATA_FILENAME }}}",
+      frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+      codeUrl: "Build/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+      memoryUrl: "Build/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+      symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
+#endif
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+      productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+      productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+      matchWebGLToCanvasSize: true,   // render at the CSS display size → crisp, correct aspect
+    }, function (progress) {
+      if (loading) loading.textContent = "Loading… " + Math.round(progress * 100) + "%";
+    }).then(function () {
+      if (loading) loading.style.display = "none";
+    }).catch(function (e) {
+      if (loading) loading.textContent = "Failed to load: " + e;
+    });
+  </script>
+</body>
+</html>

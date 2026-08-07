@@ -36,7 +36,9 @@ namespace Bordy
         public static bool IsFirstTimePlayer => !BordyProgress.TutorialCompleted;
 
         public static bool CloudEnabled =>
-            !string.IsNullOrEmpty(BordyAppConfig.ApiBaseUrl) && !Application.isEditor;
+            !BordyAppConfig.WebStandalone
+            && !string.IsNullOrEmpty(BordyAppConfig.ApiBaseUrl)
+            && !Application.isEditor;
 
         public static bool CloudLoggedIn { get; private set; }
         public static bool IsReady { get; private set; }
@@ -63,6 +65,15 @@ namespace Bordy
             // Let Unity render first frame / dismiss container loading page before TT bridge calls.
             yield return null;
             yield return null;
+
+            // Standalone web build: no TikTok SDK at all — boot straight to local play.
+            // 独立网页版：完全不碰 TikTok SDK，直接本地启动。
+            if (BordyAppConfig.WebStandalone)
+            {
+                BordyLocale.ReloadFromStore();
+                FinishOfflineBoot();
+                yield break;
+            }
 
             if (CloudEnabled)
             {

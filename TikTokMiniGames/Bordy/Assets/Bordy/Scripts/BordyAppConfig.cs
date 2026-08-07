@@ -13,6 +13,15 @@ namespace Bordy
         public const string ApiBaseUrl = "https://bordy-api.brainless.workers.dev";
 
         /// <summary>
+        /// Set true for a plain browser build (Cloudflare Pages, shareable link): skips ALL TikTok
+        /// SDK + cloud login, runs game logic only with local storage. Set false for the TikTok
+        /// mini-game build.
+        /// 独立网页版（Cloudflare Pages、可分享链接）设为 true：跳过所有 TikTok SDK 与云登录，
+        /// 只跑游戏逻辑 + 本地存储。TikTok 小游戏包设为 false。
+        /// </summary>
+        public const bool WebStandalone = true;
+
+        /// <summary>
         /// Rewarded video ad unit from TikTok Developer Portal → Monetization.
         /// </summary>
         public const string RewardedVideoAdUnitId = "ad7660431701143963669";

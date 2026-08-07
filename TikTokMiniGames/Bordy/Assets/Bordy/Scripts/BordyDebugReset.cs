@@ -20,7 +20,7 @@ namespace Bordy
     public class BordyDebugReset : MonoBehaviour
     {
         /// <summary>Master switch — set false for public release. / 总开关，正式发布设为 false。</summary>
-        public static readonly bool Enabled = true;
+        public static readonly bool Enabled = false;
 
         private const int TapsNeeded = 5;
         private const float Window = 2f; // must finish the taps within this many seconds / 需在这么多秒内点完
