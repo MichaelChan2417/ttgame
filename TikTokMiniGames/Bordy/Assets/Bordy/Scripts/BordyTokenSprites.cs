@@ -1,25 +1,72 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Bordy
 {
     /// <summary>
-    /// Procedural Q-style sun / moon sprites for board tokens.
-    /// 程序化生成的 Q 版太阳 / 月亮棋子图。
+    /// Procedural Q-style sun / moon sprites for board tokens, now skin-aware. Each skin's
+    /// pair is generated once from its palette and cached. <see cref="Sun"/> / <see cref="Moon"/>
+    /// return the currently-equipped skin (see <see cref="BordySkins"/>); use
+    /// <see cref="SunFor"/> / <see cref="MoonFor"/> for a specific skin (e.g. shop previews).
+    ///
+    /// 程序化生成的 Q 版太阳 / 月亮棋子图，支持皮肤。每套皮肤按调色板生成一次并缓存。
+    /// <see cref="Sun"/> / <see cref="Moon"/> 返回当前装备皮肤；<see cref="SunFor"/> /
+    /// <see cref="MoonFor"/> 返回指定皮肤（如商店预览）。
     /// </summary>
     public static class BordyTokenSprites
     {
         private const int Size = 128;
-        private static Sprite s_sun;
-        private static Sprite s_moon;
+        private static readonly Dictionary<string, Sprite> s_sun = new Dictionary<string, Sprite>();
+        private static readonly Dictionary<string, Sprite> s_moon = new Dictionary<string, Sprite>();
 
-        public static Sprite Sun => s_sun ??= BuildSun();
-        public static Sprite Moon => s_moon ??= BuildMoon();
+        /// <summary>Currently-equipped skin's sun. / 当前装备皮肤的太阳。</summary>
+        public static Sprite Sun => SunFor(BordySkins.Selected);
 
-        private static Sprite BuildSun()
+        /// <summary>Currently-equipped skin's moon. / 当前装备皮肤的月亮。</summary>
+        public static Sprite Moon => MoonFor(BordySkins.Selected);
+
+        public static Sprite SunFor(string skinId)
+        {
+            if (s_sun.TryGetValue(skinId, out var sprite) && sprite != null)
+                return sprite;
+            var skin = BordySkinCatalog.Get(skinId);
+            sprite = BuildArt(skin, skin.SunArt);
+            s_sun[skinId] = sprite;
+            return sprite;
+        }
+
+        public static Sprite MoonFor(string skinId)
+        {
+            if (s_moon.TryGetValue(skinId, out var sprite) && sprite != null)
+                return sprite;
+            var skin = BordySkinCatalog.Get(skinId);
+            sprite = BuildArt(skin, skin.MoonArt);
+            s_moon[skinId] = sprite;
+            return sprite;
+        }
+
+        private static Sprite BuildArt(BordySkinCatalog.SkinDef skin, BordySkinCatalog.TokenArt art)
+        {
+            switch (art)
+            {
+                case BordySkinCatalog.TokenArt.Cow: return BuildCow();
+                case BordySkinCatalog.TokenArt.Pig: return BuildPig();
+                case BordySkinCatalog.TokenArt.ColaRed: return BuildColaRed();
+                case BordySkinCatalog.TokenArt.ColaBlue: return BuildColaBlue();
+                case BordySkinCatalog.TokenArt.Moon: return BuildMoon(skin);
+                default: return BuildSun(skin);
+            }
+        }
+
+        private static Sprite BuildSun(BordySkinCatalog.SkinDef skin)
         {
             var tex = Blank();
             var center = new Vector2(Size * 0.5f, Size * 0.5f);
             float faceR = Size * 0.30f;
+
+            Color ray = Hex(skin.SunRay);
+            Color rim = Hex(skin.SunRim);
+            Color face = Hex(skin.SunFace);
 
             for (int i = 0; i < 8; i++)
             {
@@ -27,44 +74,218 @@ namespace Bordy
                 var tip = center + Polar(faceR + Size * 0.17f, angle);
                 var left = center + Polar(faceR + Size * 0.04f, angle - 0.22f);
                 var right = center + Polar(faceR + Size * 0.04f, angle + 0.22f);
-                FillTriangle(tex, tip, left, right, Hex("#FFB347"));
+                FillTriangle(tex, tip, left, right, ray);
             }
 
-            FillCircle(tex, center, faceR + Size * 0.05f, Hex("#FF9A1F"));
-            FillCircle(tex, center, faceR, Hex("#FFD35A"));
-            FillCircle(tex, center + new Vector2(-faceR * 0.42f, faceR * 0.08f), faceR * 0.16f, new Color(1f, 0.55f, 0.2f, 0.35f));
-            FillCircle(tex, center + new Vector2(faceR * 0.36f, -faceR * 0.18f), faceR * 0.12f, new Color(1f, 0.9f, 0.45f, 0.45f));
+            FillCircle(tex, center, faceR + Size * 0.05f, rim);
+            FillCircle(tex, center, faceR, face);
+            FillCircle(tex, center + new Vector2(-faceR * 0.42f, faceR * 0.08f), faceR * 0.16f, new Color(1f, 0.55f, 0.2f, 0.25f));
+            FillCircle(tex, center + new Vector2(faceR * 0.36f, -faceR * 0.18f), faceR * 0.12f, new Color(1f, 1f, 1f, 0.35f));
 
-            DrawCheek(tex, center + new Vector2(-faceR * 0.42f, -faceR * 0.18f), faceR * 0.14f);
-            DrawCheek(tex, center + new Vector2(faceR * 0.42f, -faceR * 0.18f), faceR * 0.14f);
-            DrawEye(tex, center + new Vector2(-faceR * 0.28f, faceR * 0.05f), faceR * 0.17f);
-            DrawEye(tex, center + new Vector2(faceR * 0.28f, faceR * 0.05f), faceR * 0.17f);
-            DrawSmile(tex, center + new Vector2(0f, -faceR * 0.12f), faceR * 0.42f, faceR * 0.22f, Hex("#8A3F00"));
+            if (skin.DrawFace)
+            {
+                DrawCheek(tex, center + new Vector2(-faceR * 0.42f, -faceR * 0.18f), faceR * 0.14f);
+                DrawCheek(tex, center + new Vector2(faceR * 0.42f, -faceR * 0.18f), faceR * 0.14f);
+                DrawEye(tex, center + new Vector2(-faceR * 0.28f, faceR * 0.05f), faceR * 0.17f);
+                DrawEye(tex, center + new Vector2(faceR * 0.28f, faceR * 0.05f), faceR * 0.17f);
+                DrawSmile(tex, center + new Vector2(0f, -faceR * 0.12f), faceR * 0.42f, faceR * 0.22f, Hex("#8A3F00"));
+            }
 
-            return ToSprite(tex, "BordySun");
+            return ToSprite(tex, "BordySun_" + skin.Id);
         }
 
-        private static Sprite BuildMoon()
+        private static Sprite BuildMoon(BordySkinCatalog.SkinDef skin)
         {
             var tex = Blank();
             var center = new Vector2(Size * 0.5f, Size * 0.52f);
             float faceR = Size * 0.31f;
 
-            FillCircle(tex, center, faceR + Size * 0.05f, Hex("#5A7FD4"));
-            FillCircle(tex, center, faceR, Hex("#8EB4FF"));
-            FillCircle(tex, center + new Vector2(faceR * 0.28f, faceR * 0.22f), faceR * 0.55f, Hex("#6E9EF0"));
+            Color rim = Hex(skin.MoonRim);
+            Color face = Hex(skin.MoonFace);
+            Color shade = Hex(skin.MoonShade);
+
+            FillCircle(tex, center, faceR + Size * 0.05f, rim);
+            FillCircle(tex, center, faceR, face);
+            FillCircle(tex, center + new Vector2(faceR * 0.28f, faceR * 0.22f), faceR * 0.55f, shade);
             FillCircle(tex, center + new Vector2(-faceR * 0.15f, faceR * 0.25f), faceR * 0.09f, new Color(1f, 1f, 1f, 0.35f));
 
-            DrawCheek(tex, center + new Vector2(-faceR * 0.4f, -faceR * 0.16f), faceR * 0.12f, Hex("#FF9AB8"));
-            DrawCheek(tex, center + new Vector2(faceR * 0.4f, -faceR * 0.16f), faceR * 0.12f, Hex("#FF9AB8"));
-            DrawClosedEye(tex, center + new Vector2(-faceR * 0.27f, faceR * 0.04f), faceR * 0.18f, Hex("#2D4F9C"));
-            DrawClosedEye(tex, center + new Vector2(faceR * 0.27f, faceR * 0.04f), faceR * 0.18f, Hex("#2D4F9C"));
-            DrawSmile(tex, center + new Vector2(0f, -faceR * 0.14f), faceR * 0.28f, faceR * 0.14f, Hex("#2D4F9C"));
+            if (skin.DrawFace)
+            {
+                DrawCheek(tex, center + new Vector2(-faceR * 0.4f, -faceR * 0.16f), faceR * 0.12f, Hex("#FF9AB8"));
+                DrawCheek(tex, center + new Vector2(faceR * 0.4f, -faceR * 0.16f), faceR * 0.12f, Hex("#FF9AB8"));
+                DrawClosedEye(tex, center + new Vector2(-faceR * 0.27f, faceR * 0.04f), faceR * 0.18f, Hex("#2D4F9C"));
+                DrawClosedEye(tex, center + new Vector2(faceR * 0.27f, faceR * 0.04f), faceR * 0.18f, Hex("#2D4F9C"));
+                DrawSmile(tex, center + new Vector2(0f, -faceR * 0.14f), faceR * 0.28f, faceR * 0.14f, Hex("#2D4F9C"));
 
-            FillCircle(tex, center + new Vector2(faceR * 0.55f, faceR * 0.42f), Size * 0.035f, Hex("#FFF4A8"));
-            DrawStar(tex, center + new Vector2(faceR * 0.62f, faceR * 0.44f), Size * 0.05f, Hex("#FFF4A8"));
+                FillCircle(tex, center + new Vector2(faceR * 0.55f, faceR * 0.42f), Size * 0.035f, Hex("#FFF4A8"));
+                DrawStar(tex, center + new Vector2(faceR * 0.62f, faceR * 0.44f), Size * 0.05f, Hex("#FFF4A8"));
+            }
 
-            return ToSprite(tex, "BordyMoon");
+            return ToSprite(tex, "BordyMoon_" + skin.Id);
+        }
+
+        // -----------------------------------------------------------------
+        // Illustrated tokens. / 插画棋子。
+        // -----------------------------------------------------------------
+
+        /// <summary>Cute cow face (sun slot). / 可爱奶牛脸（太阳位）。</summary>
+        private static Sprite BuildCow()
+        {
+            var tex = Blank();
+            var c = new Vector2(Size * 0.5f, Size * 0.5f);
+            Color white = Hex("#FFFFFF");
+            Color patch = Hex("#333844");
+            Color pink = Hex("#F7A6B8");
+            Color pinkDeep = Hex("#E07D95");
+            Color horn = Hex("#EAD8AC");
+            Color ink = Hex("#2B2F3A");
+
+            // Horns (behind head). / 犄角（在头后）。
+            FillEllipse(tex, c + new Vector2(-24f, 34f), 9f, 12f, horn);
+            FillEllipse(tex, c + new Vector2(24f, 34f), 9f, 12f, horn);
+
+            // Ears. / 耳朵。
+            FillEllipse(tex, c + new Vector2(-38f, 20f), 16f, 11f, white);
+            FillEllipse(tex, c + new Vector2(38f, 20f), 16f, 11f, white);
+            FillEllipse(tex, c + new Vector2(-38f, 20f), 8f, 6f, pink);
+            FillEllipse(tex, c + new Vector2(38f, 20f), 8f, 6f, pink);
+
+            // Head. / 头。
+            FillCircle(tex, c + new Vector2(0f, 2f), 42f, white);
+
+            // Cow patches. / 奶牛斑纹。
+            FillEllipse(tex, c + new Vector2(-22f, 16f), 14f, 12f, patch);
+            FillEllipse(tex, c + new Vector2(26f, -8f), 12f, 10f, patch);
+
+            // Muzzle. / 口鼻。
+            FillEllipse(tex, c + new Vector2(0f, -20f), 24f, 16f, pink);
+            FillEllipse(tex, c + new Vector2(-9f, -22f), 4.5f, 6f, pinkDeep);
+            FillEllipse(tex, c + new Vector2(9f, -22f), 4.5f, 6f, pinkDeep);
+
+            // Eyes. / 眼睛。
+            FillCircle(tex, c + new Vector2(-15f, 6f), 6f, ink);
+            FillCircle(tex, c + new Vector2(15f, 6f), 6f, ink);
+            FillCircle(tex, c + new Vector2(-13f, 8f), 2f, white);
+            FillCircle(tex, c + new Vector2(17f, 8f), 2f, white);
+
+            return ToSprite(tex, "BordyCow");
+        }
+
+        /// <summary>Cute pig face (moon slot). / 可爱母猪脸（月亮位）。</summary>
+        private static Sprite BuildPig()
+        {
+            var tex = Blank();
+            var c = new Vector2(Size * 0.5f, Size * 0.5f);
+            Color pink = Hex("#FF9FB6");
+            Color pinkDeep = Hex("#F5789B");
+            Color nostril = Hex("#B84E6C");
+            Color ink = Hex("#5A2438");
+            Color white = Hex("#FFFFFF");
+
+            // Ears (triangles, behind head). / 耳朵（三角，头后）。
+            FillTriangle(tex, c + new Vector2(-44f, 40f), c + new Vector2(-22f, 40f), c + new Vector2(-30f, 12f), pinkDeep);
+            FillTriangle(tex, c + new Vector2(44f, 40f), c + new Vector2(22f, 40f), c + new Vector2(30f, 12f), pinkDeep);
+
+            // Head. / 头。
+            FillCircle(tex, c + new Vector2(0f, 0f), 42f, pink);
+
+            // Snout. / 猪鼻。
+            FillEllipse(tex, c + new Vector2(0f, -14f), 24f, 18f, pinkDeep);
+            FillEllipse(tex, c + new Vector2(-9f, -14f), 4.5f, 7f, nostril);
+            FillEllipse(tex, c + new Vector2(9f, -14f), 4.5f, 7f, nostril);
+
+            // Eyes. / 眼睛。
+            FillCircle(tex, c + new Vector2(-16f, 14f), 6f, ink);
+            FillCircle(tex, c + new Vector2(16f, 14f), 6f, ink);
+            FillCircle(tex, c + new Vector2(-14f, 16f), 2f, white);
+            FillCircle(tex, c + new Vector2(18f, 16f), 2f, white);
+
+            return ToSprite(tex, "BordyPig");
+        }
+
+        /// <summary>Red cola CAN (sun slot). Generic, no logo. / 红色可乐易拉罐（太阳位），通用无标识。</summary>
+        private static Sprite BuildColaRed()
+            => BuildCan(Hex("#E8232E"), Hex("#B0141F"), Hex("#F2707A"), "BordyColaRed");
+
+        /// <summary>Blue cola CAN (moon slot). Generic, no logo. / 蓝色可乐易拉罐（月亮位），通用无标识。</summary>
+        private static Sprite BuildColaBlue()
+            => BuildCan(Hex("#1A4FA0"), Hex("#123A79"), Hex("#6D93D6"), "BordyColaBlue");
+
+        /// <summary>
+        /// A soda can: silver lid ellipse + pull tab, cylindrical body with straight sides,
+        /// rounded bottom, and left highlight / right shade to sell the cylinder. / 汽水易拉罐：
+        /// 银色罐盖椭圆 + 拉环，直边罐身，圆底，左高光右阴影表现圆柱体。
+        /// </summary>
+        private static Sprite BuildCan(Color body, Color bodyDark, Color bodyLight, string name)
+        {
+            var tex = Blank();
+            float cx = Size * 0.5f;
+
+            Color lid = Hex("#D9DDE4");
+            Color lidRim = Hex("#A7AEBA");
+            Color lidDark = Hex("#8B93A0");
+
+            const float left = 40f, right = 88f;   // body x-range (width 48)
+            const float topY = 98f, botY = 26f;    // body y-range
+            const float rimRy = 9f;                 // lid ellipse half-height
+            float midX = (left + right) * 0.5f;
+            float rx = (right - left) * 0.5f;
+
+            // Bottom curve (behind body). / 罐底弧线（在罐身后）。
+            FillEllipse(tex, new Vector2(midX, botY), rx, 8f, bodyDark);
+
+            // Body. / 罐身。
+            FillRect(tex, left, botY, right, topY, body);
+
+            // Cylinder shading: left highlight, right shade. / 圆柱明暗：左高光右阴影。
+            FillRect(tex, left, botY, left + 12f, topY, new Color(bodyLight.r, bodyLight.g, bodyLight.b, 0.55f));
+            FillRect(tex, right - 12f, botY, right, topY, new Color(bodyDark.r, bodyDark.g, bodyDark.b, 0.45f));
+            // Specular streak. / 竖直高光条。
+            FillRect(tex, left + 6f, botY + 4f, left + 12f, topY - 6f, new Color(1f, 1f, 1f, 0.28f));
+
+            // Neck taper hint near top (slightly darker band). / 罐肩暗带。
+            FillRect(tex, left, topY - 10f, right, topY - 4f, new Color(bodyDark.r, bodyDark.g, bodyDark.b, 0.35f));
+
+            // Lid: rim + top plate + inner. / 罐盖：外圈 + 顶面 + 内圈。
+            FillEllipse(tex, new Vector2(midX, topY), rx, rimRy, lidRim);
+            FillEllipse(tex, new Vector2(midX, topY + 1.5f), rx - 3f, rimRy - 2f, lid);
+            FillEllipse(tex, new Vector2(midX, topY + 1.5f), rx - 8f, rimRy - 4f, new Color(lidDark.r, lidDark.g, lidDark.b, 0.5f));
+
+            // Pull tab. / 拉环。
+            FillEllipse(tex, new Vector2(midX + 3f, topY + 2f), 7f, 3.5f, lidDark);
+            FillEllipse(tex, new Vector2(midX + 3f, topY + 2f), 3.5f, 1.8f, lid);
+
+            return ToSprite(tex, name);
+        }
+
+        private static void FillRect(Texture2D tex, float x0, float y0, float x1, float y1, Color color)
+        {
+            int minX = Mathf.Max(0, Mathf.FloorToInt(Mathf.Min(x0, x1)));
+            int maxX = Mathf.Min(Size - 1, Mathf.CeilToInt(Mathf.Max(x0, x1)));
+            int minY = Mathf.Max(0, Mathf.FloorToInt(Mathf.Min(y0, y1)));
+            int maxY = Mathf.Min(Size - 1, Mathf.CeilToInt(Mathf.Max(y0, y1)));
+            for (int y = minY; y <= maxY; y++)
+                for (int x = minX; x <= maxX; x++)
+                    Blend(tex, x, y, color);
+        }
+
+        private static void FillEllipse(Texture2D tex, Vector2 center, float rx, float ry, Color color)
+        {
+            int minX = Mathf.Max(0, Mathf.FloorToInt(center.x - rx));
+            int maxX = Mathf.Min(Size - 1, Mathf.CeilToInt(center.x + rx));
+            int minY = Mathf.Max(0, Mathf.FloorToInt(center.y - ry));
+            int maxY = Mathf.Min(Size - 1, Mathf.CeilToInt(center.y + ry));
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    float dx = (x + 0.5f - center.x) / rx;
+                    float dy = (y + 0.5f - center.y) / ry;
+                    if (dx * dx + dy * dy <= 1f)
+                        Blend(tex, x, y, color);
+                }
+            }
         }
 
         private static Texture2D Blank()
@@ -82,7 +303,9 @@ namespace Bordy
         private static Sprite ToSprite(Texture2D tex, string name)
         {
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+            var sprite = Sprite.Create(tex, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+            sprite.name = name;
+            return sprite;
         }
 
         private static Vector2 Polar(float radius, float angle) =>

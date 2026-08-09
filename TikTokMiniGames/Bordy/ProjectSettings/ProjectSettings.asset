@@ -12,7 +12,7 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: Quanjie
+  companyName: Bordy
   productName: Bordy
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
@@ -666,7 +666,7 @@ PlayerSettings:
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-    WebGL: TTSDK_MIX_ENGINE;TTSDK_LOG_DEBUG
+    WebGL: TTSDK_MIX_ENGINE
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

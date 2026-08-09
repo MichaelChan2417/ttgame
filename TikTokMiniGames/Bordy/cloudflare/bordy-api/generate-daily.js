@@ -168,7 +168,7 @@ const givens = makeUniqueGivens(solution, edges, rand);
 // The minimal unique set is very hard. Reveal extra clues up to a friendlier count —
 // adding clues never breaks uniqueness. Tune MIN_CLUES for difficulty (higher = easier).
 // 最小唯一解太难；补足线索到较友好的数量（加线索不影响唯一性）。MIN_CLUES 越大越简单。
-const MIN_CLUES = 16;
+const MIN_CLUES = process.argv[3] ? parseInt(process.argv[3], 10) : 16;
 {
   const hidden = [];
   for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!givens[r][c]) hidden.push([r, c]);

@@ -19,7 +19,7 @@ namespace Bordy
         /// 独立网页版（Cloudflare Pages、可分享链接）设为 true：跳过所有 TikTok SDK 与云登录，
         /// 只跑游戏逻辑 + 本地存储。TikTok 小游戏包设为 false。
         /// </summary>
-        public const bool WebStandalone = true;
+        public const bool WebStandalone = false;
 
         /// <summary>
         /// Rewarded video ad unit from TikTok Developer Portal → Monetization.
@@ -35,5 +35,12 @@ namespace Bordy
         /// When true, Unity Editor simulates a completed rewarded ad. Keep false while tuning hint limits.
         /// </summary>
         public const bool EditorSimulateRewardedAds = false;
+
+        /// <summary>
+        /// TESTING ONLY: when true, the Shop unlocks skins instantly without a rewarded ad.
+        /// Set back to false before shipping so unlocks require watching an ad.
+        /// 仅测试用：为 true 时商店直接免广告解锁皮肤。上线前改回 false，让解锁必须看广告。
+        /// </summary>
+        public const bool ShopFreeUnlockForTesting = false;
     }
 }

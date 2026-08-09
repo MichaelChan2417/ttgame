@@ -63,6 +63,7 @@ namespace Bordy
                     if (BordyDebugReset.Enabled && homeCanvas.GetComponent<BordyDebugReset>() == null)
                         homeCanvas.gameObject.AddComponent<BordyDebugReset>();
                     BordyHomeGate.EnsureOn(homeCanvas.transform);
+                    BordyShopUi.EnsureOn(homeCanvas.transform);
                 }
                 return;
             }

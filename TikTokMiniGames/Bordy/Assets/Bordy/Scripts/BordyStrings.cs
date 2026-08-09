@@ -16,6 +16,18 @@ namespace Bordy
 
             public const string NavBack = "nav.back";
 
+            public const string ShopFabLabel = "shop.fab";
+            public const string ShopTitle = "shop.title";
+            public const string ShopUse = "shop.use";
+            public const string ShopSelected = "shop.selected";
+            public const string ShopWatchAd = "shop.watch_ad";
+            public const string ShopLoadingAd = "shop.loading_ad";
+            public const string ShopUnlocked = "shop.unlocked";
+            public const string ShopAdFailed = "shop.ad_failed";
+            public const string ShopAdEditorBlocked = "shop.ad_editor_blocked";
+            public const string ShopAdSdkNotReady = "shop.ad_sdk_not_ready";
+            public const string ShopAdNotConfigured = "shop.ad_not_configured";
+
             public const string HomeSubtitle = "home.subtitle";
             public const string HomeStart = "home.start";
             public const string HomeFooter = "home.footer";
@@ -94,6 +106,18 @@ namespace Bordy
             { Keys.SettingsClose, "关闭" },
             { Keys.NavBack, "返回" },
 
+            { Keys.ShopFabLabel, "商店" },
+            { Keys.ShopTitle, "图标商店" },
+            { Keys.ShopUse, "使用" },
+            { Keys.ShopSelected, "使用中" },
+            { Keys.ShopWatchAd, "看广告解锁" },
+            { Keys.ShopLoadingAd, "正在加载广告…" },
+            { Keys.ShopUnlocked, "解锁成功，已为你装备！" },
+            { Keys.ShopAdFailed, "广告暂时不可用，请稍后再试" },
+            { Keys.ShopAdEditorBlocked, "需观看激励视频解锁（Editor 未开启广告模拟）" },
+            { Keys.ShopAdSdkNotReady, "广告加载中，请稍后再试" },
+            { Keys.ShopAdNotConfigured, "广告位未配置，请在后台创建激励视频并填入 Ad Unit ID" },
+
             { Keys.HomeSubtitle, "逻辑谜题" },
             { Keys.HomeStart, "开始游戏" },
             { Keys.HomeFooter, "轻触按钮开始游戏" },
@@ -171,6 +195,18 @@ namespace Bordy
             { Keys.SettingsLangEn, "English" },
             { Keys.SettingsClose, "Close" },
             { Keys.NavBack, "Back" },
+
+            { Keys.ShopFabLabel, "Shop" },
+            { Keys.ShopTitle, "Icon Shop" },
+            { Keys.ShopUse, "Use" },
+            { Keys.ShopSelected, "In use" },
+            { Keys.ShopWatchAd, "Watch ad" },
+            { Keys.ShopLoadingAd, "Loading ad…" },
+            { Keys.ShopUnlocked, "Unlocked — equipped for you!" },
+            { Keys.ShopAdFailed, "Ad unavailable — try again later" },
+            { Keys.ShopAdEditorBlocked, "Watch a rewarded ad to unlock (Editor ad sim is off)" },
+            { Keys.ShopAdSdkNotReady, "Ads are still loading — try again in a moment" },
+            { Keys.ShopAdNotConfigured, "Ad unit not configured — create a rewarded placement in the developer portal" },
 
             { Keys.HomeSubtitle, "Logic Puzzle" },
             { Keys.HomeStart, "Play" },
