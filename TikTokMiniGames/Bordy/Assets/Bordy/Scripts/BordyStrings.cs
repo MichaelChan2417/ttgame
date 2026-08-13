@@ -173,7 +173,7 @@ namespace Bordy
             { Keys.StatusDailyDone, "今日已完成 · 用时 {0}（只能查看，明天再来）" },
             { Keys.StatusDailyWin, "恭喜完成每日挑战！用时 {0}（只能查看）" },
 
-            { Keys.TutorialWelcome, "欢迎来到 Bordy！\n\n这是一个太阳 / 月亮逻辑谜题。点击空格可以在「空 → 太阳 → 月亮」之间切换。" },
+            { Keys.TutorialWelcome, "欢迎来到星月棋！\n\n这是一个太阳 / 月亮逻辑谜题。点击空格可以在「空 → 太阳 → 月亮」之间切换。" },
             { Keys.TutorialStart, "开始" },
             { Keys.TutorialGuideSun, "引导：点击高亮格，直到变成太阳" },
             { Keys.TutorialGuideMoon, "引导：再点击下一格，直到变成月亮" },
@@ -263,7 +263,7 @@ namespace Bordy
             { Keys.StatusDailyDone, "Done today · Time {0} (view only — come back tomorrow)" },
             { Keys.StatusDailyWin, "Daily Challenge complete! Time {0} (view only)" },
 
-            { Keys.TutorialWelcome, "Welcome to Bordy!\n\nThis is a sun / moon logic puzzle. Tap an empty cell to cycle Empty → Sun → Moon." },
+            { Keys.TutorialWelcome, "Welcome to StarMoon Chess!\n\nThis is a sun / moon logic puzzle. Tap an empty cell to cycle Empty → Sun → Moon." },
             { Keys.TutorialStart, "Start" },
             { Keys.TutorialGuideSun, "Guide: tap the highlighted cell until it becomes a Sun" },
             { Keys.TutorialGuideMoon, "Guide: tap the next cell until it becomes a Moon" },

@@ -33,10 +33,10 @@ namespace Bordy.EditorTools
             {
                 // Edit mode: the SDK isn't initialised, so clear the Unity fallback store.
                 // 编辑模式下 SDK 未初始化，清掉 Unity 回退存储。
-                PlayerPrefs.DeleteKey(ProfileKey);
-                PlayerPrefs.DeleteKey(TutorialKey);
-                foreach (var k in DailyKeys) PlayerPrefs.DeleteKey(k);
-                PlayerPrefs.Save();
+                UnityEngine.PlayerPrefs.DeleteKey(ProfileKey);
+                UnityEngine.PlayerPrefs.DeleteKey(TutorialKey);
+                foreach (var k in DailyKeys) UnityEngine.PlayerPrefs.DeleteKey(k);
+                UnityEngine.PlayerPrefs.Save();
             }
             Debug.Log("[Bordy] Player data reset. Next Play will route to the tutorial (first-time).");
         }
@@ -48,8 +48,8 @@ namespace Bordy.EditorTools
                 BordyDaily.Reset();
             else
             {
-                foreach (var k in DailyKeys) PlayerPrefs.DeleteKey(k);
-                PlayerPrefs.Save();
+                foreach (var k in DailyKeys) UnityEngine.PlayerPrefs.DeleteKey(k);
+                UnityEngine.PlayerPrefs.Save();
             }
             Debug.Log("[Bordy] Daily challenge reset — playable again today.");
         }
@@ -63,8 +63,8 @@ namespace Bordy.EditorTools
             }
             else
             {
-                string json = PlayerPrefs.GetString(ProfileKey, "(none)");
-                int done = PlayerPrefs.GetInt(TutorialKey, 0);
+                string json = UnityEngine.PlayerPrefs.GetString(ProfileKey, "(none)");
+                int done = UnityEngine.PlayerPrefs.GetInt(TutorialKey, 0);
                 Debug.Log($"[Bordy] (edit-mode, Unity fallback store) tutorialDone={done} profile={json}");
             }
         }

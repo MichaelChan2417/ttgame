@@ -4,8 +4,8 @@ using UnityEngine.UI;
 namespace Bordy
 {
     /// <summary>
-    /// UI fonts for WebGL / TikTok container. LegacyRuntime lacks CJK and some symbols (e.g. ←).
-    /// 小游戏真机字体：LegacyRuntime 不含中文与部分符号。
+    /// UI fonts for WebGL / TikTok / WeChat container. LegacyRuntime lacks CJK and some symbols (e.g. ←).
+    /// 小游戏真机字体：LegacyRuntime 不含中文与部分符号。把子集字体放进 Resources/Bordy/BordyUI.ttf 保证稳定。
     /// </summary>
     public static class BordyFonts
     {
@@ -33,26 +33,7 @@ namespace Bordy
             if (text == null)
                 return;
 
-            if (NeedsCjkFont(text.text) && HasCjk)
-                text.font = Ui;
-            else
-                text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        }
-
-        private static bool NeedsCjkFont(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return false;
-
-            foreach (char ch in value)
-            {
-                if (ch >= 0x2E80 && ch <= 0x9FFF)
-                    return true;
-                if (ch >= 0xF900 && ch <= 0xFAFF)
-                    return true;
-            }
-
-            return false;
+            text.font = Ui;
         }
 
         public static void ApplyAllUnder(Transform root)
@@ -61,6 +42,13 @@ namespace Bordy
                 return;
 
             foreach (var text in root.GetComponentsInChildren<Text>(true))
+                Apply(text);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void ApplyToAllTexts()
+        {
+            foreach (var text in Object.FindObjectsOfType<Text>(true))
                 Apply(text);
         }
     }

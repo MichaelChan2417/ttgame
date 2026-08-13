@@ -1,0 +1,16 @@
+BordyFallback.ttf placeholder
+
+This file should be replaced with a small Chinese TrueType font (e.g. a subset of Noto Sans SC
+or another open-source CJK font) before building the WeChat Mini Game.
+
+Use the provided script:
+
+    python3 tools/subset_font.py /path/to/NotoSansSC-Regular.otf \
+        Assets/Bordy/StreamingAssets/BordyFallback.ttf
+
+Then also copy it to Resources so Unity can load it natively:
+
+    cp Assets/Bordy/StreamingAssets/BordyFallback.ttf \
+       Assets/Bordy/Resources/Bordy/BordyUI.ttf
+
+Do NOT commit commercial fonts (e.g. PingFang) to the repository.

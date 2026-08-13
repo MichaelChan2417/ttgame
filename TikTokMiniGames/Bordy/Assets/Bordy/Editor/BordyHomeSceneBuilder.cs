@@ -87,7 +87,7 @@ namespace Bordy.EditorTools
             Stretch(bg.rectTransform);
 
             // Title. / 标题。
-            var title = CreateText("Title", canvasGo.transform, "Bordy", 120, FontStyle.Bold);
+            var title = CreateText("Title", canvasGo.transform, BordyLevelCatalog.GameTitle, 120, FontStyle.Bold);
             Anchor(title.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             title.rectTransform.sizeDelta = new Vector2(900, 170);
             title.rectTransform.anchoredPosition = new Vector2(0, -560);

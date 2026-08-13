@@ -15,12 +15,12 @@ namespace Bordy
 
         public static event Action Changed;
 
-        public static BordyLanguage Current { get; private set; } = BordyLanguage.En;
+        public static BordyLanguage Current { get; private set; } = BordyLanguage.ZhHans;
 
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void LoadSaved()
         {
-            string raw = BordyStore.GetString(StoreKey, "en");
+            string raw = BordyStore.GetString(StoreKey, "zh");
             Current = raw == "en" ? BordyLanguage.En : BordyLanguage.ZhHans;
         }
 
@@ -53,7 +53,7 @@ namespace Bordy
         public static void ReloadFromStore()
         {
             var prev = Current;
-            string raw = BordyStore.GetString(StoreKey, "en");
+            string raw = BordyStore.GetString(StoreKey, "zh");
             Current = raw == "en" ? BordyLanguage.En : BordyLanguage.ZhHans;
             if (prev != Current)
                 Changed?.Invoke();

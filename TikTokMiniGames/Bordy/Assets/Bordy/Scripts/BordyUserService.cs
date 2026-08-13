@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using UnityEngine;
 using TTSDK;
+#if WECHAT_MINIGAME
+using WeChatWASM;
+#endif
 
 namespace Bordy
 {
@@ -35,10 +38,19 @@ namespace Bordy
         public static bool IsNewUser { get; private set; }
         public static bool IsFirstTimePlayer => !BordyProgress.TutorialCompleted;
 
-        public static bool CloudEnabled =>
-            !BordyAppConfig.WebStandalone
-            && !string.IsNullOrEmpty(BordyAppConfig.ApiBaseUrl)
-            && !Application.isEditor;
+        public static bool CloudEnabled
+        {
+            get
+            {
+                if (BordyAppConfig.WebStandalone)
+                    return false;
+#if WECHAT_MINIGAME
+                return false;
+#endif
+                return !string.IsNullOrEmpty(BordyAppConfig.ApiBaseUrl)
+                    && !Application.isEditor;
+            }
+        }
 
         public static bool CloudLoggedIn { get; private set; }
         public static bool IsReady { get; private set; }
@@ -74,6 +86,41 @@ namespace Bordy
                 FinishOfflineBoot();
                 yield break;
             }
+
+#if WECHAT_MINIGAME
+            // WeChat Mini Game: use WX.InitSDK and mark SDK ready for ads.
+            // 微信小游戏：使用 WX.InitSDK 初始化，并标记 SDK 就绪。
+            bool wxDone = false;
+            try
+            {
+                WX.InitSDK(code =>
+                {
+                    SdkInited = true;
+                    wxDone = true;
+                    Debug.Log("[BordyUser] WX.InitSDK complete.");
+                    BordyLocale.ReloadFromStore();
+                    BordyAdsService.NotifySdkReady();
+                    FinishOfflineBoot();
+                });
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[BordyUser] WX.InitSDK threw: {e.Message}");
+                FinishOfflineBoot();
+                yield break;
+            }
+
+            float wxDeadline = Time.realtimeSinceStartup + InitSdkTimeoutSec;
+            while (!wxDone && Time.realtimeSinceStartup < wxDeadline)
+                yield return null;
+
+            if (!wxDone)
+            {
+                Debug.LogWarning("[BordyUser] WX.InitSDK timeout — continue offline.");
+                FinishOfflineBoot();
+            }
+            yield break;
+#endif
 
             if (CloudEnabled)
             {

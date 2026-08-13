@@ -94,7 +94,7 @@ namespace Bordy
             var msgGo = new GameObject("Message", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             msgGo.transform.SetParent(card.transform, false);
             _message = msgGo.GetComponent<Text>();
-            _message.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _message.font = BordyFonts.Ui;
             _message.fontSize = 30;
             _message.color = new Color(0.16f, 0.16f, 0.18f);
             _message.alignment = TextAnchor.UpperLeft;
@@ -125,7 +125,7 @@ namespace Bordy
             var labelGo = new GameObject("Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             labelGo.transform.SetParent(btnGo.transform, false);
             _actionLabel = labelGo.GetComponent<Text>();
-            _actionLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _actionLabel.font = BordyFonts.Ui;
             _actionLabel.fontSize = 30;
             _actionLabel.fontStyle = FontStyle.Bold;
             _actionLabel.color = Color.white;

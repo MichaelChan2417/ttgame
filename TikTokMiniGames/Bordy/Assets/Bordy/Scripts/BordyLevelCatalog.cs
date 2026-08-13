@@ -18,6 +18,13 @@ namespace Bordy
         public const string LevelSelectScene = "LevelSelect";
         public const string HomeScene = "Home";
 
+        /// <summary>Game display name. / 游戏显示名。</summary>
+#if WECHAT_MINIGAME
+        public const string GameTitle = "星月棋";
+#else
+        public const string GameTitle = "Bordy";
+#endif
+
         private static readonly Dictionary<string, BordyPuzzleData> Levels = new Dictionary<string, BordyPuzzleData>
         {
             { TutorialId, BuildTutorial() },

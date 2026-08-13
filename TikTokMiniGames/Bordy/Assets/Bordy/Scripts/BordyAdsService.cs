@@ -1,11 +1,14 @@
 using System;
 using TTSDK;
 using UnityEngine;
+#if WECHAT_MINIGAME
+using WeChatWASM;
+#endif
 
 namespace Bordy
 {
     /// <summary>
-    /// TikTok Minis ad wrapper for gameplay (rewarded hints, optional interstitials).
+    /// TikTok Minis / WeChat Mini Game ad wrapper for gameplay (rewarded hints, optional interstitials).
     /// Requires <see cref="BordyUserService.SdkInited"/> in container builds.
     /// </summary>
     public static class BordyAdsService
@@ -19,7 +22,7 @@ namespace Bordy
             !string.IsNullOrEmpty(BordyAppConfig.RewardedVideoAdUnitId)
             && !BordyAppConfig.RewardedVideoAdUnitId.StartsWith("demo_", StringComparison.Ordinal);
 
-        /// <summary>Call after <c>TT.InitSDK</c> succeeds — logs config state for debugging.</summary>
+        /// <summary>Call after SDK init succeeds — logs config state for debugging.</summary>
         public static void NotifySdkReady()
         {
 #if !UNITY_EDITOR
@@ -35,6 +38,9 @@ namespace Bordy
             }
 #endif
         }
+
+        private static bool IsWechatRewardedConfigured =>
+            !string.IsNullOrEmpty(BordyAppConfig.WechatRewardedAdUnitId);
 
         /// <summary>Show rewarded video; grant reward only when <c>isEnded == true</c>.</summary>
         public static void ShowRewarded(Action onReward, Action<string> onFail = null)
@@ -65,11 +71,19 @@ namespace Bordy
                 return;
             }
 
+#if WECHAT_MINIGAME
+            if (!IsWechatRewardedConfigured)
+            {
+                onFail?.Invoke("not_configured");
+                return;
+            }
+#else
             if (!IsRewardedConfigured)
             {
                 onFail?.Invoke("not_configured");
                 return;
             }
+#endif
 
             _pendingReward = onReward;
             _pendingFail = onFail;
@@ -77,38 +91,11 @@ namespace Bordy
 
             try
             {
-                // Match SDK demo: create → Show() per request (no Load()).
-                var ad = TT.CreateRewardedVideoAd(new CreateRewardedVideoAdParam
-                {
-                    AdUnitId = BordyAppConfig.RewardedVideoAdUnitId,
-                });
-                if (ad == null)
-                {
-                    FailRewarded("create_null");
-                    return;
-                }
-
-                ad.OnError += (code, msg) =>
-                {
-                    Debug.LogWarning($"[BordyAds] Rewarded error {code}: {msg}");
-                    TryDestroy(ad);
-                    FailRewarded($"error_{code}");
-                };
-                ad.OnClose += isEnded =>
-                {
-                    _rewardedShowing = false;
-                    TryDestroy(ad);
-                    if (isEnded)
-                    {
-                        var reward = _pendingReward;
-                        ClearPending();
-                        reward?.Invoke();
-                    }
-                    else
-                        FailRewarded("skipped");
-                };
-
-                ad.Show();
+#if WECHAT_MINIGAME
+                ShowWechatRewarded();
+#else
+                ShowTikTokRewarded();
+#endif
             }
             catch (Exception e)
             {
@@ -117,6 +104,83 @@ namespace Bordy
             }
 #endif
         }
+
+#if !UNITY_EDITOR && WECHAT_MINIGAME
+        private static void ShowWechatRewarded()
+        {
+            var ad = WX.CreateRewardedVideoAd(new WXCreateRewardedVideoAdParam
+            {
+                adUnitId = BordyAppConfig.WechatRewardedAdUnitId,
+            });
+            if (ad == null)
+            {
+                FailRewarded("create_null");
+                return;
+            }
+
+            ad.OnError(res =>
+            {
+                Debug.LogWarning($"[BordyAds] WeChat rewarded error: {res?.errMsg}");
+                FailRewarded("error");
+            });
+            ad.OnClose(res =>
+            {
+                _rewardedShowing = false;
+                if (res != null && res.isEnded)
+                {
+                    var reward = _pendingReward;
+                    ClearPending();
+                    reward?.Invoke();
+                }
+                else
+                {
+                    FailRewarded("skipped");
+                }
+            });
+
+            // WeChat rewarded ads can usually be shown directly; if not, they fail via OnError.
+            ad.Show();
+        }
+#endif
+
+#if !UNITY_EDITOR && !WECHAT_MINIGAME
+        private static void ShowTikTokRewarded()
+        {
+            var ad = TT.CreateRewardedVideoAd(new CreateRewardedVideoAdParam
+            {
+                AdUnitId = BordyAppConfig.RewardedVideoAdUnitId,
+            });
+            if (ad == null)
+            {
+                FailRewarded("create_null");
+                return;
+            }
+
+            ad.OnError += (code, msg) =>
+            {
+                Debug.LogWarning($"[BordyAds] Rewarded error {code}: {msg}");
+                TryDestroy(ad);
+                FailRewarded($"error_{code}");
+            };
+            ad.OnClose += isEnded =>
+            {
+                _rewardedShowing = false;
+                TryDestroy(ad);
+                if (isEnded)
+                {
+                    var reward = _pendingReward;
+                    ClearPending();
+                    reward?.Invoke();
+                }
+                else
+                {
+                    FailRewarded("skipped");
+                }
+            };
+
+            ad.Show();
+        }
+#endif
 
         /// <summary>Optional interstitial (no reward). Safe to call; failures are logged only.</summary>
         public static void TryShowInterstitial()
@@ -128,12 +192,35 @@ namespace Bordy
             if (!BordyUserService.SdkInited)
                 return;
 
+#if WECHAT_MINIGAME
+            if (string.IsNullOrEmpty(BordyAppConfig.WechatInterstitialAdUnitId))
+                return;
+#else
             if (string.IsNullOrEmpty(BordyAppConfig.InterstitialAdUnitId)
                 || BordyAppConfig.InterstitialAdUnitId.StartsWith("demo_", StringComparison.Ordinal))
                 return;
+#endif
 
             try
             {
+#if WECHAT_MINIGAME
+                var ad = WX.CreateInterstitialAd(new WXCreateInterstitialAdParam
+                {
+                    adUnitId = BordyAppConfig.WechatInterstitialAdUnitId,
+                });
+                if (ad == null)
+                    return;
+
+                ad.OnError(res =>
+                {
+                    Debug.LogWarning($"[BordyAds] WeChat interstitial error: {res?.errMsg}");
+                });
+                ad.OnClose(() =>
+                {
+                    Debug.Log("[BordyAds] WeChat interstitial closed.");
+                });
+                ad.Show();
+#else
                 var ad = TT.CreateInterstitialAd(new CreateInterstitialAdParam
                 {
                     InterstitialAdId = BordyAppConfig.InterstitialAdUnitId,
@@ -153,6 +240,7 @@ namespace Bordy
                 };
 
                 ad.Show();
+#endif
             }
             catch (Exception e)
             {

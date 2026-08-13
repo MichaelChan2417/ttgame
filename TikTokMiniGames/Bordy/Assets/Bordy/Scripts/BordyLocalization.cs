@@ -41,6 +41,13 @@ namespace Bordy
 
         private static void ApplyHome(Transform root)
         {
+            var title = root.Find("Title")?.GetComponent<Text>();
+            if (title != null)
+            {
+                title.text = BordyLevelCatalog.GameTitle;
+                BordyFonts.Apply(title);
+            }
+
             SetText(root, "Subtitle", BordyStrings.Keys.HomeSubtitle);
             SetPillText(root, "StartButton", BordyStrings.Keys.HomeStart);
             SetText(root, "Footer", BordyStrings.Keys.HomeFooter);

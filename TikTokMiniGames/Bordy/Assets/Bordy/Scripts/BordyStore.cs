@@ -7,42 +7,53 @@ namespace Bordy
     /// <summary>
     /// Persistent key/value storage for Bordy.
     ///
-    /// IMPORTANT: on the TikTok mini-game container you MUST use <c>TT.PlayerPrefs</c> —
-    /// the official docs warn that Unity's own <see cref="UnityEngine.PlayerPrefs"/> does
-    /// NOT persist inside the container. This wrapper routes everything through
-    /// <c>TT.PlayerPrefs</c> and only falls back to Unity's store if the SDK call throws
-    /// (e.g. in the Editor before InitSDK, or when the SDK is unavailable), so saves never
-    /// crash the game.
+    /// TikTok: must use <c>TT.PlayerPrefs</c> — Unity's own PlayerPrefs does not persist
+    /// inside the TikTok container. WeChat: the WeChat Mini Game runtime hijacks
+    /// <c>UnityEngine.PlayerPrefs</c> so it persists correctly, so we use that directly.
     ///
-    /// Bordy 的持久化 KV 封装。重要：在 TikTok 小游戏容器里必须用 <c>TT.PlayerPrefs</c>，
-    /// 官方文档明确说明 Unity 自带的 <see cref="UnityEngine.PlayerPrefs"/> 在容器内不会持久化。
-    /// 本封装优先走 <c>TT.PlayerPrefs</c>，仅在 SDK 调用抛错时（如 Editor 未 InitSDK、SDK 不可用）
-    /// 回退到 Unity 存储，保证存档不会让游戏崩溃。
+    /// Bordy 的持久化 KV 封装。TikTok 容器内优先用 TT.PlayerPrefs；微信小游戏运行时
+    /// 会自动劫持 UnityEngine.PlayerPrefs 使其持久化，因此直接走 Unity 接口。
     /// </summary>
     public static class BordyStore
     {
         public static string GetString(string key, string defaultValue = "")
         {
+#if WECHAT_MINIGAME
+            return UnityEngine.PlayerPrefs.GetString(key, defaultValue);
+#else
             try { return TT.PlayerPrefs.GetString(key, defaultValue); }
-            catch (Exception) { return PlayerPrefs.GetString(key, defaultValue); }
+            catch (Exception) { return UnityEngine.PlayerPrefs.GetString(key, defaultValue); }
+#endif
         }
 
         public static void SetString(string key, string value)
         {
+#if WECHAT_MINIGAME
+            UnityEngine.PlayerPrefs.SetString(key, value);
+#else
             try { TT.PlayerPrefs.SetString(key, value); }
-            catch (Exception) { PlayerPrefs.SetString(key, value); }
+            catch (Exception) { UnityEngine.PlayerPrefs.SetString(key, value); }
+#endif
         }
 
         public static int GetInt(string key, int defaultValue = 0)
         {
+#if WECHAT_MINIGAME
+            return UnityEngine.PlayerPrefs.GetInt(key, defaultValue);
+#else
             try { return TT.PlayerPrefs.GetInt(key, defaultValue); }
-            catch (Exception) { return PlayerPrefs.GetInt(key, defaultValue); }
+            catch (Exception) { return UnityEngine.PlayerPrefs.GetInt(key, defaultValue); }
+#endif
         }
 
         public static void SetInt(string key, int value)
         {
+#if WECHAT_MINIGAME
+            UnityEngine.PlayerPrefs.SetInt(key, value);
+#else
             try { TT.PlayerPrefs.SetInt(key, value); }
-            catch (Exception) { PlayerPrefs.SetInt(key, value); }
+            catch (Exception) { UnityEngine.PlayerPrefs.SetInt(key, value); }
+#endif
         }
 
         public static bool GetBool(string key, bool defaultValue = false)
@@ -53,18 +64,24 @@ namespace Bordy
 
         public static void DeleteKey(string key)
         {
+#if WECHAT_MINIGAME
+            UnityEngine.PlayerPrefs.DeleteKey(key);
+#else
             try { TT.PlayerPrefs.DeleteKey(key); }
             catch (Exception) { /* ignore */ }
-            // Also clear the Unity fallback copy so a reset is thorough in the Editor.
-            // 同时清掉 Unity 回退副本，保证 Editor 里重置彻底。
-            try { PlayerPrefs.DeleteKey(key); } catch (Exception) { }
+            try { UnityEngine.PlayerPrefs.DeleteKey(key); } catch (Exception) { }
+#endif
         }
 
         /// <summary>Flush pending writes to disk / container storage. / 把改动落盘 / 落到容器存储。</summary>
         public static void Save()
         {
+#if WECHAT_MINIGAME
+            UnityEngine.PlayerPrefs.Save();
+#else
             try { TT.PlayerPrefs.Save(); }
-            catch (Exception) { PlayerPrefs.Save(); }
+            catch (Exception) { UnityEngine.PlayerPrefs.Save(); }
+#endif
         }
     }
 }

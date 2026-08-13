@@ -32,6 +32,25 @@ namespace Bordy
         public const string InterstitialAdUnitId = "demo_interstitial";
 
         /// <summary>
+        /// WeChat Mini Game app id from the WeChat Developer Portal (MP).
+        /// Used only when building with WECHAT_MINIGAME scripting define symbol.
+        /// 微信小游戏 AppID，仅 WECHAT_MINIGAME 编译符号生效。
+        /// </summary>
+        public const string WechatAppId = "wxc8a4ef945116dc27";
+
+        /// <summary>
+        /// WeChat rewarded video ad unit id. Set in WeChat MP → Traffic Master → Ad Placements.
+        /// 微信激励视频广告位 ID。
+        /// </summary>
+        public const string WechatRewardedAdUnitId = "";
+
+        /// <summary>
+        /// WeChat interstitial ad unit id (optional). Leave empty to disable.
+        /// 微信插屏广告位 ID（可选）。留空则不启用。
+        /// </summary>
+        public const string WechatInterstitialAdUnitId = "";
+
+        /// <summary>
         /// When true, Unity Editor simulates a completed rewarded ad. Keep false while tuning hint limits.
         /// </summary>
         public const bool EditorSimulateRewardedAds = false;
