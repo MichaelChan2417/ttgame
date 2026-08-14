@@ -75,9 +75,3 @@ crashlytics-build.properties
 
 # WeChat Mini Game SDK tool temp data
 /TextToolDatas/
-
-# Generated subset fonts (must be rebuilt per machine from a licensed/open font)
-/Assets/Bordy/Resources/Bordy/BordyUI.ttf
-/Assets/Bordy/Resources/Bordy/BordyUI.ttf.meta
-/Assets/Bordy/StreamingAssets/BordyFallback.ttf
-/Assets/Bordy/StreamingAssets/BordyFallback.ttf.meta
