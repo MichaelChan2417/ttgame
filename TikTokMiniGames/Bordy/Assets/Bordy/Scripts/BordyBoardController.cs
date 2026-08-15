@@ -528,6 +528,10 @@ namespace Bordy
 
             BordyTimer.ShowFrozen(BordyDaily.CompletedSeconds);
             PinStatusKey(BordyStrings.Keys.StatusDailyDone, BordyTimer.Format(BordyDaily.CompletedSeconds));
+
+            // Re-show the result popup on re-entry (same as the moment of solving).
+            // 再次进入已完成的每日时，也弹出结算弹窗（与当场解出时一致）。
+            BordyDailyResultPopup.Show(transform, BordyDaily.CompletedSeconds);
         }
 
         /// <summary>Encode the board row-major: '0'=sun, '1'=moon, '2'=empty. / 把盘面编码：'0'太阳 '1'月亮 '2'空。</summary>

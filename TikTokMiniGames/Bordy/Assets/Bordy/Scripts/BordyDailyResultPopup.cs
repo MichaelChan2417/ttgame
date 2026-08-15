@@ -53,21 +53,28 @@ namespace Bordy
 
             var title = CreateText("Title", card.transform, "🎉  Daily Challenge Complete!", 42, FontStyle.Bold, ColInk);
             Anchor(title.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
-            title.rectTransform.sizeDelta = new Vector2(-48, 110);
-            title.rectTransform.anchoredPosition = new Vector2(0, -36);
+            title.rectTransform.sizeDelta = new Vector2(-48, 92);
+            title.rectTransform.anchoredPosition = new Vector2(0, -30);
             title.alignment = TextAnchor.MiddleCenter;
             title.horizontalOverflow = HorizontalWrapMode.Wrap;
+
+            var subtitle = CreateText("Subtitle", card.transform, "Come back tomorrow for a new puzzle!", 28, FontStyle.Normal, ColMuted);
+            Anchor(subtitle.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
+            subtitle.rectTransform.sizeDelta = new Vector2(-56, 40);
+            subtitle.rectTransform.anchoredPosition = new Vector2(0, -128);
+            subtitle.alignment = TextAnchor.MiddleCenter;
+            subtitle.horizontalOverflow = HorizontalWrapMode.Wrap;
 
             var timeLabel = CreateText("TimeLabel", card.transform, "Your time", 30, FontStyle.Normal, ColMuted);
             Anchor(timeLabel.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             timeLabel.rectTransform.sizeDelta = new Vector2(600, 48);
-            timeLabel.rectTransform.anchoredPosition = new Vector2(0, -168);
+            timeLabel.rectTransform.anchoredPosition = new Vector2(0, -186);
             timeLabel.alignment = TextAnchor.MiddleCenter;
 
-            var time = CreateText("Time", card.transform, BordyTimer.Format(seconds), 92, FontStyle.Bold, ColAccent);
+            var time = CreateText("Time", card.transform, BordyTimer.Format(seconds), 88, FontStyle.Bold, ColAccent);
             Anchor(time.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             time.rectTransform.sizeDelta = new Vector2(600, 120);
-            time.rectTransform.anchoredPosition = new Vector2(0, -210);
+            time.rectTransform.anchoredPosition = new Vector2(0, -226);
             time.alignment = TextAnchor.MiddleCenter;
 
             // Stats container — future rank rows go here.

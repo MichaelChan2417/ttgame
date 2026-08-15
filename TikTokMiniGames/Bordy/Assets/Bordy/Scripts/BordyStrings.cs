@@ -68,6 +68,8 @@ namespace Bordy
             public const string GameplayRulesBody = "gameplay.rules.body";
             public const string GameplayRulesTutorialHeading = "gameplay.rules.tutorial.heading";
             public const string GameplayRulesTutorialBody = "gameplay.rules.tutorial.body";
+            public const string RulesIconsFill = "gameplay.rules.icons_fill";
+            public const string RulesIconsOr = "gameplay.rules.icons_or";
 
             public const string StatusTap = "gameplay.status.tap";
             public const string StatusNoHint = "gameplay.status.no_hint";
@@ -155,9 +157,11 @@ namespace Bordy
             { Keys.GameplayUndo, "撤销" },
             { Keys.GameplayHint, "提示" },
             { Keys.GameplayRulesHeading, "游戏玩法" },
-            { Keys.GameplayRulesBody, "•  填充网格，使每个格子都有一个太阳或一个月亮。\n•  每行（和每列）最多 2 个相同图案相邻，且太阳与月亮数量相等。\n•  由 = 分隔的格子必须相同；由 × 分隔的格子必须相反。" },
+            { Keys.GameplayRulesBody, "•  每行、每列两种图案数量相等，且相邻相同图案不超过 2 个。\n•  由 = 分隔的格子必须相同；由 × 分隔的格子必须相反。" },
             { Keys.GameplayRulesTutorialHeading, "引导提示" },
-            { Keys.GameplayRulesTutorialBody, "•  跟随底部卡片完成教学步骤。\n•  4×4 棋盘每行/列各 2 个太阳、2 个月亮。\n•  × 要相反，= 要相同，不能连出 3 个一样。" },
+            { Keys.GameplayRulesTutorialBody, "•  跟随底部卡片完成教学步骤。\n•  4×4 棋盘每行/列各有 2 个同种图案。\n•  × 要相反，= 要相同，不能连出 3 个一样。" },
+            { Keys.RulesIconsFill, "•  每格填入" },
+            { Keys.RulesIconsOr, "或" },
 
             { Keys.StatusTap, "点击空格填入太阳或月亮" },
             { Keys.StatusNoHint, "没有可提示的格子了" },
@@ -245,9 +249,11 @@ namespace Bordy
             { Keys.GameplayUndo, "Undo" },
             { Keys.GameplayHint, "Hint" },
             { Keys.GameplayRulesHeading, "How to Play" },
-            { Keys.GameplayRulesBody, "•  Fill the grid so every cell holds a sun or a moon.\n•  Each row (and column) has equal suns and moons, with at most 2 identical symbols adjacent.\n•  Cells split by = must match; cells split by × must differ." },
+            { Keys.GameplayRulesBody, "•  Each row and column holds an equal number of each icon, with at most 2 identical icons adjacent.\n•  Cells split by = must match; cells split by × must differ." },
             { Keys.GameplayRulesTutorialHeading, "Guide" },
-            { Keys.GameplayRulesTutorialBody, "•  Follow the cards at the bottom to complete the lesson.\n•  Each row / column on the 4×4 board has 2 suns and 2 moons.\n•  × means opposite, = means same; never 3 identical in a row." },
+            { Keys.GameplayRulesTutorialBody, "•  Follow the cards at the bottom to complete the lesson.\n•  Each row / column on the 4×4 board has 2 of each icon.\n•  × means opposite, = means same; never 3 identical in a row." },
+            { Keys.RulesIconsFill, "•  Fill each cell with" },
+            { Keys.RulesIconsOr, "or" },
 
             { Keys.StatusTap, "Tap an empty cell to place a sun or moon" },
             { Keys.StatusNoHint, "No cells left to hint" },
