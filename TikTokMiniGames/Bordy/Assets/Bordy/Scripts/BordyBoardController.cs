@@ -777,6 +777,7 @@ namespace Bordy
                 int seconds = BordyTimer.ElapsedSeconds;
                 BordyDaily.SaveResult(seconds, EncodeState());
                 BordyDaily.ClearProgress(); // solved → no in-progress snapshot needed / 已解出，无需进行中存档
+                BordyFriendCloud.UploadDailyTime(BordyDaily.TodayKey, seconds); // publish to friends / 上传成绩供好友查看
                 _reviewMode = true;
                 PinStatusKey(BordyStrings.Keys.StatusDailyWin, BordyTimer.Format(seconds));
 
