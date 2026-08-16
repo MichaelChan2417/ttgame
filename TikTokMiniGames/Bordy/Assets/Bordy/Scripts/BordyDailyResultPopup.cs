@@ -26,7 +26,11 @@ namespace Bordy
         private RectTransform _statsRoot;
         private float _nextStatY;
         private int _seconds;
+        private System.Action _onClosed;
         private static BordyDailyResultPopup s_current;
+
+        /// <summary>Run a callback after this popup closes (e.g. chain the add-to-home prompt). / 关闭后回调。</summary>
+        public void SetOnClosed(System.Action onClosed) => _onClosed = onClosed;
 
         /// <summary>Build and show the popup under the given canvas. / 在指定 Canvas 下创建并显示弹窗。</summary>
         public static BordyDailyResultPopup Show(Transform canvas, int seconds)
@@ -220,7 +224,10 @@ namespace Bordy
 
         public void Close()
         {
+            var cb = _onClosed;
+            _onClosed = null;
             Destroy(gameObject);
+            cb?.Invoke();
         }
 
         // ---- helpers ----

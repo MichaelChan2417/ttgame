@@ -781,9 +781,20 @@ namespace Bordy
                 _reviewMode = true;
                 PinStatusKey(BordyStrings.Keys.StatusDailyWin, BordyTimer.Format(seconds));
 
-                // First-completion celebration popup (time + congrats; ranks added later).
-                // 首次通关的祝贺弹窗（用时 + 祝贺；排名之后加）。
-                BordyDailyResultPopup.Show(transform, seconds);
+                // Order: on the first Daily solve, prompt "add to home screen" FIRST, then the
+                // result popup (time + congrats + friends/invite). Otherwise go straight to result.
+                // 顺序：首次完成每日先弹「加桌」，关掉后再弹结算弹窗（含好友/邀请）；否则直接结算。
+                var canvasT = transform;
+                int solvedSeconds = seconds;
+                if (BordyShortcut.ShouldPrompt)
+                {
+                    BordyShortcut.Prompted = true;
+                    BordyShortcutPopup.Show(canvasT, () => BordyDailyResultPopup.Show(canvasT, solvedSeconds));
+                }
+                else
+                {
+                    BordyDailyResultPopup.Show(canvasT, solvedSeconds);
+                }
             }
             else if (BordyCampaignCatalog.IsCampaignId(_levelId))
             {
