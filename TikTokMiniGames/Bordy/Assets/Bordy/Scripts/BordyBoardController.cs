@@ -97,6 +97,12 @@ namespace Bordy
                 ResetPuzzle();
                 RestoreDailyProgress();
             }
+            else if (BordyCampaignCatalog.IsCampaignId(_levelId) && BordyProgress.IsCampaignLevelCompleted(_levelId))
+            {
+                // A cleared campaign level stays cleared: show the solved board, read-only.
+                // 已通关的关卡保持通关：显示解好的棋盘，只读。
+                EnterCampaignReview();
+            }
             else
             {
                 BordyTimer.ResetClock();
@@ -353,7 +359,10 @@ namespace Bordy
 
             if (_reviewMode)
             {
-                PinStatusKey(BordyStrings.Keys.StatusDailyDone, BordyTimer.Format(BordyDaily.CompletedSeconds));
+                if (_levelId == BordyLevelCatalog.DailyId)
+                    PinStatusKey(BordyStrings.Keys.StatusDailyDone, BordyTimer.Format(BordyDaily.CompletedSeconds));
+                else
+                    SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
                 return;
             }
 
@@ -532,6 +541,30 @@ namespace Bordy
             // Re-show the result popup on re-entry (same as the moment of solving).
             // 再次进入已完成的每日时，也弹出结算弹窗（与当场解出时一致）。
             BordyDailyResultPopup.Show(transform, BordyDaily.CompletedSeconds);
+        }
+
+        /// <summary>
+        /// Read-only view of a cleared campaign level: fill the solved board and lock input, so
+        /// reopening a completed level stays completed instead of resetting to a blank board.
+        /// 已通关关卡的只读视图：填入解答并锁定，重开时保持通关而非清空。
+        /// </summary>
+        private void EnterCampaignReview()
+        {
+            _reviewMode = true;
+            _won = true;
+            _undo.Clear();
+
+            for (int r = 0; r < _size; r++)
+            {
+                for (int c = 0; c < _size; c++)
+                {
+                    _state[r, c] = _puzzle.Solution[r, c];
+                    RefreshCell(r, c, animate: false);
+                }
+            }
+
+            BordyTimer.Stop();
+            SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
         }
 
         /// <summary>Encode the board row-major: '0'=sun, '1'=moon, '2'=empty. / 把盘面编码：'0'太阳 '1'月亮 '2'空。</summary>
@@ -805,6 +838,13 @@ namespace Bordy
                         BordyAdsService.TryShowInterstitial();
                 }
                 SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
+
+                // Cleared the whole campaign → "more levels coming soon".
+                // 全部闯关通关 → 弹「更多关卡敬请期待」。
+                if (BordyProgress.AllCampaignCompleted())
+                    BordyMessagePopup.Show(transform,
+                        "All levels cleared! 🎉",
+                        "You've beaten every Bordy level. More challenges are coming soon — thanks for playing!");
             }
             else
             {

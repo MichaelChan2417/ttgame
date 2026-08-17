@@ -43,10 +43,10 @@ namespace Bordy
             var popup = go.AddComponent<BordyDailyResultPopup>();
             popup.Build(seconds);
 
-            // Kick off the async friend fetch; results arrive via BordyFriendCloudReceiver
-            // and call RefreshOpenFriends() to repopulate the box.
-            // 异步拉取好友成绩;结果回来后刷新方块。
-            BordyFriendCloud.RequestFriendDaily(BordyDaily.TodayKey);
+            // NOTE: the TikTok friend leaderboard (open data domain / getFriendCloudStorage) is
+            // only supported for Cocos, NOT Unity. So we do not fetch friends here — the box shows
+            // the "invite friends" state. Upload + share still work (main-domain APIs).
+            // 说明:TikTok 好友榜(开放数据域)只支持 Cocos,不支持 Unity,故这里不拉好友,显示邀请态。
             return popup;
         }
 

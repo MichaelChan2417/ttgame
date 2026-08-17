@@ -1,20 +1,23 @@
 <#
-  upload-range.ps1 — batch-upload already-generated daily JSON files to KV, then verify each.
+  upload-range.ps1 - batch-upload already-generated daily JSON files to KV, then verify each.
 
   Uploads the EXISTING <date>.json files (does NOT regenerate), so what goes live is exactly
   what was validated. Run from cloudflare/bordy-api.
 
-  用法（在 cloudflare/bordy-api 目录下）:
-    .\upload-range.ps1                       # 上传下面默认的一批日期
-    .\upload-range.ps1 -Dates 20260810,20260811   # 只传指定几天
+  Usage:
+    .\upload-range.ps1                         # today (UTC) + next 13 days = rolling 14-day window
+    .\upload-range.ps1 -Dates 20260817,20260818   # only specific days
 
-  首次运行若被 PowerShell 拦：先执行  Set-ExecutionPolicy -Scope Process -Bypass
+  If PowerShell blocks it, first run:  Set-ExecutionPolicy -Scope Process -Bypass
 #>
 param(
-    [string[]]$Dates = @(
-        "20260809","20260810","20260811","20260812","20260813","20260814","20260815","20260816"
-    )
+    [string[]]$Dates = $null
 )
+
+# Default: today (UTC) + the next 13 days = a rolling 14-day window.
+if (-not $Dates) {
+    $Dates = 0..13 | ForEach-Object { [DateTime]::UtcNow.Date.AddDays($_).ToString("yyyyMMdd") }
+}
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
@@ -24,7 +27,7 @@ $fail = 0
 foreach ($d in $Dates) {
     $file = "$d.json"
     if (-not (Test-Path $file)) {
-        Write-Warning "skip $d — $file not found"
+        Write-Warning "skip $d - $file not found"
         $fail++
         continue
     }
@@ -38,10 +41,10 @@ foreach ($d in $Dates) {
         $clues = ($r.givens | Where-Object { $_ -eq $true }).Count
         Write-Host "    OK  date=$($r.date)  size=$($r.size)  givens=$clues/36  edges=$($r.edges.Count)"
     } catch {
-        Write-Warning "verify failed for $d (KV may need a few seconds): $_"
+        Write-Warning "verify failed for $d (KV may need a few seconds)"
         $fail++
     }
 }
 
 if ($fail -eq 0) { Write-Host "`nAll daily puzzles are live." }
-else { Write-Warning "`nDone with $fail problem(s) — re-run to retry those dates." }
+else { Write-Warning "`nDone with $fail problem(s) - re-run to retry those dates." }

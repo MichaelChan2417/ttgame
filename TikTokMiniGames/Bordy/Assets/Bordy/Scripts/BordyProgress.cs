@@ -70,6 +70,18 @@ namespace Bordy
         public static bool IsCampaignLevelCompleted(string levelId)
             => BordyStore.GetBool(CampaignDonePrefix + levelId, false);
 
+        /// <summary>True when every campaign level has been completed. / 所有闯关关卡都已通关。</summary>
+        public static bool AllCampaignCompleted()
+        {
+            var levels = BordyCampaignCatalog.Levels;
+            if (levels == null || levels.Count == 0)
+                return false;
+            foreach (var e in levels)
+                if (!IsCampaignLevelCompleted(e.Id))
+                    return false;
+            return true;
+        }
+
         public static void CompleteCampaignLevel(string levelId, int index)
         {
             BordyStore.SetBool(CampaignDonePrefix + levelId, true);

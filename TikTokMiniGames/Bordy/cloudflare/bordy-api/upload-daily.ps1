@@ -1,14 +1,14 @@
 <#
-  upload-daily.ps1 — 把某天的每日题目 JSON 上传到 Cloudflare KV 并验证。
+  upload-daily.ps1 - upload one day's daily puzzle JSON to Cloudflare KV and verify.
 
-  用法（在 cloudflare/bordy-api 目录下）:
-    .\upload-daily.ps1                      # 用今天(UTC)的日期，读取 <日期>.json
-    .\upload-daily.ps1 -Date 20260803       # 指定日期，读取 20260803.json
+  Usage (from cloudflare/bordy-api):
+    .\upload-daily.ps1                      # today (UTC), reads <date>.json
+    .\upload-daily.ps1 -Date 20260803       # specific day, reads 20260803.json
     .\upload-daily.ps1 -Date 20260803 -File .\mypuzzle.json
-    .\upload-daily.ps1 -Deploy              # 顺便先部署 Worker（改过 Worker 代码时才需要）
+    .\upload-daily.ps1 -Deploy              # also deploy the Worker first (only if Worker code changed)
 
-  题目 JSON 怎么来：Unity 菜单 Bordy -> Export Daily Template JSON 会导出一份，
-  改名成 <日期>.json 即可；或按同样格式手写。
+  Tip: to upload many days at once, use .\upload-range.ps1 instead.
+  If PowerShell blocks it, first run:  Set-ExecutionPolicy -Scope Process -Bypass
 #>
 param(
     [string]$Date = ([DateTime]::UtcNow.ToString("yyyyMMdd")),
@@ -23,40 +23,40 @@ $WorkerUrl = "https://bordy-api.brainless.workers.dev"
 
 if ([string]::IsNullOrWhiteSpace($File)) { $File = Join-Path $PSScriptRoot "$Date.json" }
 
-# 1) 文件存在 + JSON 合法性检查
+# 1) file exists + valid JSON
 if (-not (Test-Path $File)) {
-    Write-Error "找不到题目文件: $File`n请先在 Unity 里用 Bordy -> Export Daily Template JSON 导出，改名为 $Date.json；或用 -File 指定路径。"
+    Write-Error "puzzle file not found: $File  (generate it first, e.g. node generate-daily.js $Date)"
     exit 1
 }
-Write-Host "==> 校验 JSON: $File"
+Write-Host "==> Validating JSON: $File"
 try {
     $dto = Get-Content $File -Raw -Encoding UTF8 | ConvertFrom-Json
-    if (-not $dto.solution -or -not $dto.givens) { throw "缺少 solution / givens 字段" }
+    if (-not $dto.solution -or -not $dto.givens) { throw "missing solution / givens field" }
 } catch {
-    Write-Error "JSON 不合法: $_"
+    Write-Error "invalid JSON: $_"
     exit 1
 }
 
-# 2) 可选：部署 Worker（仅在改过 Worker 代码时需要）
+# 2) optional: deploy Worker (only when Worker code changed)
 if ($Deploy) {
-    Write-Host "==> 部署 Worker ..."
+    Write-Host "==> Deploying Worker ..."
     npx wrangler deploy
 }
 
-# 3) 上传到 KV，键名 daily:<日期>
-Write-Host "==> 上传到 KV: daily:$Date  (来源 $File)"
+# 3) upload to KV under key daily:<date>
+Write-Host "==> Uploading to KV: daily:$Date  (from $File)"
 npx wrangler kv key put --binding=BORDY_KV "daily:$Date" --path="$File" --remote
-if ($LASTEXITCODE -ne 0) { Write-Error "wrangler kv put 失败"; exit 1 }
+if ($LASTEXITCODE -ne 0) { Write-Error "wrangler kv put failed"; exit 1 }
 
-# 4) 验证线上能取到
+# 4) verify it is live
 $url = "$WorkerUrl/api/daily/$Date.json"
-Write-Host "==> 验证 $url"
+Write-Host "==> Verifying $url"
 try {
     $resp = Invoke-RestMethod -Uri $url -Method GET
     $edgeCount = if ($resp.edges) { $resp.edges.Count } else { 0 }
-    Write-Host "OK ✅  date=$($resp.date) size=$($resp.size) edges=$edgeCount"
-    Write-Host "每日题目已上线: daily:$Date"
+    Write-Host "OK  date=$($resp.date) size=$($resp.size) edges=$edgeCount"
+    Write-Host "Daily is live: daily:$Date"
 } catch {
-    Write-Error "验证失败（KV 可能还没生效，稍等重试）: $_"
+    Write-Error "verify failed (KV may need a few seconds)"
     exit 1
 }
