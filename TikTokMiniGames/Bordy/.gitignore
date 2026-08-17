@@ -40,6 +40,9 @@ crashlytics-build.properties
 # Packed Addressables
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
+# Python
+**/__pycache__/
+
 # Visual Studio cache directory
 .vs/
 .idea/

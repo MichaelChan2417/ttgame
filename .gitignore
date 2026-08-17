@@ -10,6 +10,8 @@ Desktop.ini
 # Editor scratch
 *.swp
 *~
+*.log
+**/__pycache__/
 
 # Unity — caches & generated output (all projects under this repo)
 **/Library/

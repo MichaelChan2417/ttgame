@@ -33,7 +33,7 @@ foreach ($d in $Dates) {
     }
 
     Write-Host "==> Uploading daily:$d ..."
-    npx wrangler kv key put --binding=BORDY_KV "daily:$d" --path="$file" --remote
+    npx wrangler kv key put --binding=BORDY_KV "daily:$d" --path="$file"
     if ($LASTEXITCODE -ne 0) { Write-Warning "wrangler put failed for $d"; $fail++; continue }
 
     try {

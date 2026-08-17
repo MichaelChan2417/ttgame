@@ -45,7 +45,7 @@ if ($Deploy) {
 
 # 3) upload to KV under key daily:<date>
 Write-Host "==> Uploading to KV: daily:$Date  (from $File)"
-npx wrangler kv key put --binding=BORDY_KV "daily:$Date" --path="$File" --remote
+npx wrangler kv key put --binding=BORDY_KV "daily:$Date" --path="$File"
 if ($LASTEXITCODE -ne 0) { Write-Error "wrangler kv put failed"; exit 1 }
 
 # 4) verify it is live

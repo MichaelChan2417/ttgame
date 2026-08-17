@@ -1,3 +1,5 @@
 node_modules/
 .wrangler/
 .dev.vars
+# Generated daily puzzles (YYYYMMDD.json)
+[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].json
