@@ -127,6 +127,7 @@ namespace Bordy.EditorTools
                 Anchor(sym.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
                 sym.rectTransform.sizeDelta = new Vector2(48, 48);
                 sym.rectTransform.anchoredPosition = mid;
+                BordyEdgeRules.OrientSymbol(sym.rectTransform, e);
                 sym.alignment = TextAnchor.MiddleCenter;
                 sym.color = ColInk;
                 sym.raycastTarget = false;
@@ -142,11 +143,11 @@ namespace Bordy.EditorTools
 
         private static void BuildActionRow(Transform parent, BordyBoardController board, float actionTopY, float actionH)
         {
-            var undo = CreateClickablePill("UndoButton", parent, "Undo", ColPill, ColMuted);
+            var undo = CreateClickablePill("UndoButton", parent, "Check", ColPill, ColMuted);
             Anchor(undo.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             undo.rectTransform.sizeDelta = new Vector2(440, actionH);
             undo.rectTransform.anchoredPosition = new Vector2(-235, -actionTopY);
-            UnityEventTools.AddPersistentListener(undo.GetComponent<Button>().onClick, board.Undo);
+            UnityEventTools.AddPersistentListener(undo.GetComponent<Button>().onClick, board.Check);
 
             var hint = CreateClickablePill("HintButton", parent, "Hint", ColPill, ColMuted);
             Anchor(hint.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));

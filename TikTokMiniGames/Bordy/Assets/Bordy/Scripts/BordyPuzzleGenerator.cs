@@ -26,34 +26,36 @@ namespace Bordy
             public double DifficultyScore;
         }
 
-        /// <summary>Difficulty ramps from easy (low) to hard (high). Used to order campaign levels.</summary>
+        /// <summary>Easy 6×6 for early t, then sparse unique 6×6, then 8×8. / 前期简单 6×6，随后极少给定格，最后 8×8。</summary>
         public static GenConfig ConfigForDifficulty(double t)
         {
             t = Clamp01(t);
             var cfg = new GenConfig { Seed = (int)(t * 1_000_000) };
 
-            if (t < 0.40)
+            if (t < 0.07)
             {
                 cfg.Size = 6;
-                cfg.GivenRatio = Lerp(0.50, 0.38, t / 0.40);
-                cfg.EdgeDensity = Lerp(0.12, 0.22, t / 0.40);
+                cfg.GivenRatio = 0.56;
+                cfg.EdgeDensity = 0.16;
             }
-            else if (t < 0.75)
+            else if (t < 0.12)
             {
-                cfg.Size = 8;
-                cfg.GivenRatio = Lerp(0.42, 0.30, (t - 0.40) / 0.35);
-                cfg.EdgeDensity = Lerp(0.16, 0.26, (t - 0.40) / 0.35);
+                cfg.Size = 6;
+                cfg.GivenRatio = 0.42;
+                cfg.EdgeDensity = 0.18;
+            }
+            else if (t < 0.50)
+            {
+                cfg.Size = 6;
+                cfg.GivenRatio = Lerp(0.22, 0.10, (t - 0.12) / 0.38);
+                cfg.EdgeDensity = Lerp(0.22, 0.30, (t - 0.12) / 0.38);
             }
             else
             {
-                // 10×10 peel + uniqueness is very slow in Editor; cap at 8×8 for responsive generation.
                 cfg.Size = 8;
-                cfg.GivenRatio = Lerp(0.36, 0.30, (t - 0.75) / 0.25);
-                cfg.EdgeDensity = Lerp(0.20, 0.28, (t - 0.75) / 0.25);
+                cfg.GivenRatio = Lerp(0.22, 0.16, (t - 0.50) / 0.50);
+                cfg.EdgeDensity = Lerp(0.18, 0.24, (t - 0.50) / 0.50);
             }
-
-            if (cfg.Size >= 8)
-                cfg.GivenRatio = Math.Max(cfg.GivenRatio, 0.34);
 
             return cfg;
         }
@@ -220,10 +222,12 @@ namespace Bordy
             Shuffle(pool, rng);
             int pick = Math.Max(2, (int)Math.Round(pool.Count * Clamp01(density)));
             pick = Math.Min(pick, pool.Count);
-            var edges = new EdgeConstraint[pick];
-            for (int i = 0; i < pick; i++)
-                edges[i] = pool[i];
-            return edges;
+
+            var chosen = new List<EdgeConstraint>(pick);
+            for (int i = 0; i < pool.Count && chosen.Count < pick; i++)
+                chosen.Add(pool[i]);
+
+            return BordyEdgeRules.StripRedundantCrosses(chosen.ToArray());
         }
 
         private static bool TryGenerateGivens(int size, int[,] solution, EdgeConstraint[] edges, double givenRatio,

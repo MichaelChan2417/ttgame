@@ -375,6 +375,7 @@ namespace Bordy
         public static void ResetAll()
         {
             BordyStore.DeleteKey(ProfileKey);
+            BordyStore.DeleteKey("bordy.locale");
             BordyProgress.Reset();
             BordyDaily.Reset();
             Profile = null;

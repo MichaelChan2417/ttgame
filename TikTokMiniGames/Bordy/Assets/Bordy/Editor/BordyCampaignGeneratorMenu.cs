@@ -10,7 +10,7 @@ namespace Bordy.EditorTools
     public static class BordyCampaignGeneratorMenu
     {
         private const string OutputPath = "Assets/Bordy/Resources/Bordy/campaign-levels.json";
-        private const int DefaultCount = 20;
+        private const int DefaultCount = 30;
 
         [MenuItem("Bordy/Dev Tools/Generate Campaign Levels (Editor, slow)")]
         public static void GenerateMenu() => Generate(showDialog: true);

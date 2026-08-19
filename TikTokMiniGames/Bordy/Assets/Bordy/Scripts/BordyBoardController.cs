@@ -17,6 +17,10 @@ namespace Bordy
         private static readonly Color ColGivenCell = new Color(0.94f, 0.93f, 0.90f);
         private static readonly Color ColErrorCell = new Color(1.00f, 0.86f, 0.86f);
         private static readonly Color ColGuideCell = new Color(1.00f, 0.97f, 0.78f);
+        private static readonly Color ColHintCell = new Color(1.00f, 0.90f, 0.52f);
+        private static readonly Color ColCheckArmed = new Color(1.00f, 0.66f, 0.10f);
+        private static readonly Color ColCheckArmedLabel = Color.white;
+        private static readonly Color ColPillLabel = new Color(0.45f, 0.45f, 0.48f);
 
         [SerializeField] private string _levelId = BordyLevelCatalog.Level1Id;
 
@@ -48,13 +52,39 @@ namespace Bordy
         private int _freeHintBudget = -1;
         private bool _hintAdInFlight;
 
+        private int _checksUsedThisSession;
+        private int _freeCheckBudget = 1;
+        private int _adChecksGranted;
+        private bool _checkPickMode;
+        private bool _checkAdInFlight;
+        private bool[,] _checkMarks;
+        private bool[,] _hintMarks;
+        private bool[,] _guideMarks;
+        private Image _checkButtonImage;
+        private Text _checkButtonLabel;
+        private Button _checkButton;
+        private Button _hintButton;
+        private Color _checkButtonIdleColor;
+        private Color _checkButtonIdleLabelColor = ColPillLabel;
+        private bool _checkButtonIdleCaptured;
+
         public event Action BoardWon;
+        public event Action BlockedTap;
+        public event Action<int, int> CellChanged;
         public Func<int, int, bool> CanTapCell { get; set; }
 
         public BordyPuzzleData Puzzle => _puzzle;
         public int Size => _size;
         public bool IsWon => _won;
+        public bool IsCheckPickMode => _checkPickMode;
         public Image GetCellImage(int row, int col) => _cells[row, col];
+
+        public bool HasCheckMark(int row, int col)
+        {
+            if (_checkMarks == null || row < 0 || col < 0 || row >= _size || col >= _size)
+                return false;
+            return _checkMarks[row, col];
+        }
 
         private void Start()
         {
@@ -70,6 +100,9 @@ namespace Bordy
             _state = new int[_size, _size];
             _tokenViews = new BordyTokenView[_size, _size];
             _cells = new Image[_size, _size];
+            _checkMarks = new bool[_size, _size];
+            _hintMarks = new bool[_size, _size];
+            _guideMarks = new bool[_size, _size];
 
             if (NeedsRuntimeBoard())
                 BordyBoardViewBuilder.EnsureBoard(transform, _puzzle);
@@ -87,6 +120,8 @@ namespace Bordy
             ApplyHeaderTitle();
             WireBackButton();
             InitHintBudget();
+            InitCheckBudget();
+            RefreshToolCaps();
 
             if (_levelId == BordyLevelCatalog.DailyId && BordyDaily.CompletedToday)
             {
@@ -97,13 +132,17 @@ namespace Bordy
                 ResetPuzzle();
                 RestoreDailyProgress();
             }
+            else if (BordyCampaignCatalog.IsCampaignId(_levelId) && BordyProgress.IsCampaignLevelCompleted(_levelId))
+            {
+                // A cleared campaign level stays cleared: show the solved board, read-only.
+                // 已通关的关卡保持通关：显示解好的棋盘，只读。
+                EnterCampaignReview();
+            }
             else
             {
                 BordyTimer.ResetClock();
                 ResetPuzzle();
             }
-
-            NoteActivity(); // start the idle-hint clock from when the board is ready / 从进入棋盘起算空闲
         }
 
         private bool TryLoadPuzzle(out BordyPuzzleData puzzle)
@@ -111,9 +150,8 @@ namespace Bordy
             puzzle = null;
             if (_levelId == BordyLevelCatalog.DailyId)
             {
-                puzzle = BordyDailyService.GetTodayPuzzleOrNull();
-                if (puzzle == null)
-                    Debug.LogError("[BordyBoardController] Daily template not available (fetch first).");
+                puzzle = BordyDailyService.GetTodayPuzzleOrNull()
+                    ?? BordyDailyService.UseBuiltInFallback("board start without fetch");
                 return puzzle != null;
             }
 
@@ -141,34 +179,6 @@ namespace Bordy
         {
             if (paused)
                 SaveDailyProgressIfNeeded();
-        }
-
-        // Idle "obvious mistake" hint: after the last move, if the player is idle for a few
-        // seconds, highlight clear mistakes (3-in-a-row, too many of one symbol in a line,
-        // and = / × violations). Not real-time — only fires once per idle period.
-        // 空闲提醒：最后一次操作后空闲几秒，就把明显错误标红（连续3个、某行列同符号过多、= / × 违反）。
-        // 非实时，每个空闲周期只提醒一次。
-        private const float IdleHintSeconds = 3f;
-        private float _lastActivityTime;
-        private bool _idleHintShown;
-
-        private void NoteActivity()
-        {
-            _lastActivityTime = Time.unscaledTime;
-            _idleHintShown = false;
-        }
-
-        private void Update()
-        {
-            if (_puzzle == null || _size == 0 || _won || _reviewMode || _idleHintShown)
-                return;
-            if (!string.IsNullOrEmpty(_pinnedStatus)) // don't fight a pinned status (e.g. tutorial)
-                return;
-            if (Time.unscaledTime - _lastActivityTime < IdleHintSeconds)
-                return;
-
-            _idleHintShown = true;
-            HighlightObviousErrors();
         }
 
         /// <summary>Snapshot the in-progress daily so the player can resume later. / 快照进行中的每日挑战，便于之后续玩。</summary>
@@ -285,9 +295,83 @@ namespace Bordy
 
         private void WireActionButtons()
         {
-            WirePill("UndoButton", Undo);
+            if (transform.Find("CheckButton") != null)
+                WirePill("CheckButton", Check);
+            else
+                WirePill("UndoButton", Check);
             WirePill("HintButton", Hint);
             WirePill("ResetPill", OnResetPressed);
+            CacheCheckButton();
+            CacheHintButton();
+        }
+
+        private void CacheCheckButton()
+        {
+            var tr = transform.Find("CheckButton") ?? transform.Find("UndoButton");
+            if (tr == null)
+                return;
+
+            _checkButtonImage = tr.GetComponent<Image>();
+            _checkButtonLabel = tr.Find("Text")?.GetComponent<Text>();
+            _checkButton = tr.GetComponent<Button>();
+        }
+
+        private void CacheHintButton()
+        {
+            var tr = transform.Find("HintButton");
+            if (tr != null)
+                _hintButton = tr.GetComponent<Button>();
+        }
+
+        private bool HintCapReached()
+            => _freeHintBudget >= 0 && _hintsUsedThisSession >= BordyHintPolicy.MaxUsesPerLevel;
+
+        private bool CheckCapReached()
+            => _freeCheckBudget >= 0 && _checksUsedThisSession >= BordyCheckPolicy.MaxUsesPerLevel;
+
+        private void RefreshToolCaps()
+        {
+            if (_hintButton != null)
+                _hintButton.interactable = !HintCapReached();
+            if (_checkButton != null)
+                _checkButton.interactable = !CheckCapReached() || _checkPickMode;
+        }
+
+        /// <summary>
+        /// Enter or leave check-pick mode and keep the Check button visually armed so the
+        /// player can tell the first tap registered.
+        /// 进入/退出选格模式，并让 Check 按钮保持点亮，避免玩家不确定有没有点到。
+        /// </summary>
+        private void SetCheckPickMode(bool on)
+        {
+            _checkPickMode = on;
+            if (_checkButtonImage == null)
+                CacheCheckButton();
+            if (_checkButtonImage == null)
+                return;
+
+            if (on)
+            {
+                if (!_checkButtonIdleCaptured)
+                {
+                    _checkButtonIdleColor = _checkButtonImage.color;
+                    _checkButtonIdleLabelColor = _checkButtonLabel != null
+                        ? _checkButtonLabel.color
+                        : ColPillLabel;
+                    _checkButtonIdleCaptured = true;
+                }
+
+                _checkButtonImage.color = ColCheckArmed;
+                if (_checkButtonLabel != null)
+                    _checkButtonLabel.color = ColCheckArmedLabel;
+            }
+            else if (_checkButtonIdleCaptured)
+            {
+                _checkButtonImage.color = _checkButtonIdleColor;
+                if (_checkButtonLabel != null)
+                    _checkButtonLabel.color = _checkButtonIdleLabelColor;
+                _checkButtonIdleCaptured = false;
+            }
         }
 
         private void WirePill(string name, UnityEngine.Events.UnityAction action)
@@ -353,7 +437,10 @@ namespace Bordy
 
             if (_reviewMode)
             {
-                PinStatusKey(BordyStrings.Keys.StatusDailyDone, BordyTimer.Format(BordyDaily.CompletedSeconds));
+                if (_levelId == BordyLevelCatalog.DailyId)
+                    PinStatusKey(BordyStrings.Keys.StatusDailyDone, BordyTimer.Format(BordyDaily.CompletedSeconds));
+                else
+                    SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
                 return;
             }
 
@@ -426,6 +513,7 @@ namespace Bordy
                 rt.pivot = new Vector2(0.5f, 0.5f);
                 rt.sizeDelta = new Vector2(48, 48);
                 rt.anchoredPosition = mid;
+                BordyEdgeRules.OrientSymbol(rt, e);
             }
         }
 
@@ -466,11 +554,17 @@ namespace Bordy
         {
             if (_reviewMode)
                 return;
+            if (_levelId == BordyLevelCatalog.TutorialId && _won)
+                return;
+
             ResetPuzzle();
             // Daily: persist the cleared board with the UNCHANGED time, so resuming keeps the timer.
             // 每日挑战：把清空后的盘面与“不变的时间”一起存档，续玩时计时不丢。
             if (_levelId == BordyLevelCatalog.DailyId)
                 SaveDailyProgressIfNeeded();
+
+            if (_levelId == BordyLevelCatalog.TutorialId)
+                GetComponent<BordyTutorialGuide>()?.OnPuzzleReset();
         }
 
         public void ResetPuzzle()
@@ -480,6 +574,9 @@ namespace Bordy
 
             _undo.Clear();
             _won = false;
+            SetCheckPickMode(false);
+            ClearCheckMarks();
+            ClearHintHighlights();
 
             for (int r = 0; r < _size; r++)
             {
@@ -528,6 +625,34 @@ namespace Bordy
 
             BordyTimer.ShowFrozen(BordyDaily.CompletedSeconds);
             PinStatusKey(BordyStrings.Keys.StatusDailyDone, BordyTimer.Format(BordyDaily.CompletedSeconds));
+
+            // Re-show the result popup on re-entry (same as the moment of solving).
+            // 再次进入已完成的每日时，也弹出结算弹窗（与当场解出时一致）。
+            BordyDailyResultPopup.Show(transform, BordyDaily.CompletedSeconds);
+        }
+
+        /// <summary>
+        /// Read-only view of a cleared campaign level: fill the solved board and lock input, so
+        /// reopening a completed level stays completed instead of resetting to a blank board.
+        /// 已通关关卡的只读视图：填入解答并锁定，重开时保持通关而非清空。
+        /// </summary>
+        private void EnterCampaignReview()
+        {
+            _reviewMode = true;
+            _won = true;
+            _undo.Clear();
+
+            for (int r = 0; r < _size; r++)
+            {
+                for (int c = 0; c < _size; c++)
+                {
+                    _state[r, c] = _puzzle.Solution[r, c];
+                    RefreshCell(r, c, animate: false);
+                }
+            }
+
+            BordyTimer.Stop();
+            SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
         }
 
         /// <summary>Encode the board row-major: '0'=sun, '1'=moon, '2'=empty. / 把盘面编码：'0'太阳 '1'月亮 '2'空。</summary>
@@ -549,28 +674,58 @@ namespace Bordy
             if (_puzzle.IsGiven(row, col))
                 return;
 
-            _cells[row, col].color = on ? ColGuideCell : ColCell;
+            if (_guideMarks != null)
+                _guideMarks[row, col] = on;
+            ApplyCellBackground(row, col);
         }
 
         public void ClearGuideHighlights()
         {
+            if (_guideMarks == null)
+                return;
+
             for (int r = 0; r < _size; r++)
             {
                 for (int c = 0; c < _size; c++)
                 {
-                    if (!_puzzle.IsGiven(r, c) && _cells[r, c].color == ColGuideCell)
-                        _cells[r, c].color = ColCell;
+                    if (!_guideMarks[r, c])
+                        continue;
+                    _guideMarks[r, c] = false;
+                    ApplyCellBackground(r, c);
                 }
             }
         }
 
         private void OnCellTapped(int row, int col)
         {
-            if (_won || _puzzle.IsGiven(row, col))
+            if (_won || _reviewMode)
                 return;
 
-            if (CanTapCell != null && !CanTapCell(row, col))
+            ClearHintHighlights();
+
+            if (_checkPickMode)
+            {
+                if (CanTapCell != null && !CanTapCell(row, col))
+                {
+                    BlockedTap?.Invoke();
+                    return;
+                }
+                ApplyCheckAt(row, col);
                 return;
+            }
+
+            if (_puzzle.IsGiven(row, col))
+            {
+                if (CanTapCell != null)
+                    BlockedTap?.Invoke();
+                return;
+            }
+
+            if (CanTapCell != null && !CanTapCell(row, col))
+            {
+                BlockedTap?.Invoke();
+                return;
+            }
 
             int previous = _state[row, col];
             int next = CycleToken(previous);
@@ -578,6 +733,7 @@ namespace Bordy
             _undo.Push(new MoveRecord(row, col, previous));
             RefreshCell(row, col, animate: true);
             EvaluateBoard();
+            CellChanged?.Invoke(row, col);
             SaveDailyProgressIfNeeded();
         }
 
@@ -592,17 +748,192 @@ namespace Bordy
 
         public void Undo()
         {
-            if (_won || _undo.Count == 0)
+            // Kept for baked scene listeners; gameplay uses Check instead.
+            // 场景里可能还绑着旧监听，玩法已改为 Check。
+        }
+
+        /// <summary>
+        /// Start a row/column check: tap Check, then tap a cell. Wrong filled cells in that
+        /// row and column stay marked until the player corrects them.
+        /// 点 Check 再点一格：标出该行列里填错的格子，改对前一直留着。
+        /// </summary>
+        public void Check()
+        {
+            if (_won || _reviewMode)
                 return;
 
-            var move = _undo.Pop();
-            if (_puzzle.IsGiven(move.Row, move.Col))
+            ClearHintHighlights();
+
+            if (_checkPickMode)
+            {
+                SetCheckPickMode(false);
+                SetTransientStatusKey(BordyStrings.Keys.StatusTap);
+                return;
+            }
+
+            if (CheckCapReached())
+            {
+                SetTransientStatusKey(BordyStrings.Keys.StatusCheckCap, BordyCheckPolicy.MaxUsesPerLevel);
+                RefreshToolCaps();
+                return;
+            }
+
+            if (NeedsRewardedAdForCheck())
+            {
+                RequestCheckViaAd();
+                return;
+            }
+
+            BeginCheckPick();
+        }
+
+        private void InitCheckBudget()
+        {
+            _checksUsedThisSession = 0;
+            _adChecksGranted = 0;
+            SetCheckPickMode(false);
+            _checkAdInFlight = false;
+            _freeCheckBudget = BordyCheckPolicy.ResolveBudget(_levelId);
+        }
+
+        private bool NeedsRewardedAdForCheck()
+            => _freeCheckBudget >= 0
+               && _checksUsedThisSession >= _freeCheckBudget + _adChecksGranted
+               && !CheckCapReached();
+
+        private void BeginCheckPick()
+        {
+            SetCheckPickMode(true);
+            SetTransientStatusKey(BordyStrings.Keys.StatusCheckPick);
+        }
+
+        private void RequestCheckViaAd()
+        {
+            if (_checkAdInFlight)
                 return;
 
-            _state[move.Row, move.Col] = move.Previous;
-            RefreshCell(move.Row, move.Col, animate: true);
-            EvaluateBoard();
-            SaveDailyProgressIfNeeded();
+            _checkAdInFlight = true;
+            SetTransientStatusKey(BordyStrings.Keys.StatusCheckWatchAd);
+            BordyAdsService.ShowRewarded(
+                () =>
+                {
+                    _checkAdInFlight = false;
+                    _adChecksGranted++;
+                    BeginCheckPick();
+                },
+                reason =>
+                {
+                    _checkAdInFlight = false;
+                    SetTransientStatusKey(MapAdFailReason(reason));
+                });
+        }
+
+        private void ApplyCheckAt(int row, int col)
+        {
+            SetCheckPickMode(false);
+            _checksUsedThisSession++;
+
+            int marked = 0;
+            for (int c = 0; c < _size; c++)
+            {
+                if (MarkIfWrong(row, c))
+                    marked++;
+            }
+
+            for (int r = 0; r < _size; r++)
+            {
+                if (r == row)
+                    continue;
+                if (MarkIfWrong(r, col))
+                    marked++;
+            }
+
+            RefreshCheckMarks();
+            RefreshToolCaps();
+            if (CheckCapReached())
+                SetTransientStatusKey(BordyStrings.Keys.StatusCheckCap, BordyCheckPolicy.MaxUsesPerLevel);
+            else if (marked > 0)
+                SetTransientStatusKey(BordyStrings.Keys.StatusCheckMarked);
+            else
+                SetTransientStatusKey(BordyStrings.Keys.StatusCheckNone);
+        }
+
+        private bool MarkIfWrong(int row, int col)
+        {
+            if (_puzzle.IsGiven(row, col))
+                return false;
+            if (_state[row, col] == BordyPuzzleData.Empty)
+                return false;
+            if (_state[row, col] == _puzzle.Solution[row, col])
+                return false;
+            _checkMarks[row, col] = true;
+            return true;
+        }
+
+        private bool IsCheckWrong(int row, int col)
+        {
+            if (_puzzle.IsGiven(row, col))
+                return false;
+            if (_state[row, col] == BordyPuzzleData.Empty)
+                return false;
+            return _state[row, col] != _puzzle.Solution[row, col];
+        }
+
+        private void ClearCheckMarks()
+        {
+            if (_checkMarks == null)
+                return;
+            for (int r = 0; r < _size; r++)
+                for (int c = 0; c < _size; c++)
+                    _checkMarks[r, c] = false;
+        }
+
+        private void MarkHintCell(int row, int col)
+        {
+            if (_hintMarks == null)
+                return;
+            _hintMarks[row, col] = true;
+        }
+
+        private void ClearHintHighlights()
+        {
+            if (_hintMarks == null || _cells == null || _cells.Length == 0)
+                return;
+
+            for (int r = 0; r < _size; r++)
+            {
+                for (int c = 0; c < _size; c++)
+                {
+                    if (!_hintMarks[r, c])
+                        continue;
+
+                    _hintMarks[r, c] = false;
+                    ApplyCellBackground(r, c);
+                }
+            }
+        }
+
+        private void RefreshCheckMarks()
+        {
+            if (_checkMarks == null || _cells == null || _cells.Length == 0)
+                return;
+
+            for (int r = 0; r < _size; r++)
+            {
+                for (int c = 0; c < _size; c++)
+                {
+                    if (!_checkMarks[r, c])
+                        continue;
+                    if (!IsCheckWrong(r, c))
+                    {
+                        _checkMarks[r, c] = false;
+                        ApplyCellBackground(r, c);
+                        continue;
+                    }
+
+                    ApplyCellBackground(r, c);
+                }
+            }
         }
 
         public void Hint()
@@ -613,6 +944,13 @@ namespace Bordy
             if (!HasHintableCell())
             {
                 SetTransientStatusKey(BordyStrings.Keys.StatusNoHint);
+                return;
+            }
+
+            if (HintCapReached())
+            {
+                SetTransientStatusKey(BordyStrings.Keys.StatusHintCap, BordyHintPolicy.MaxUsesPerLevel);
+                RefreshToolCaps();
                 return;
             }
 
@@ -639,7 +977,7 @@ namespace Bordy
         }
 
         private bool NeedsRewardedAdForHint()
-            => _freeHintBudget >= 0 && _hintsUsedThisSession >= _freeHintBudget;
+            => _freeHintBudget >= 0 && _hintsUsedThisSession >= _freeHintBudget && !HintCapReached();
 
         private void RequestHintViaAd()
         {
@@ -682,8 +1020,15 @@ namespace Bordy
 
         private void UpdateHintStatus()
         {
-            if (_freeHintBudget < 0)
+            RefreshToolCaps();
+            if (_won || _freeHintBudget < 0)
                 return;
+
+            if (HintCapReached())
+            {
+                SetTransientStatusKey(BordyStrings.Keys.StatusHintCap, BordyHintPolicy.MaxUsesPerLevel);
+                return;
+            }
 
             int remaining = Mathf.Max(0, _freeHintBudget - _hintsUsedThisSession);
             if (remaining > 0)
@@ -719,8 +1064,11 @@ namespace Bordy
                     int answer = _puzzle.Solution[r, c];
                     _state[r, c] = answer;
                     _undo.Push(new MoveRecord(r, c, previous));
+                    MarkHintCell(r, c);
                     RefreshCell(r, c, animate: true);
                     EvaluateBoard();
+                    if (_won)
+                        ClearHintHighlights();
                     return true;
                 }
             }
@@ -734,21 +1082,40 @@ namespace Bordy
         private void RefreshCell(int row, int col, bool animate)
         {
             var token = _tokenViews[row, col];
-            var cell = _cells[row, col];
-            bool given = _puzzle.IsGiven(row, col);
-            cell.color = given ? ColGivenCell : ColCell;
-
             int value = _state[row, col];
             if (animate)
                 token.SetKind(value, true);
             else
                 token.ShowStatic(value);
+
+            ApplyCellBackground(row, col);
+        }
+
+        private void ApplyCellBackground(int row, int col)
+        {
+            if (_cells == null || _puzzle == null)
+                return;
+
+            if (_puzzle.IsGiven(row, col))
+            {
+                _cells[row, col].color = ColGivenCell;
+                return;
+            }
+
+            if (_checkMarks != null && _checkMarks[row, col] && IsCheckWrong(row, col))
+                _cells[row, col].color = ColErrorCell;
+            else if (_hintMarks != null && _hintMarks[row, col])
+                _cells[row, col].color = ColHintCell;
+            else if (_guideMarks != null && _guideMarks[row, col])
+                _cells[row, col].color = ColGuideCell;
+            else
+                _cells[row, col].color = ColCell;
         }
 
         private void EvaluateBoard()
         {
-            NoteActivity(); // any move resets the idle-hint timer / 任何操作重置空闲提醒计时
             ClearErrorHighlights();
+            RefreshCheckMarks();
 
             if (!IsBoardComplete())
             {
@@ -765,6 +1132,7 @@ namespace Bordy
 
             _won = true;
             BordyTimer.Stop(); // freeze the timer on solve / 通关即停表
+            ClearHintHighlights();
 
             if (_levelId == BordyLevelCatalog.DailyId)
             {
@@ -773,12 +1141,24 @@ namespace Bordy
                 int seconds = BordyTimer.ElapsedSeconds;
                 BordyDaily.SaveResult(seconds, EncodeState());
                 BordyDaily.ClearProgress(); // solved → no in-progress snapshot needed / 已解出，无需进行中存档
+                BordyFriendCloud.UploadDailyTime(BordyDaily.TodayKey, seconds); // publish to friends / 上传成绩供好友查看
                 _reviewMode = true;
                 PinStatusKey(BordyStrings.Keys.StatusDailyWin, BordyTimer.Format(seconds));
 
-                // First-completion celebration popup (time + congrats; ranks added later).
-                // 首次通关的祝贺弹窗（用时 + 祝贺；排名之后加）。
-                BordyDailyResultPopup.Show(transform, seconds);
+                // Order: on the first Daily solve, prompt "add to home screen" FIRST, then the
+                // result popup (time + congrats + friends/invite). Otherwise go straight to result.
+                // 顺序：首次完成每日先弹「加桌」，关掉后再弹结算弹窗（含好友/邀请）；否则直接结算。
+                var canvasT = transform;
+                int solvedSeconds = seconds;
+                if (BordyShortcut.ShouldPrompt)
+                {
+                    BordyShortcut.Prompted = true;
+                    BordyShortcutPopup.Show(canvasT, () => BordyDailyResultPopup.Show(canvasT, solvedSeconds));
+                }
+                else
+                {
+                    BordyDailyResultPopup.Show(canvasT, solvedSeconds);
+                }
             }
             else if (BordyCampaignCatalog.IsCampaignId(_levelId))
             {
@@ -789,6 +1169,13 @@ namespace Bordy
                         BordyAdsService.TryShowInterstitial();
                 }
                 SetStatus(BordyStrings.Get(BordyStrings.Keys.StatusWin));
+
+                // Cleared the whole campaign → "more levels coming soon".
+                // 全部闯关通关 → 弹「更多关卡敬请期待」。
+                if (BordyProgress.AllCampaignCompleted())
+                    BordyMessagePopup.Show(transform,
+                        "All levels cleared! 🎉",
+                        "You've beaten every Bordy level. More challenges are coming soon — thanks for playing!");
             }
             else
             {
@@ -803,10 +1190,7 @@ namespace Bordy
             for (int r = 0; r < _size; r++)
             {
                 for (int c = 0; c < _size; c++)
-                {
-                    if (!_puzzle.IsGiven(r, c) && _cells[r, c].color == ColErrorCell)
-                        _cells[r, c].color = ColCell;
-                }
+                    ApplyCellBackground(r, c);
             }
         }
 
@@ -826,60 +1210,6 @@ namespace Bordy
                         _cells[r, c].color = ColErrorCell;
                 }
             }
-        }
-
-        /// <summary>
-        /// Highlight clearly-wrong cells during play on a partial board: 3 identical in a row/col,
-        /// a line holding more than half of one symbol, and = / × edge violations. Empties ignored.
-        /// 游玩中在未填满的盘上标出明显错误：连续3个相同、某行/列同一符号超过一半、= / × 违反；忽略空格。
-        /// </summary>
-        private void HighlightObviousErrors()
-        {
-            ClearErrorHighlights();
-
-            var bad = new bool[_size, _size];
-            MarkRunViolations(bad);       // 3 in a row / 连续三个
-            MarkOverflowViolations(bad);  // > half of one symbol in a line / 某行列同符号过半
-            MarkEdgeViolations(bad);      // = / × / 边约束
-
-            int count = 0;
-            for (int r = 0; r < _size; r++)
-                for (int c = 0; c < _size; c++)
-                    if (bad[r, c] && !_puzzle.IsGiven(r, c))
-                    {
-                        _cells[r, c].color = ColErrorCell;
-                        count++;
-                    }
-
-            if (count > 0)
-                SetTransientStatusKey(BordyStrings.Keys.StatusErrors);
-        }
-
-        private void MarkOverflowViolations(bool[,] bad)
-        {
-            int target = _size / 2;
-            for (int r = 0; r < _size; r++)
-                MarkOverflowLine(bad, r, true, target);
-            for (int c = 0; c < _size; c++)
-                MarkOverflowLine(bad, c, false, target);
-        }
-
-        private void MarkOverflowLine(bool[,] bad, int index, bool horizontal, int target)
-        {
-            int sun = 0, moon = 0;
-            for (int i = 0; i < _size; i++)
-            {
-                int v = ReadState(index, i, horizontal);
-                if (v == BordyPuzzleData.Sun) sun++;
-                else if (v == BordyPuzzleData.Moon) moon++;
-            }
-            if (sun <= target && moon <= target)
-                return;
-
-            int over = sun > target ? BordyPuzzleData.Sun : BordyPuzzleData.Moon;
-            for (int i = 0; i < _size; i++)
-                if (ReadState(index, i, horizontal) == over)
-                    Mark(index, i, bad, horizontal);
         }
 
         private void MarkRunViolations(bool[,] bad)

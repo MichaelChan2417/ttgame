@@ -82,9 +82,9 @@ namespace Bordy
                 },
                 onError: err =>
                 {
+                    // Fallback puzzle is always installed by DailyService; still enter Daily.
                     _dailyLoading = false;
-                    if (_dailySubtitle != null)
-                        _dailySubtitle.text = BordyStrings.Get(BordyStrings.Keys.LevelDailyLoadError);
+                    nav.OpenDaily();
                 });
         }
 

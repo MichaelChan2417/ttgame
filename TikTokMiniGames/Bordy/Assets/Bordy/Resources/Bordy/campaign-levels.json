@@ -1,64 +1,56 @@
 {
   "version": 2,
-  "hookCount": 1,
+  "hookCount": 2,
   "levels": [
     {
       "id": "campaign-01",
       "index": 1,
-      "tier": "easy",
+      "tier": "hook",
       "size": 6,
-      "difficulty": 17.1,
-      "givenRatio": 0.583,
+      "difficulty": 17.111,
+      "givenRatio": 0.556,
       "solution": [
         1,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0,
-        1,
-        0,
         1,
         0,
         1,
         0,
         0,
-        1,
+        0,
         0,
         1,
         0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
         1
       ],
       "givens": [
         false,
         true,
-        false,
-        false,
-        false,
         true,
-        false,
-        true,
-        false,
-        true,
-        false,
         false,
         false,
         true,
@@ -67,6 +59,18 @@
         false,
         true,
         true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
         true,
         true,
         true,
@@ -77,24 +81,14 @@
         true,
         true,
         true,
-        true,
-        true,
-        true,
-        true,
-        true,
+        false,
         false,
         false
       ],
       "edges": [
         {
-          "row": 1,
-          "col": 2,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
           "row": 2,
-          "col": 3,
+          "col": 1,
           "horizontal": true,
           "mustMatch": false
         },
@@ -102,72 +96,54 @@
           "row": 2,
           "col": 1,
           "horizontal": false,
-          "mustMatch": true
-        },
-        {
-          "row": 0,
-          "col": 2,
-          "horizontal": false,
-          "mustMatch": false
-        },
-        {
-          "row": 0,
-          "col": 1,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 4,
-          "col": 1,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 2,
-          "col": 4,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 3,
-          "col": 4,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 3,
-          "col": 0,
-          "horizontal": false,
-          "mustMatch": false
-        },
-        {
-          "row": 4,
-          "col": 3,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 4,
-          "col": 1,
-          "horizontal": false,
-          "mustMatch": false
-        },
-        {
-          "row": 2,
-          "col": 4,
-          "horizontal": false,
-          "mustMatch": false
-        },
-        {
-          "row": 4,
-          "col": 0,
-          "horizontal": true,
           "mustMatch": false
         },
         {
           "row": 5,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
           "col": 1,
           "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "horizontal": false,
           "mustMatch": false
         }
       ]
@@ -175,29 +151,26 @@
     {
       "id": "campaign-02",
       "index": 2,
-      "tier": "medium",
+      "tier": "hook",
       "size": 6,
-      "difficulty": 18.567,
+      "difficulty": 18.5,
       "givenRatio": 0.417,
       "solution": [
-        0,
-        0,
         1,
         1,
         0,
         1,
-        1,
-        1,
         0,
         0,
-        1,
         0,
         0,
         1,
         0,
         1,
-        0,
         1,
+        1,
+        0,
+        0,
         1,
         0,
         1,
@@ -205,13 +178,16 @@
         1,
         0,
         1,
-        0,
-        0,
-        1,
         1,
         0,
         0,
         1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
         1,
         0,
         0,
@@ -225,20 +201,9 @@
         false,
         true,
         true,
-        true,
         false,
         false,
         false,
-        false,
-        true,
-        true,
-        true,
-        false,
-        false,
-        false,
-        true,
-        false,
-        true,
         false,
         false,
         false,
@@ -246,61 +211,72 @@
         true,
         false,
         false,
-        true,
-        true,
-        false,
         false,
         true,
         false,
         true,
-        true
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
       ],
       "edges": [
         {
-          "row": 1,
-          "col": 1,
+          "row": 0,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
           "horizontal": false,
           "mustMatch": true
         },
         {
-          "row": 4,
-          "col": 3,
+          "row": 3,
+          "col": 1,
           "horizontal": true,
-          "mustMatch": true
+          "mustMatch": false
         },
         {
           "row": 5,
-          "col": 3,
-          "horizontal": true,
-          "mustMatch": true
-        },
-        {
-          "row": 2,
-          "col": 3,
+          "col": 0,
           "horizontal": true,
           "mustMatch": false
         },
         {
           "row": 1,
-          "col": 5,
-          "horizontal": false,
-          "mustMatch": false
-        },
-        {
-          "row": 2,
-          "col": 5,
-          "horizontal": false,
-          "mustMatch": false
-        },
-        {
-          "row": 4,
           "col": 1,
           "horizontal": false,
-          "mustMatch": false
+          "mustMatch": true
         },
         {
-          "row": 2,
-          "col": 4,
+          "row": 0,
+          "col": 2,
           "horizontal": true,
           "mustMatch": false
         },
@@ -311,16 +287,10 @@
           "mustMatch": true
         },
         {
-          "row": 4,
-          "col": 0,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 1,
+          "row": 3,
           "col": 4,
-          "horizontal": true,
-          "mustMatch": false
+          "horizontal": false,
+          "mustMatch": true
         }
       ]
     },
@@ -328,38 +298,12 @@
       "id": "campaign-03",
       "index": 3,
       "tier": "hard",
-      "size": 8,
-      "difficulty": 23.496,
-      "givenRatio": 0.297,
+      "size": 6,
+      "difficulty": 20.511,
+      "givenRatio": 0.222,
       "solution": [
         1,
-        1,
         0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        1,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        1,
-        1,
-        0,
-        0,
-        1,
         0,
         1,
         1,
@@ -372,16 +316,6 @@
         1,
         0,
         1,
-        1,
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        1,
-        0,
         0,
         1,
         1,
@@ -389,33 +323,37 @@
         1,
         0,
         0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
         0,
         1,
         1,
         0,
         1,
-        0,
-        1
+        0
       ],
       "givens": [
         false,
-        false,
-        true,
-        true,
         true,
         false,
         false,
-        false,
-        false,
-        false,
+        true,
         false,
         false,
         false,
         false,
         true,
+        false,
+        false,
+        false,
         true,
-        false,
-        false,
         false,
         false,
         false,
@@ -426,19 +364,6 @@
         false,
         false,
         false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        true,
-        false,
-        false,
-        false,
-        true,
-        false,
-        true,
-        false,
         false,
         false,
         false,
@@ -447,97 +372,74 @@
         false,
         false,
         true,
-        true,
         false,
         true,
-        false,
-        true,
-        true,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
         true,
         false
       ],
       "edges": [
         {
           "row": 0,
-          "col": 0,
+          "col": 4,
           "horizontal": true,
-          "mustMatch": true
+          "mustMatch": false
         },
         {
-          "row": 6,
-          "col": 1,
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
           "horizontal": false,
           "mustMatch": true
         },
         {
           "row": 4,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
           "col": 3,
           "horizontal": false,
           "mustMatch": true
         },
         {
-          "row": 1,
-          "col": 1,
-          "horizontal": true,
-          "mustMatch": true
-        },
-        {
           "row": 0,
-          "col": 7,
-          "horizontal": false,
-          "mustMatch": true
-        },
-        {
-          "row": 2,
-          "col": 5,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 0,
-          "col": 6,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 7,
-          "col": 2,
-          "horizontal": true,
-          "mustMatch": true
-        },
-        {
-          "row": 3,
-          "col": 2,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 5,
-          "col": 0,
-          "horizontal": true,
-          "mustMatch": true
-        },
-        {
-          "row": 5,
-          "col": 6,
-          "horizontal": true,
-          "mustMatch": false
-        },
-        {
-          "row": 3,
-          "col": 1,
-          "horizontal": false,
-          "mustMatch": false
-        },
-        {
-          "row": 6,
           "col": 2,
           "horizontal": false,
           "mustMatch": false
@@ -547,10 +449,1152 @@
     {
       "id": "campaign-04",
       "index": 4,
-      "tier": "brutal",
-      "size": 8,
-      "difficulty": 24.134,
-      "givenRatio": 0.219,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 20.644,
+      "givenRatio": 0.222,
+      "solution": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "givens": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        }
+      ]
+    },
+    {
+      "id": "campaign-05",
+      "index": 5,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 20.856,
+      "givenRatio": 0.194,
+      "solution": [
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "edges": [
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-06",
+      "index": 6,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 20.922,
+      "givenRatio": 0.194,
+      "solution": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-07",
+      "index": 7,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 20.856,
+      "givenRatio": 0.194,
+      "solution": [
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 3,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        }
+      ]
+    },
+    {
+      "id": "campaign-08",
+      "index": 8,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 21.267,
+      "givenRatio": 0.167,
+      "solution": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "givens": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 2,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        }
+      ]
+    },
+    {
+      "id": "campaign-09",
+      "index": 9,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 21.2,
+      "givenRatio": 0.167,
+      "solution": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        }
+      ]
+    },
+    {
+      "id": "campaign-10",
+      "index": 10,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 21.2,
+      "givenRatio": 0.167,
+      "solution": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "givens": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-11",
+      "index": 11,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 21.478,
+      "givenRatio": 0.139,
       "solution": [
         1,
         1,
@@ -558,6 +1602,170 @@
         0,
         1,
         0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-12",
+      "index": 12,
+      "tier": "hard",
+      "size": 6,
+      "difficulty": 21.544,
+      "givenRatio": 0.139,
+      "solution": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
         0,
         1,
         0,
@@ -569,16 +1777,8 @@
         1,
         0,
         0,
-        0,
         1,
         1,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
         0,
         1,
         1,
@@ -586,6 +1786,522 @@
         0,
         0,
         1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "edges": [
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-13",
+      "index": 13,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.544,
+      "givenRatio": 0.139,
+      "solution": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-14",
+      "index": 14,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.611,
+      "givenRatio": 0.139,
+      "solution": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "givens": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 3,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-15",
+      "index": 15,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.478,
+      "givenRatio": 0.139,
+      "solution": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
         1,
         0,
         0,
@@ -593,6 +2309,155 @@
         0,
         1,
         0,
+        1,
+        0,
+        1
+      ],
+      "givens": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-16",
+      "index": 16,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.889,
+      "givenRatio": 0.111,
+      "solution": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
         0,
         1,
         1,
@@ -600,6 +2465,164 @@
         0,
         1,
         1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        }
+      ]
+    },
+    {
+      "id": "campaign-17",
+      "index": 17,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.822,
+      "givenRatio": 0.111,
+      "solution": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
         1,
         1,
         0,
@@ -609,7 +2632,1148 @@
         0,
         0,
         1,
+        1,
         0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-18",
+      "index": 18,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.822,
+      "givenRatio": 0.111,
+      "solution": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-19",
+      "index": 19,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.756,
+      "givenRatio": 0.111,
+      "solution": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "givens": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "edges": [
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        }
+      ]
+    },
+    {
+      "id": "campaign-20",
+      "index": 20,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.822,
+      "givenRatio": 0.111,
+      "solution": [
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-21",
+      "index": 21,
+      "tier": "brutal",
+      "size": 6,
+      "difficulty": 21.822,
+      "givenRatio": 0.111,
+      "solution": [
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-22",
+      "index": 22,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 24.491,
+      "givenRatio": 0.219,
+      "solution": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "givens": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        }
+      ]
+    },
+    {
+      "id": "campaign-23",
+      "index": 23,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 24.455,
+      "givenRatio": 0.219,
+      "solution": [
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
         0,
         1,
         1,
@@ -620,46 +3784,28 @@
       "givens": [
         false,
         false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
         false,
         false,
         true,
         false,
         false,
         true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
         true,
         true,
         false,
         false,
-        true,
-        true,
-        false,
         false,
         true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
         false,
         false,
         true,
@@ -671,6 +3817,267 @@
         false,
         false,
         false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "edges": [
+        {
+          "row": 6,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 7,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 7,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 7,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 7,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-24",
+      "index": 24,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 24.647,
+      "givenRatio": 0.203,
+      "solution": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "givens": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
         false,
         false,
         true,
@@ -679,6 +4086,13 @@
         false,
         false,
         true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
         false,
         false,
         true
@@ -686,15 +4100,33 @@
       "edges": [
         {
           "row": 4,
-          "col": 4,
+          "col": 1,
           "horizontal": false,
-          "mustMatch": true
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
         },
         {
           "row": 6,
-          "col": 0,
+          "col": 3,
           "horizontal": false,
-          "mustMatch": true
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
         },
         {
           "row": 6,
@@ -703,8 +4135,538 @@
           "mustMatch": true
         },
         {
-          "row": 4,
+          "row": 7,
           "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-25",
+      "index": 25,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 24.683,
+      "givenRatio": 0.203,
+      "solution": [
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 1,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 7,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 7,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 6,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-26",
+      "index": 26,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 24.946,
+      "givenRatio": 0.188,
+      "solution": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "givens": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 4,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 7,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 4,
           "horizontal": true,
           "mustMatch": true
         },
@@ -715,15 +4677,1117 @@
           "mustMatch": false
         },
         {
+          "row": 4,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
           "row": 2,
-          "col": 6,
+          "col": 5,
           "horizontal": true,
           "mustMatch": true
         },
         {
           "row": 6,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
           "col": 4,
           "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-27",
+      "index": 27,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 24.946,
+      "givenRatio": 0.188,
+      "solution": [
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true
+      ],
+      "edges": [
+        {
+          "row": 3,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-28",
+      "index": 28,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 25.103,
+      "givenRatio": 0.172,
+      "solution": [
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "givens": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 7,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 7,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        }
+      ]
+    },
+    {
+      "id": "campaign-29",
+      "index": 29,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 25.103,
+      "givenRatio": 0.172,
+      "solution": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "givens": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 7,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        }
+      ]
+    },
+    {
+      "id": "campaign-30",
+      "index": 30,
+      "tier": "brutal",
+      "size": 8,
+      "difficulty": 25.259,
+      "givenRatio": 0.156,
+      "solution": [
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "givens": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "edges": [
+        {
+          "row": 6,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 6,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 6,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "horizontal": true,
           "mustMatch": true
         },
         {
@@ -733,10 +5797,82 @@
           "mustMatch": false
         },
         {
+          "row": 3,
+          "col": 5,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 0,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "horizontal": false,
+          "mustMatch": true
+        },
+        {
+          "row": 7,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
           "row": 1,
           "col": 7,
           "horizontal": false,
           "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "horizontal": true,
+          "mustMatch": true
+        },
+        {
+          "row": 7,
+          "col": 6,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "horizontal": false,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "horizontal": true,
+          "mustMatch": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "horizontal": true,
+          "mustMatch": true
         }
       ]
     }

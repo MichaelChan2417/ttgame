@@ -82,20 +82,36 @@ tt-minigame/wechat-minigame/
 
 ## 5. 每日挑战
 
-- 微信分支初期：**使用内置本地模板**（`BordyDailyService.BaseUrl = ""`）
-- 好处：无需配置 request 合法域名、无需 CDN
-- 上线后可再接入：把每日 JSON 放到已通过 ICP 备案的域名或对象存储上
+- 微信构建 **不请求 CDN**（`BordyDailyService.BaseUrl` 在 `WECHAT_MINIGAME` 下为空），直接用 `BordyLevelCatalog` 内置 6×6 固定题。
+- 好处：无需配置 request 合法域名、审核不会打到 `workers.dev`。
+- TikTok 仍可拉云端题；失败时同样回退到这份内置题。
+- 上线后若要真正「每日一题」，把 JSON 放到已备案域名后再打开联网。
 
 ---
 
-## 6. 构建与测试流程（待补充）
+## 6. 构建与提审
 
-1. 安装微信小游戏转换 SDK
-2. 菜单 `微信小游戏` → 转换小游戏
-3. 配置 AppID、CDN 路径、包体信息
-4. 用微信开发者工具打开 `minigame` 目录
-5. 预览 / 真机调试
-6. 上传代码 → 提交审核
+产出目录（Unity 转换 SDK 配置）：
+
+```text
+/Users/holya/WeChatProjects/星月棋/
+  minigame/     # 用微信开发者工具打开这个目录
+  webgl/
+```
+
+步骤：
+
+1. 分支：`feature/wechat-minigame`（已含教程 / Check / 30 关闯关 / 简中 / 设置按钮）
+2. Unity 2022.3：菜单 **Bordy → Switch Build Target → WeChat Mini Game**，再 **微信小游戏 → 转换小游戏**
+   - 或命令行：`-executeMethod Bordy.Editor.BordyWechatBuildMenu.ExportForReview`
+3. 微信开发者工具 → 导入 `minigame` → AppID `wxc8a4ef945116dc27` → 预览 / 真机
+4. 上传代码 → 提交审核
+
+注意：
+
+- 游戏内名称、后台名称均为 **星月棋**；默认简体中文，右下角设置可切英文。
+- 激励视频广告位 `WechatRewardedAdUnitId` 若为空，Check/Hint 用完免费次数后无法看广告续次（教程不受影响）。
+- 不得请求未备案域名。
 
 ---
 

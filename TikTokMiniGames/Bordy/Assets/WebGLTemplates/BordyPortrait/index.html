@@ -73,8 +73,11 @@
       matchWebGLToCanvasSize: true,   // render at the CSS display size → crisp, correct aspect
     }, function (progress) {
       if (loading) loading.textContent = "Loading… " + Math.round(progress * 100) + "%";
-    }).then(function () {
+    }).then(function (instance) {
       if (loading) loading.style.display = "none";
+      // Expose the instance so the relationship-chain bridge (BordyCloudStorage.jslib) can
+      // push friend results back via SendMessage. / 暴露实例,供好友桥接回传。
+      window.bordyUnity = instance;
     }).catch(function (e) {
       if (loading) loading.textContent = "Failed to load: " + e;
     });

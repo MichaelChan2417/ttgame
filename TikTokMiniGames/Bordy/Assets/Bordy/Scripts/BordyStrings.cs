@@ -63,11 +63,14 @@ namespace Bordy
 
             public const string GameplayReset = "gameplay.reset";
             public const string GameplayUndo = "gameplay.undo";
+            public const string GameplayCheck = "gameplay.check";
             public const string GameplayHint = "gameplay.hint";
             public const string GameplayRulesHeading = "gameplay.rules.heading";
             public const string GameplayRulesBody = "gameplay.rules.body";
             public const string GameplayRulesTutorialHeading = "gameplay.rules.tutorial.heading";
             public const string GameplayRulesTutorialBody = "gameplay.rules.tutorial.body";
+            public const string RulesIconsFill = "gameplay.rules.icons_fill";
+            public const string RulesIconsOr = "gameplay.rules.icons_or";
 
             public const string StatusTap = "gameplay.status.tap";
             public const string StatusNoHint = "gameplay.status.no_hint";
@@ -78,6 +81,12 @@ namespace Bordy
             public const string StatusHintAdNotConfigured = "gameplay.status.hint_ad_not_configured";
             public const string StatusHintFreeLeft = "gameplay.status.hint_free_left";
             public const string StatusHintWatchAd = "gameplay.status.hint_watch_ad";
+            public const string StatusHintCap = "gameplay.status.hint_cap";
+            public const string StatusCheckPick = "gameplay.status.check_pick";
+            public const string StatusCheckNone = "gameplay.status.check_none";
+            public const string StatusCheckMarked = "gameplay.status.check_marked";
+            public const string StatusCheckWatchAd = "gameplay.status.check_watch_ad";
+            public const string StatusCheckCap = "gameplay.status.check_cap";
             public const string StatusErrors = "gameplay.status.errors";
             public const string StatusWin = "gameplay.status.win";
             public const string StatusDailyDone = "gameplay.status.daily_done";
@@ -91,9 +100,23 @@ namespace Bordy
             public const string TutorialContinue = "tutorial.continue";
             public const string TutorialEquals = "tutorial.equals";
             public const string TutorialCross = "tutorial.cross";
-            public const string TutorialFinishRest = "tutorial.finish_rest";
+            public const string TutorialRowCount = "tutorial.row_count";
+            public const string TutorialColCount = "tutorial.col_count";
+            public const string TutorialAvoidThree = "tutorial.avoid_three";
+            public const string TutorialRowNeedSun = "tutorial.row_need_sun";
+            public const string TutorialColNeedSun = "tutorial.col_need_sun";
+            public const string TutorialCheckPlant = "tutorial.check_plant";
+            public const string TutorialCheckUse = "tutorial.check_use";
+            public const string TutorialCheckFix = "tutorial.check_fix";
+            public const string TutorialHintUse = "tutorial.hint_use";
+            public const string TutorialLastMoon = "tutorial.last_moon";
             public const string TutorialComplete = "tutorial.complete";
             public const string TutorialToLevelSelect = "tutorial.to_level_select";
+            public const string TutorialNudgeCell = "tutorial.nudge.cell";
+            public const string TutorialNudgeAgain = "tutorial.nudge.again";
+            public const string TutorialNudgeCheck = "tutorial.nudge.check";
+            public const string TutorialNudgeHint = "tutorial.nudge.hint";
+            public const string TutorialNudgeIdle = "tutorial.nudge.idle";
         }
 
         private static readonly Dictionary<string, string> Zh = new Dictionary<string, string>
@@ -152,12 +175,15 @@ namespace Bordy
             { Keys.CampaignLevelDone, "{0}×{1} · 已完成" },
 
             { Keys.GameplayReset, "重置" },
-            { Keys.GameplayUndo, "撤销" },
+            { Keys.GameplayUndo, "检查" },
+            { Keys.GameplayCheck, "检查" },
             { Keys.GameplayHint, "提示" },
             { Keys.GameplayRulesHeading, "游戏玩法" },
-            { Keys.GameplayRulesBody, "•  填充网格，使每个格子都有一个太阳或一个月亮。\n•  每行（和每列）最多 2 个相同图案相邻，且太阳与月亮数量相等。\n•  由 = 分隔的格子必须相同；由 × 分隔的格子必须相反。" },
+            { Keys.GameplayRulesBody, "•  每行、每列两种图案数量相等，且相邻相同图案不超过 2 个。\n•  由 = 分隔的格子必须相同；由 × 分隔的格子必须相反。" },
             { Keys.GameplayRulesTutorialHeading, "引导提示" },
-            { Keys.GameplayRulesTutorialBody, "•  跟随底部卡片完成教学步骤。\n•  4×4 棋盘每行/列各 2 个太阳、2 个月亮。\n•  × 要相反，= 要相同，不能连出 3 个一样。" },
+            { Keys.GameplayRulesTutorialBody, "•  跟随底部卡片，一步步填完 4×4。\n•  每行、每列各 2 个太阳和 2 个月亮。\n•  = 两侧相同，× 两侧相反；不能连续 3 个一样。" },
+            { Keys.RulesIconsFill, "•  每格填入" },
+            { Keys.RulesIconsOr, "或" },
 
             { Keys.StatusTap, "点击空格填入太阳或月亮" },
             { Keys.StatusNoHint, "没有可提示的格子了" },
@@ -168,22 +194,42 @@ namespace Bordy
             { Keys.StatusHintAdNotConfigured, "广告位未配置，请在后台创建激励视频并填入 Ad Unit ID" },
             { Keys.StatusHintFreeLeft, "剩余免费提示 {0} 次" },
             { Keys.StatusHintWatchAd, "免费提示已用完，观看广告获得提示" },
+            { Keys.StatusHintCap, "本关提示已用完（最多 {0} 次）" },
+            { Keys.StatusCheckPick, "点一个格子，检查它所在的行和列" },
+            { Keys.StatusCheckNone, "这一行和这一列没有填错的格子" },
+            { Keys.StatusCheckMarked, "标红的格子填错了，改对后标记会消失" },
+            { Keys.StatusCheckWatchAd, "免费检查已用完，观看广告再检查一次" },
+            { Keys.StatusCheckCap, "本关检查已用完（最多 {0} 次）" },
             { Keys.StatusErrors, "还有规则未满足，请检查标红的格子" },
             { Keys.StatusWin, "恭喜通关！" },
             { Keys.StatusDailyDone, "今日已完成 · 用时 {0}（只能查看，明天再来）" },
             { Keys.StatusDailyWin, "恭喜完成每日挑战！用时 {0}（只能查看）" },
 
-            { Keys.TutorialWelcome, "欢迎来到星月棋！\n\n这是一个太阳 / 月亮逻辑谜题。点击空格可以在「空 → 太阳 → 月亮」之间切换。" },
+            { Keys.TutorialWelcome, "欢迎来到{0}！\n\n这是太阳和月亮的逻辑谜题。点空格会按「空 → 太阳 → 月亮 → 空」循环切换。\n\n新手引导里固定用太阳和月亮，方便你认规则。" },
             { Keys.TutorialStart, "开始" },
-            { Keys.TutorialGuideSun, "引导：点击高亮格，直到变成太阳" },
-            { Keys.TutorialGuideMoon, "引导：再点击下一格，直到变成月亮" },
-            { Keys.TutorialSymbols, "格子之间会出现 = 和 × 两种符号：\n\n= 表示相邻两格必须相同；× 表示相邻两格必须相反。\n\n下面来分别试一下。" },
+            { Keys.TutorialGuideSun, "点黄色高亮格一次，放入太阳。" },
+            { Keys.TutorialGuideMoon, "再点这一格，变成月亮。点好后第一行就是 2 个太阳、2 个月亮。" },
+            { Keys.TutorialSymbols, "格子之间会出现 = 和 ×：\n\n= 两侧必须相同；× 两侧必须相反。\n\n看棋盘第一行，月亮和太阳中间已经有一个 ×，它们正好相反。下面来动手试。" },
             { Keys.TutorialContinue, "继续" },
-            { Keys.TutorialEquals, "= 号：两侧必须相同，把这两格都点成月亮" },
-            { Keys.TutorialCross, "× 号：两侧必须不同，让这两格一个太阳、一个月亮" },
-            { Keys.TutorialFinishRest, "完成剩余格子，通关后即可解锁闯关模式" },
-            { Keys.TutorialComplete, "恭喜完成新手引导！\n\n闯关模式和每日挑战已解锁。" },
+            { Keys.TutorialEquals, "= 号：两侧必须相同。把这两格都点成月亮。" },
+            { Keys.TutorialCross, "× 号：两侧必须相反。上面一格点成太阳，下面一格点成月亮。" },
+            { Keys.TutorialRowCount, "数量规则：每行 2 个太阳、2 个月亮。\n这一行已经有 2 个月亮，所以这格必须是太阳。" },
+            { Keys.TutorialColCount, "列也一样。这一列已经有 2 个月亮、1 个太阳，所以这格必须是太阳。" },
+            { Keys.TutorialAvoidThree, "不能连续 3 个相同图案。把这一格点成月亮。" },
+            { Keys.TutorialRowNeedSun, "这一行还差一个太阳。点成太阳。" },
+            { Keys.TutorialColNeedSun, "这一列已经有 2 个月亮，所以这格必须是太阳。" },
+            { Keys.TutorialCheckPlant, "接下来学「检查」。先故意把这一格点成月亮——这是错的，等下用来练习查错。" },
+            { Keys.TutorialCheckUse, "点底部发黄的「检查」，再点黄色格子。它会检查这一行和这一列，把填错的格子标红。" },
+            { Keys.TutorialCheckFix, "标红的格子填错了。把它改成太阳。" },
+            { Keys.TutorialHintUse, "卡住时可以用「提示」。点底部发黄的「提示」，游戏会帮你填对一格。" },
+            { Keys.TutorialLastMoon, "最后一格：这一行已经有 2 个太阳，点成月亮。" },
+            { Keys.TutorialComplete, "恭喜完成新手引导！\n\n闯关模式和每日挑战已解锁。之后可以用「检查」查错、用「提示」求助。" },
             { Keys.TutorialToLevelSelect, "关卡选择" },
+            { Keys.TutorialNudgeCell, "请点黄色高亮的格子。" },
+            { Keys.TutorialNudgeAgain, "还没完成，再点一次。" },
+            { Keys.TutorialNudgeCheck, "请先点发黄的「检查」按钮。" },
+            { Keys.TutorialNudgeHint, "请点发黄的「提示」按钮。" },
+            { Keys.TutorialNudgeIdle, "这一步还没完成，点高亮的格子或按钮。" },
         };
 
         private static readonly Dictionary<string, string> En = new Dictionary<string, string>
@@ -242,12 +288,15 @@ namespace Bordy
             { Keys.CampaignLevelDone, "{0}×{1} · completed" },
 
             { Keys.GameplayReset, "Reset" },
-            { Keys.GameplayUndo, "Undo" },
+            { Keys.GameplayUndo, "Check" },
+            { Keys.GameplayCheck, "Check" },
             { Keys.GameplayHint, "Hint" },
             { Keys.GameplayRulesHeading, "How to Play" },
-            { Keys.GameplayRulesBody, "•  Fill the grid so every cell holds a sun or a moon.\n•  Each row (and column) has equal suns and moons, with at most 2 identical symbols adjacent.\n•  Cells split by = must match; cells split by × must differ." },
+            { Keys.GameplayRulesBody, "•  Each row and column holds an equal number of each icon, with at most 2 identical icons adjacent.\n•  Cells split by = must match; cells split by × must differ." },
             { Keys.GameplayRulesTutorialHeading, "Guide" },
-            { Keys.GameplayRulesTutorialBody, "•  Follow the cards at the bottom to complete the lesson.\n•  Each row / column on the 4×4 board has 2 suns and 2 moons.\n•  × means opposite, = means same; never 3 identical in a row." },
+            { Keys.GameplayRulesTutorialBody, "•  Follow the cards and fill the 4×4 one step at a time.\n•  Each row and column has 2 suns and 2 moons.\n•  = means same, × means opposite; never 3 identical in a row." },
+            { Keys.RulesIconsFill, "•  Fill each cell with" },
+            { Keys.RulesIconsOr, "or" },
 
             { Keys.StatusTap, "Tap an empty cell to place a sun or moon" },
             { Keys.StatusNoHint, "No cells left to hint" },
@@ -258,28 +307,54 @@ namespace Bordy
             { Keys.StatusHintAdNotConfigured, "Ad unit not configured — create a rewarded placement in the developer portal" },
             { Keys.StatusHintFreeLeft, "{0} free hint(s) left" },
             { Keys.StatusHintWatchAd, "No free hints left — watch an ad for a hint" },
+            { Keys.StatusHintCap, "No hints left this level (max {0})" },
+            { Keys.StatusCheckPick, "Tap a cell to check its row and column" },
+            { Keys.StatusCheckNone, "No mistakes in this row and column" },
+            { Keys.StatusCheckMarked, "Red cells are wrong — marks clear when you fix them" },
+            { Keys.StatusCheckWatchAd, "No free checks left — watch an ad to check again" },
+            { Keys.StatusCheckCap, "No checks left this level (max {0})" },
             { Keys.StatusErrors, "Some rules aren't satisfied — check the cells in red" },
             { Keys.StatusWin, "Puzzle solved!" },
             { Keys.StatusDailyDone, "Done today · Time {0} (view only — come back tomorrow)" },
             { Keys.StatusDailyWin, "Daily Challenge complete! Time {0} (view only)" },
 
-            { Keys.TutorialWelcome, "Welcome to StarMoon Chess!\n\nThis is a sun / moon logic puzzle. Tap an empty cell to cycle Empty → Sun → Moon." },
+            { Keys.TutorialWelcome, "Welcome to {0}!\n\nThis is a sun and moon logic puzzle. Tap an empty cell to cycle Empty → Sun → Moon → Empty.\n\nThe tutorial always uses sun and moon icons so the rules stay easy to read." },
             { Keys.TutorialStart, "Start" },
-            { Keys.TutorialGuideSun, "Guide: tap the highlighted cell until it becomes a Sun" },
-            { Keys.TutorialGuideMoon, "Guide: tap the next cell until it becomes a Moon" },
-            { Keys.TutorialSymbols, "Two symbols appear between cells:\n\n= means the two cells must match;  × means they must differ.\n\nLet's try each one below." },
+            { Keys.TutorialGuideSun, "Tap the yellow cell once to place a Sun." },
+            { Keys.TutorialGuideMoon, "Tap this cell until it becomes a Moon. That finishes row 1: 2 suns and 2 moons." },
+            { Keys.TutorialSymbols, "Cells can have = or × between them:\n\n= means both sides must match; × means they must differ.\n\nLook at row 1: Moon and Sun already have a × between them — they are opposites. Let's try both symbols." },
             { Keys.TutorialContinue, "Continue" },
-            { Keys.TutorialEquals, "= : both sides must match — make both cells Moons" },
-            { Keys.TutorialCross, "× : both sides must differ — make one Sun and one Moon" },
-            { Keys.TutorialFinishRest, "Fill the remaining cells — solve it to unlock Campaign mode" },
-            { Keys.TutorialComplete, "Tutorial complete!\n\nCampaign and Daily Challenge are unlocked." },
+            { Keys.TutorialEquals, "= means both sides must match. Make both of these cells Moons." },
+            { Keys.TutorialCross, "× means the two cells must differ. Make the top cell a Sun and the bottom cell a Moon." },
+            { Keys.TutorialRowCount, "Count rule: 2 suns and 2 moons per row.\nThis row already has 2 moons, so this cell must be a Sun." },
+            { Keys.TutorialColCount, "Columns work the same way. This column already has 2 moons and 1 sun, so this cell must be a Sun." },
+            { Keys.TutorialAvoidThree, "Never place 3 identical icons in a row. Make this cell a Moon." },
+            { Keys.TutorialRowNeedSun, "This row still needs one Sun. Tap until it becomes a Sun." },
+            { Keys.TutorialColNeedSun, "This column already has 2 moons, so this cell must be a Sun." },
+            { Keys.TutorialCheckPlant, "Next: Check. Tap this cell until it becomes a Moon — that's wrong on purpose, so we can practice finding mistakes." },
+            { Keys.TutorialCheckUse, "Tap Check, then tap the yellow cell. It checks that row and column and marks the wrong cells in red." },
+            { Keys.TutorialCheckFix, "Red means this cell is wrong. Change it to a Sun." },
+            { Keys.TutorialHintUse, "If you get stuck, use Hint. Tap Hint and the game fills one cell correctly." },
+            { Keys.TutorialLastMoon, "Last cell: this row already has 2 suns, so make it a Moon." },
+            { Keys.TutorialComplete, "Tutorial complete!\n\nCampaign and Daily Challenge are unlocked. You can use Check to find mistakes and Hint when you get stuck." },
             { Keys.TutorialToLevelSelect, "Level Select" },
+            { Keys.TutorialNudgeCell, "Tap the yellow highlighted cell." },
+            { Keys.TutorialNudgeAgain, "Not done yet — tap again." },
+            { Keys.TutorialNudgeCheck, "Tap the yellow Check button first." },
+            { Keys.TutorialNudgeHint, "Tap the yellow Hint button." },
+            { Keys.TutorialNudgeIdle, "This step isn't done yet. Tap the highlighted cell or button." },
         };
 
         public static string Get(string key)
         {
             var table = BordyLocale.Current == BordyLanguage.En ? En : Zh;
-            return table.TryGetValue(key, out var value) ? value : key;
+            if (!table.TryGetValue(key, out var value) && table != En)
+                En.TryGetValue(key, out value);
+            if (string.IsNullOrEmpty(value))
+                value = key;
+            if (key == Keys.TutorialWelcome)
+                return string.Format(value, BordyLevelCatalog.GameTitle);
+            return value;
         }
 
         /// <summary>Language row label — ASCII fallback when CJK font not bundled.</summary>

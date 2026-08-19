@@ -24,6 +24,16 @@ namespace Bordy.Editor
                 "Set WECHAT_MINIGAME scripting symbol, productName=星月棋, companyName=上海诠界科技有限公司.");
         }
 
+        [MenuItem("Bordy/WeChat Mini Game/Export For Review")]
+        public static void ExportForReview()
+        {
+            SwitchToWechat();
+            var err = WeChatWASM.WXConvertCore.DoExport(true);
+            if (err != WeChatWASM.WXConvertCore.WXExportError.SUCCEED)
+                throw new System.Exception("[BordyWechat] Export failed: " + err);
+            Debug.Log("[BordyWechat] Export succeeded. Open 微信开发者工具 with the DST minigame folder.");
+        }
+
         [MenuItem("Bordy/Switch Build Target/TikTok Mini Game")]
         public static void SwitchToTikTok()
         {

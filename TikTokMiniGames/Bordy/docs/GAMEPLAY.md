@@ -14,17 +14,21 @@ Bordy is a **sun / moon logic puzzle** (Takuzu / Binairo style):
 ## Scene flow
 
 ```
-Home ──[Start]──▶ LevelSelect
-                    ├─[Tutorial]──▶ Tutorial (4×4)
-                    └─[Level 1]───▶ MainMenu (6×6, unlock after tutorial)
+Home ──[Start]──▶ first-time → Tutorial
+                  returning  → LevelSelect
+                                 ├─ Tutorial
+                                 ├─ CampaignSelect → Play
+                                 └─ Daily → Play
 ```
 
 | Index | Scene | Role |
 |-------|-------|------|
 | 0 | `Home.unity` | Entry |
-| 1 | `LevelSelect.unity` | Level picker |
-| 2 | `Tutorial.unity` | Guided 4×4 tutorial |
-| 3 | `MainMenu.unity` | Level 1 (6×6) |
+| 1 | `LevelSelect.unity` | Hub (tutorial / campaign / daily) |
+| 2 | `CampaignSelect.unity` | Campaign grid |
+| 3 | `Tutorial.unity` | Guided 4×4 (includes Check / Hint) |
+| 4 | `Play.unity` | Shared board (campaign / daily) |
+| 5 | `MainMenu.unity` | Legacy 6×6 demo |
 
 ## Key scripts
 

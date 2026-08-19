@@ -96,7 +96,7 @@ namespace Bordy
 
         private static void RepositionChrome(Transform root, LayoutMetrics m)
         {
-            var undo = root.Find("UndoButton")?.GetComponent<RectTransform>();
+            var undo = (root.Find("CheckButton") ?? root.Find("UndoButton"))?.GetComponent<RectTransform>();
             if (undo != null)
             {
                 undo.sizeDelta = new Vector2(440, m.ActionH);
