@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
@@ -12,6 +13,30 @@ namespace Bordy.Editor
         private const string ProductNameDefault = "Bordy";
         private const string WechatCompany = "上海诠界科技有限公司";
         private const string DefaultCompany = "Quanjie";
+        private const string ExportMarkerName = "EXPORT_WECHAT_NOW";
+
+        [InitializeOnLoadMethod]
+        private static void AutoExportIfRequested()
+        {
+            EditorApplication.delayCall += TryExportFromMarker;
+        }
+
+        private static void TryExportFromMarker()
+        {
+            string marker = Path.Combine(Directory.GetParent(Application.dataPath).FullName, ExportMarkerName);
+            if (!File.Exists(marker))
+                return;
+
+            try { File.Delete(marker); }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[BordyWechat] Could not delete export marker: " + e.Message);
+                return;
+            }
+
+            Debug.Log("[BordyWechat] Export marker found — starting WeChat Mini Game convert.");
+            ExportForReview();
+        }
 
         [MenuItem("Bordy/Switch Build Target/WeChat Mini Game")]
         public static void SwitchToWechat()
