@@ -28,8 +28,12 @@ namespace Bordy
             set { BordyStore.SetBool(PromptedKey, value); BordyStore.Save(); }
         }
 
-        /// <summary>Whether the auto add-to-home prompt should be shown now. / 现在是否该弹加桌提示。</summary>
-        public static bool ShouldPrompt => !BordyAppConfig.WebStandalone && !Added && !Prompted;
+        /// <summary>
+        /// Whether the add-to-home prompt should be shown now. Shown after a daily solve until the
+        /// player has actually added the shortcut (NOT once-only, so it keeps nudging until added).
+        /// 是否该弹加桌提示：每次完成每日后都弹，直到玩家真正加桌为止（非一次性）。
+        /// </summary>
+        public static bool ShouldPrompt => !BordyAppConfig.WebStandalone && !Added;
 
         /// <summary>Trigger the platform add-to-home flow. / 触发平台加桌流程。</summary>
         public static void Add(Action<bool> onDone)

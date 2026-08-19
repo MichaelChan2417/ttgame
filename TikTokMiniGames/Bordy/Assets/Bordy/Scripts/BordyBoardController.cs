@@ -1088,7 +1088,6 @@ namespace Bordy
                 int solvedSeconds = seconds;
                 if (BordyShortcut.ShouldPrompt)
                 {
-                    BordyShortcut.Prompted = true;
                     BordyShortcutPopup.Show(canvasT, () => BordyDailyResultPopup.Show(canvasT, solvedSeconds));
                 }
                 else
