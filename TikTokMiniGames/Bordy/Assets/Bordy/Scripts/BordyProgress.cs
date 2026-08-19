@@ -90,5 +90,18 @@ namespace Bordy
             BordyStore.Save();
             BordyCloudSync.PushNow();
         }
+
+        /// <summary>
+        /// Debug: mark the tutorial done and unlock every campaign level (does not mark them completed,
+        /// so boards stay playable). / 调试：完成教程并解锁全部闯关，不标记通关，关卡仍可玩。
+        /// </summary>
+        public static void UnlockAllCampaignForDebug()
+        {
+            TutorialCompleted = true;
+            int n = BordyCampaignCatalog.Count;
+            if (n <= 0)
+                n = 30;
+            CampaignHighestUnlocked = n;
+        }
     }
 }

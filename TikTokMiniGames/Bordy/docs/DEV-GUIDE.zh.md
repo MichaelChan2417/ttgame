@@ -2,7 +2,7 @@
 
 印尼 TikTok Minis 逻辑谜题。Unity 2022.3 + TTSDK Native 小游戏。
 
-**当前里程碑**：闯关模式（4 关试玩包）、激励视频 Hint 广告已接入（Ad Unit `ad7660431701143963669`），云端登录/存档已通，Native 包可上传预览。简中手机端字体仍有问题（见文末已知 Bug）。
+**当前里程碑**：闯关 **30 关**、Undo 已换成 **Check**、Hint/Check 每关最多 3 次（含广告）、新手引导含 Check/Hint 教学，激励视频与云端登录已通。简中手机端字体仍有问题（见文末已知 Bug）。
 
 ---
 
@@ -69,47 +69,47 @@ Editor 里 **没有 TikTok 容器**，`BordyUserService` 会走 Editor 模拟用
 
 ### 3.2 改玩法 / 关卡
 
-- 关卡数据：`StreamingAssets/levels.json`，或 Editor 工具生成
-- 规则：`BordyBoard`、`BordyGameController`
-- 教学：`Tutorial` 场景 + `BordyTutorialController`
+- 关卡数据：`Assets/Bordy/Resources/Bordy/campaign-levels.json`，或 `./scripts/generate-campaign.sh`
+- 棋盘：`BordyBoardController`（点格、Check、Hint、重置、判胜）
+- 教学：`Tutorial` 场景 + `BordyTutorialGuide`
 
 改完 Play 模式走一遍：Home → 教学 → 闯关 → 每日挑战。
 
 ### 3.3 闯关关卡（离线生成 + 盈利向难度曲线）
 
-设计目标：**前 3～5 关多数人能过**（留住用户、熟悉规则），**之后大量极难关**（多数人需提示/广告道具，少数人能纯逻辑通关）。
+设计目标：**前几关多数人能过**（留住用户、熟悉规则），**之后大量极难关**（多数人需 Hint / Check，少数人能纯逻辑通关）。
 
-| 档位 `tier` | 关卡 | 典型参数 |
-|-------------|------|----------|
-| `hook` | 第 1～5 关 | 6×6，给定格 52%～62%，边线索偏多 |
-| `hard` | 第 6 关起前半 | 8×8，给定格 26%～32%，边线索偏少 |
-| `brutal` | 后 30% | 8×8，给定格 18%～24%，边线索极少 |
+当前 JSON（seed `20260819`，`--hook-count 2`）大约是：
 
-**顺序 = 游玩顺序**（不再按难度分排序打乱）。
+| 关卡 | 尺寸 | 给定格（约） | 档位 |
+|------|------|--------------|------|
+| 1 | 6×6 | 20/36 | hook |
+| 2 | 6×6 | 15/36 | hook |
+| 3 | 6×6 | 8/36 | hard（难度陡升） |
+| 8–10 | 6×6 | 6/36 | hard |
+| 16–21 | 6×6 | 4/36 | brutal |
+| 22–30 | 8×8 | 14→10/64 | brutal |
 
-**试玩 4 关**（1 简单 / 1 中等 / 1 偏难 / 1 极难）：
+Hint 免费次数：hook 2、medium 1、hard/brutal 0。Check 每关 1 次免费。**Hint 与 Check 每关最多各 3 次**（免费+广告合计），教程不限。
+
+**顺序 = 游玩顺序**。
 
 ```bash
-python3 tools/generate_levels.py demo
+./scripts/generate-campaign.sh            # 默认 30 关，前 2 关 hook
+./scripts/generate-campaign.sh 30 2
+python3 tools/generate_levels.py campaign --count 30 --hook-count 2
 ```
 
-正式批量：
+JSON 字段：`tier`、`givenRatio`。每日挑战默认 `hard`。
 
-```bash
-./scripts/generate-campaign.sh 30 5    # 30 关，前 5 关 hook
-python3 tools/generate_levels.py campaign --count 30 --hook-count 5
-```
-
-JSON 字段：`tier`、`givenRatio` 便于你们调参和数据分析。
-
-每日挑战默认 `hard`（给定格约 26%，少边线索），与主线后半难度一致。
+调试：菜单 **Bordy → Debug → Unlock All Campaign Levels**（只解锁，不标记通关）。
 
 ### 3.4 广告变现（激励视频 → Hint）★
 
 > **详细代码文档** → [ADS-INTEGRATION.zh.md](ADS-INTEGRATION.zh.md)（给同伴讲实现用这个）。
 
-> **本版本重点**：Hint 提示已与 TikTok 激励视频广告打通，是闯关盈利的核心链路。  
-> 代码：`BordyAdsService` → `BordyBoardController.Hint()` → `BordyHintPolicy`（免费次数）。
+> **本版本重点**：Hint 与 Check 都接激励视频；每关各最多 3 次（含免费）。  
+> 代码：`BordyAdsService` → `BordyBoardController.Hint()` / `Check()` → `BordyHintPolicy` / `BordyCheckPolicy`。
 
 #### 当前配置（已上线代码）
 
@@ -124,18 +124,22 @@ JSON 字段：`tier`、`givenRatio` 便于你们调参和数据分析。
 
 #### 玩家侧流程
 
-1. 闯关关卡有 **免费 Hint 次数**（按难度档位，见下表）。
-2. 免费次数用完后，点 **Hint** → 拉起激励视频。
-3. 用户 **完整观看**（`OnClose(isEnded == true)`）→ 填入一格正确答案。
-4. 提前关闭 / 广告失败 → **不给** Hint，底部状态栏有提示。
+1. 闯关 / 每日：Hint、Check 各有免费次数（见下表），用完后看激励视频。
+2. **每关最多 3 次** Hint、**最多 3 次** Check（免费 + 广告合计）。用完按钮变灰。
+3. 教程：不限次数、不看广告，并有 Check / Hint 分步教学。
+4. 用户 **完整观看**（`OnClose(isEnded == true)`）才给奖励。提前关闭 / 失败不给。
 
-| 档位 `tier` | 免费 Hint |
-|-------------|-----------|
-| `easy` / `hook` | 2 次 |
-| `medium` | 1 次 |
-| `hard` / `brutal` | 0 次（首次 Hint 即走广告） |
-| 教程关 | 无限（不走广告） |
-| 每日挑战 | 0 次免费 |
+| 来源 | 免费 Hint | 免费 Check | 每关上限定 |
+|------|-----------|------------|------------|
+| 教程 | 无限 | 无限 | 无 |
+| 闯关 `hook` | 2 | 1 | 各 3 |
+| 闯关 `medium` | 1 | 1 | 各 3 |
+| 闯关 `hard` / `brutal` | 0 | 1 | 各 3 |
+| 每日挑战 | 0 | 1 | 各 3 |
+
+Check：点按钮（按钮变橙）→ 再点一格 → 标出该行列填错的格子，改对前一直留着。不再空闲自动标错。
+
+Hint：填一格正确答案，该格金色高亮，直到下次点棋盘 / Check，或这次 Hint 直接通关。
 
 #### SDK 调用约定（已实现，勿改顺序）
 
@@ -147,10 +151,11 @@ JSON 字段：`tier`、`givenRatio` 便于你们调参和数据分析。
 核心代码路径：
 
 ```
-Hint() → NeedsRewardedAdForHint?
-  → BordyAdsService.ShowRewarded(onReward, onFail)
-  → TT.CreateRewardedVideoAd / Show / OnClose
-  → ApplyHintInternal()
+Hint() / Check()
+  → 是否已达每关 3 次上限？
+  → 是否还有免费次数？
+  → 否则 NeedsRewardedAd → BordyAdsService.ShowRewarded
+  → Hint：ApplyHintInternal() / Check：进入选格模式
 ```
 
 #### 测试方式
@@ -164,8 +169,7 @@ Hint() → NeedsRewardedAdForHint?
 
 1. **TikTokGame → Build Minigame** → `./scripts/pack-native-minigame.sh`
 2. 上传 zip，TikTok App 扫码预览
-3. 进闯关 **第 3 / 4 关**（或第 1 关用完 2 次免费 Hint）
-4. 点 Hint → 应弹出激励视频；看完后棋盘填入一格
+3. 进闯关用完免费次数后点 Hint / Check，确认视频弹出且看完后给奖励
 
 启动日志（TTSDK 调试终端）应出现：
 
@@ -377,7 +381,7 @@ KV 命名空间 ID 在 `cloudflare/bordy-api/wrangler.toml`。
 | 文档 | 用途 |
 |------|------|
 | [LOGIN-STATE.zh.md](LOGIN-STATE.zh.md) | **登录状态代码详解**（Boot、Worker、Home 门控） |
-| [ADS-INTEGRATION.zh.md](ADS-INTEGRATION.zh.md) | **广告接入代码详解**（Hint 激励视频） |
+| [ADS-INTEGRATION.zh.md](ADS-INTEGRATION.zh.md) | **广告接入代码详解**（Hint / Check 激励视频、每关 3 次上限） |
 | [GAMEPLAY.zh.md](GAMEPLAY.zh.md) | 玩法规则、场景说明 |
 | [GAMEPLAY.md](GAMEPLAY.md) | 英文玩法（可选） |
 | [README.md](README.md) | 文档索引 |

@@ -70,11 +70,11 @@ namespace Bordy.EditorTools
             reset.rectTransform.anchoredPosition = new Vector2(-60, -228);
             UnityEventTools.AddPersistentListener(reset.GetComponent<Button>().onClick, board.ResetPuzzle);
 
-            var undo = CreateClickablePill("UndoButton", canvasGo.transform, "Undo", new Color(0.92f, 0.91f, 0.88f), new Color(0.45f, 0.45f, 0.48f));
+            var undo = CreateClickablePill("UndoButton", canvasGo.transform, "Check", new Color(0.92f, 0.91f, 0.88f), new Color(0.45f, 0.45f, 0.48f));
             Anchor(undo.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             undo.rectTransform.sizeDelta = new Vector2(440, 84);
             undo.rectTransform.anchoredPosition = new Vector2(-235, -700);
-            UnityEventTools.AddPersistentListener(undo.GetComponent<Button>().onClick, board.Undo);
+            UnityEventTools.AddPersistentListener(undo.GetComponent<Button>().onClick, board.Check);
 
             var hint = CreateClickablePill("HintButton", canvasGo.transform, "Hint", new Color(0.92f, 0.91f, 0.88f), new Color(0.45f, 0.45f, 0.48f));
             Anchor(hint.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));

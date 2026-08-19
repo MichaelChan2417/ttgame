@@ -8,7 +8,7 @@ namespace Bordy
         En,
     }
 
-    /// <summary>Persisted UI language. / 持久化的界面语言。</summary>
+    /// <summary>Persisted UI language. Default is English unless the player explicitly chose Chinese. / 持久化界面语言。默认英文，只有明确选中文才用中文。</summary>
     public static class BordyLocale
     {
         private const string StoreKey = "bordy.locale";
@@ -20,8 +20,7 @@ namespace Bordy
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void LoadSaved()
         {
-            string raw = BordyStore.GetString(StoreKey, "en");
-            Current = raw == "en" ? BordyLanguage.En : BordyLanguage.ZhHans;
+            Current = Parse(BordyStore.GetString(StoreKey, "en"));
         }
 
         public static void SetLanguage(BordyLanguage language)
@@ -30,7 +29,7 @@ namespace Bordy
                 return;
 
             Current = language;
-            BordyStore.SetString(StoreKey, language == BordyLanguage.En ? "en" : "zh");
+            BordyStore.SetString(StoreKey, ToCode(language));
             BordyStore.Save();
             BordyCloudSync.PushNow();
             Changed?.Invoke();
@@ -39,12 +38,12 @@ namespace Bordy
         /// <summary>Apply locale from cloud without re-uploading. / 从云端应用语言，不触发上传。</summary>
         public static void ApplyFromCloud(string localeCode)
         {
-            var lang = localeCode == "en" ? BordyLanguage.En : BordyLanguage.ZhHans;
+            var lang = Parse(localeCode);
             if (Current == lang)
                 return;
 
             Current = lang;
-            BordyStore.SetString(StoreKey, localeCode == "en" ? "en" : "zh");
+            BordyStore.SetString(StoreKey, ToCode(lang));
             BordyStore.Save();
             Changed?.Invoke();
         }
@@ -53,13 +52,29 @@ namespace Bordy
         public static void ReloadFromStore()
         {
             var prev = Current;
-            string raw = BordyStore.GetString(StoreKey, "en");
-            Current = raw == "en" ? BordyLanguage.En : BordyLanguage.ZhHans;
+            Current = Parse(BordyStore.GetString(StoreKey, "en"));
             if (prev != Current)
                 Changed?.Invoke();
         }
 
         public static string ToCode(BordyLanguage language)
-            => language == BordyLanguage.En ? "en" : "zh";
+            => language == BordyLanguage.ZhHans ? "zh" : "en";
+
+        /// <summary>
+        /// English unless the value is explicitly Chinese. Empty / unknown codes (including
+        /// "en-US") must not fall through to Chinese.
+        /// 只有明确是中文才返回中文；空值、未知码（包括 en-US）都走英文。
+        /// </summary>
+        private static BordyLanguage Parse(string raw)
+        {
+            if (string.IsNullOrEmpty(raw))
+                return BordyLanguage.En;
+
+            var code = raw.Trim();
+            if (code.StartsWith("zh", StringComparison.OrdinalIgnoreCase))
+                return BordyLanguage.ZhHans;
+
+            return BordyLanguage.En;
+        }
     }
 }

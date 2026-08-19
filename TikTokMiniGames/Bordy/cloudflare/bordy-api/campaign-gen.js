@@ -9,7 +9,23 @@ function lineComplete(v){let s=0,m=0;for(const x of v){if(x===SUN)s++;else if(x=
 function partialOk(g,edges){for(let r=0;r<N;r++){let s=0,m=0;for(let c=0;c<N;c++){const v=g[r][c];if(v===SUN)s++;else if(v===MOON)m++;}if(s>TARGET||m>TARGET)return false;}for(let c=0;c<N;c++){let s=0,m=0;for(let r=0;r<N;r++){const v=g[r][c];if(v===SUN)s++;else if(v===MOON)m++;}if(s>TARGET||m>TARGET)return false;}for(let r=0;r<N;r++)for(let i=0;i<=N-3;i++){const a=g[r][i],b=g[r][i+1],d=g[r][i+2];if(a!==EMPTY&&a===b&&b===d)return false;}for(let c=0;c<N;c++)for(let i=0;i<=N-3;i++){const a=g[i][c],b=g[i+1][c],d=g[i+2][c];if(a!==EMPTY&&a===b&&b===d)return false;}for(const e of edges){const r2=e.horizontal?e.row:e.row+1,c2=e.horizontal?e.col+1:e.col;const a=g[e.row][e.col],b=g[r2][c2];if(a!==EMPTY&&b!==EMPTY){if(e.mustMatch&&a!==b)return false;if(!e.mustMatch&&a===b)return false;}}return true;}
 function emptyGrid(){return Array.from({length:N},()=>Array(N).fill(EMPTY));}
 function generateSolution(rand){const g=emptyGrid();const cells=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)cells.push([r,c]);function bt(i){if(i===cells.length){for(let r=0;r<N;r++)if(!lineComplete(g[r]))return false;for(let c=0;c<N;c++){const col=[];for(let r=0;r<N;r++)col.push(g[r][c]);if(!lineComplete(col))return false;}return true;}const[r,c]=cells[i];for(const v of(rand()<0.5?[SUN,MOON]:[MOON,SUN])){g[r][c]=v;if(partialOk(g,[])&&bt(i+1))return true;}g[r][c]=EMPTY;return false;}bt(0);return g;}
-function pickEdges(sol,rand,count){const cand=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(c+1<N)cand.push({row:r,col:c,horizontal:true});if(r+1<N)cand.push({row:r,col:c,horizontal:false});}shuffle(cand,rand);const edges=[];for(const e of cand){if(edges.length>=count)break;const r2=e.horizontal?e.row:e.row+1,c2=e.horizontal?e.col+1:e.col;e.mustMatch=sol[e.row][e.col]===sol[r2][c2];edges.push(e);}return edges;}
+function pickEdges(sol,rand,count){
+  const cand=[];
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    if(c+1<N)cand.push({row:r,col:c,horizontal:true,mustMatch:sol[r][c]===sol[r][c+1]});
+    if(r+1<N)cand.push({row:r,col:c,horizontal:false,mustMatch:sol[r][c]===sol[r+1][c]});
+  }
+  shuffle(cand,rand);
+  const edges=[];
+  for(const e of cand){if(edges.length>=count)break;edges.push(e);}
+  const equals=edges.filter(e=>e.mustMatch);
+  return edges.filter(e=>{
+    if(e.mustMatch)return true;
+    return !equals.some(eq=>eq.horizontal===e.horizontal && (
+      eq.horizontal ? (eq.row===e.row && Math.abs(eq.col-e.col)===1)
+                    : (eq.col===e.col && Math.abs(eq.row-e.row)===1)));
+  });
+}
 function countSolutions(fixed,edges,limit){const g=fixed.map(r=>r.slice());const cells=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(g[r][c]===EMPTY)cells.push([r,c]);let n=0;function bt(i){if(n>=limit)return;if(i===cells.length){n++;return;}const[r,c]=cells[i];for(const v of[SUN,MOON]){g[r][c]=v;if(partialOk(g,edges))bt(i+1);g[r][c]=EMPTY;if(n>=limit)return;}}bt(0);return n;}
 function makeUniqueGivens(sol,edges,rand){const given=Array.from({length:N},()=>Array(N).fill(true));const order=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)order.push([r,c]);shuffle(order,rand);for(const[r,c]of order){given[r][c]=false;const fixed=sol.map((row,rr)=>row.map((v,cc)=>given[rr][cc]?v:EMPTY));if(countSolutions(fixed,edges,2)!==1)given[r][c]=true;}return given;}
 function buildLevel(index, clues, tier){

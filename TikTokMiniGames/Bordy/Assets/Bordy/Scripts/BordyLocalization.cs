@@ -74,7 +74,8 @@ namespace Bordy
         {
             BordyUiChrome.RefreshBackLabel(root);
             SetPillText(root, "ResetPill", BordyStrings.Keys.GameplayReset);
-            SetPillText(root, "UndoButton", BordyStrings.Keys.GameplayUndo);
+            SetPillText(root, "UndoButton", BordyStrings.Keys.GameplayCheck);
+            SetPillText(root, "CheckButton", BordyStrings.Keys.GameplayCheck);
             SetPillText(root, "HintButton", BordyStrings.Keys.GameplayHint);
 
             SetText(root, "RulesCard/RulesHeading",
@@ -87,9 +88,8 @@ namespace Bordy
 
         /// <summary>
         /// Inline icon legend under the rules heading: "Fill each cell with [sun] or [moon]",
-        /// using the actually-equipped token sprites (so it matches whatever skin is selected).
-        /// Legacy UI Text can't embed sprites, so this is a small HorizontalLayoutGroup row.
-        /// 规则标题下的图案图例：「每格填入 [日] 或 [月]」，用当前装备的棋子图，随皮肤变化。
+        /// using classic sun / moon during the tutorial (ForceSkinId), otherwise the equipped skin.
+        /// 规则标题下的图案图例：「每格填入 [日] 或 [月]」。新手引导固定经典皮肤，其它关跟装备皮肤。
         /// </summary>
         private static void EnsureRulesLegend(Transform root)
         {

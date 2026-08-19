@@ -1,6 +1,6 @@
 # Bordy 广告接入 — 代码实现详解
 
-TikTok Minis **激励视频**如何接到 Hint 提示，以及可选插屏的实现细节。
+TikTok Minis **激励视频**如何接到 Hint / Check，以及可选插屏的实现细节。
 
 相关源码：
 
@@ -8,11 +8,11 @@ TikTok Minis **激励视频**如何接到 Hint 提示，以及可选插屏的实
 |------|------|
 | `Assets/Bordy/Scripts/BordyAppConfig.cs` | Ad Unit ID、Editor 模拟开关 |
 | `Assets/Bordy/Scripts/BordyAdsService.cs` | TTSDK 广告封装 |
-| `Assets/Bordy/Scripts/BordyHintPolicy.cs` | 各关卡免费 Hint 次数 |
-| `Assets/Bordy/Scripts/BordyBoardController.cs` | Hint 按钮、扣次数、调广告 |
+| `Assets/Bordy/Scripts/BordyHintPolicy.cs` | 免费 Hint 次数 + 每关上限 3 |
+| `Assets/Bordy/Scripts/BordyCheckPolicy.cs` | 免费 Check 次数 + 每关上限 3 |
+| `Assets/Bordy/Scripts/BordyBoardController.cs` | Hint / Check 按钮、扣次数、调广告 |
 | `Assets/Bordy/Scripts/BordyUserService.cs` | InitSDK 后 `NotifySdkReady()` |
 | `Assets/Bordy/Scripts/BordyStrings.cs` | 广告相关状态文案 |
-| `Assets/Bordy/Scripts/BordyMainMenu.cs` | SDK Demo 参考（Legacy，未挂正式场景） |
 
 当前生产配置：
 
@@ -28,40 +28,44 @@ TikTok Minis **激励视频**如何接到 Hint 提示，以及可选插屏的实
 ## 1. 产品逻辑
 
 ```
-玩家点 Hint
+玩家点 Hint 或 Check
     │
-    ├─ 棋盘已无错误格可提示 → 状态「没有可提示的格子」
+    ├─ 本关已用满 3 次 → 按钮变灰，状态「本关已用完（最多 3 次）」
     │
-    ├─ 本关仍有免费次数 → 直接填一格正确答案
+    ├─ 本关仍有免费次数 → 直接给（Hint 填一格 / Check 进入选格）
     │
-    └─ 免费次数用完 → 播激励视频
+    └─ 免费次数用完且未满 3 次 → 播激励视频
             │
-            ├─ 完整观看 (isEnded=true) → 填一格提示
-            └─ 提前关闭 / 失败 → 不给提示，底部状态栏提示原因
+            ├─ 完整观看 (isEnded=true) → 给一次
+            └─ 提前关闭 / 失败 → 不给，底部状态栏提示原因
 ```
 
-盈利设计：前几关给少量免费 Hint 留住用户；高难度关（`hard` / `brutal`）首次 Hint 即走广告。
+教程：无限、不看广告。闯关 / 每日：Hint 与 Check **每关各最多 3 次**（含免费）。
+
+Check：点按钮（按钮保持橙色）→ 再点一格 → 标出该行列相对标准答案填错的格子，改对前一直留着。没有空闲自动标错。
 
 ---
 
-## 2. 免费 Hint 策略 — BordyHintPolicy
+## 2. 次数策略
 
-```csharp
-public static int ResolveBudget(string levelId, string tier)
-{
-    if (levelId == TutorialId) return -1;           // 教程：无限，不走广告
-    if (IsCampaignId(levelId)) return FreeHintsForTier(tier);
-    return 0;                                       // 每日 / 其它：0 次免费
-}
-```
+### Hint — `BordyHintPolicy`
 
-| 档位 `tier` | 免费 Hint |
-|-------------|-----------|
-| `easy` / `hook` | 2 |
-| `medium` | 1 |
-| `hard` / `brutal` | 0 |
-| 教程 | 无限（`-1` 表示不扣费、不播广告） |
-| 每日挑战 | 0 |
+| 档位 `tier` | 免费 Hint | 之后广告 | 本关合计上限 |
+|-------------|-----------|----------|--------------|
+| `easy` / `hook` | 2 | 1 | 3 |
+| `medium` | 1 | 2 | 3 |
+| `hard` / `brutal` | 0 | 3 | 3 |
+| 教程 | 无限（`-1`） | 否 | 无 |
+| 每日挑战 | 0 | 3 | 3 |
+
+### Check — `BordyCheckPolicy`
+
+| 来源 | 免费 Check | 之后广告 | 本关合计上限 |
+|------|------------|----------|--------------|
+| 教程 | 无限 | 否 | 无 |
+| 闯关 / 每日 | 1 | 2 | 3 |
+
+`MaxUsesPerLevel = 3`。教程 `ResolveBudget` 返回 `-1`，不扣费、不播广告。
 
 ---
 
@@ -71,18 +75,12 @@ public static int ResolveBudget(string levelId, string tier)
 
 ```csharp
 InitHintBudget();
+InitCheckBudget();
 ```
 
-```csharp
-if (TryGetEntry(_levelId, out var entry))
-    _freeHintBudget = BordyHintPolicy.ResolveBudget(_levelId, entry.Tier);
-else
-    _freeHintBudget = BordyHintPolicy.ResolveBudget(_levelId, null);
-_hintsUsedThisSession = 0;
-```
-
-- `_freeHintBudget >= 0`：有上限，用完后走广告。
-- `_freeHintBudget == -1`：教程无限 Hint。
+- `_freeHintBudget` / `_freeCheckBudget >= 0`：有免费上限，用完后走广告，但不超过 `MaxUsesPerLevel`。
+- `== -1`：教程无限。
+- `HintCapReached()` / `CheckCapReached()`：本关已用满 3 次，按钮 `interactable = false`。
 
 ### 3.2 Hint() 主流程
 
@@ -91,20 +89,23 @@ public void Hint()
 {
     if (_won || _reviewMode) return;
     if (!HasHintableCell()) { ... return; }
-
-    if (NeedsRewardedAdForHint())   // _hintsUsed >= _freeHintBudget
+    if (HintCapReached()) { ... return; }          // 本关 3 次用完
+    if (NeedsRewardedAdForHint())                  // 免费用完且未达上限
     {
         RequestHintViaAd();
         return;
     }
-
     if (ApplyHintInternal())
         _hintsUsedThisSession++;
 }
 
 private bool NeedsRewardedAdForHint()
-    => _freeHintBudget >= 0 && _hintsUsedThisSession >= _freeHintBudget;
+    => _freeHintBudget >= 0 && _hintsUsedThisSession >= _freeHintBudget && !HintCapReached();
 ```
+
+Check 同结构：`CheckCapReached` → `NeedsRewardedAdForCheck` → `BeginCheckPick`（点亮按钮）→ 再点格 `ApplyCheckAt`。
+
+看完广告若取消选格，这次额度仍保留，不必连看两次。
 
 ### 3.3 请求广告
 
@@ -238,8 +239,8 @@ sequenceDiagram
 1. TikTok 后台 **Monetization** 创建 Rewarded Video，复制 Ad Unit ID。
 2. 写入 `BordyAppConfig.RewardedVideoAdUnitId`（当前已填 `ad7660431701143963669`）。
 3. **TikTokGame → Build Minigame** → 打 zip → App 扫码预览（Editor 无真广告）。
-4. 进闯关第 3/4 关或用完免费 Hint 后点 Hint，确认视频弹出且看完后填格。
-5. 查 TTSDK 调试终端：`[BordyAds] Rewarded ad ready (unit=...)`。
+4. 用完免费次数后点 Hint 或 Check，确认视频弹出且看完后给奖励（Hint 填格并金色高亮；Check 进入选格）。
+5. 第 4 次应提示本关用完，按钮变灰。
 
 ---
 
@@ -247,7 +248,7 @@ sequenceDiagram
 
 | 能力 | 依赖 |
 |------|------|
-| 激励视频 Hint | `SdkInited`（InitSDK 成功） |
+| 激励视频 Hint / Check | `SdkInited`（InitSDK 成功） |
 | 云存档 | `CloudLoggedIn`（Worker 登录） |
 
 两者独立：云登录失败时 Play 可能被 Home 挡住，但已进入对局后 Hint 广告仍依赖 SDK init，不依赖 `CloudLoggedIn`。

@@ -30,37 +30,26 @@ def lerp(a: float, b: float, t: float) -> float:
     return a + (b - a) * clamp01(t)
 
 
-def config_for_campaign_level(index: int, total: int, hook_count: int = 5) -> tuple[int, float, float, str]:
+def config_for_campaign_level(index: int, total: int, hook_count: int = 2) -> tuple[int, float, float, str]:
     """
-    Monetization curve:
-      1..hook_count  — hook: most players clear without hints (retention / teach rules)
-      hook+1..total  — hard: few players solve by logic alone (hints / ads)
-    index is 1-based.
+    Levels 1–2 stay easy. From level 3 the given-cell count drops sharply; later
+    levels peel toward a near-minimal unique 6×6 (Tango-hard), then 8×8.
+    1–2 关简单；第 3 关起给定格骤减，后面尽量剥到唯一解所需的最少线索。
     """
     if index <= hook_count:
-        # 6×6, generous givens + visible edge clues
-        t = 0 if hook_count <= 1 else (index - 1) / (hook_count - 1)
-        given = lerp(0.62, 0.52, t)
-        edge = lerp(0.22, 0.28, t)
-        return 6, given, edge, "hook"
+        if hook_count <= 1 or index == 1:
+            return 6, 0.56, 0.16, "hook"
+        t = (index - 1) / (hook_count - 1)
+        return 6, lerp(0.56, 0.42, t), lerp(0.16, 0.18, t), "hook"
 
-    hard_index = index - hook_count
-    hard_total = max(1, total - hook_count)
-    t = (hard_index - 1) / max(1, hard_total - 1)
-
+    t = (index - hook_count - 1) / max(1, total - hook_count - 1)
+    if t < 0.35:
+        # 6×6, ~8 givens → ~5 givens, more = / × so uniqueness still holds
+        return 6, lerp(0.22, 0.14, t / 0.35), lerp(0.22, 0.28, t / 0.35), "hard"
     if t < 0.70:
-        size = 8
-        given = lerp(0.32, 0.24, t / 0.70)
-        edge = lerp(0.16, 0.10, t / 0.70)
-        tier = "hard"
-    else:
-        # brutal: still 8×8 but very few givens + sparse edges (fast to generate, very hard to play)
-        size = 8
-        given = lerp(0.24, 0.20, (t - 0.70) / 0.30)
-        edge = lerp(0.10, 0.07, (t - 0.70) / 0.30)
-        tier = "brutal"
-
-    return size, given, edge, tier
+        return 6, lerp(0.14, 0.10, (t - 0.35) / 0.35), lerp(0.26, 0.30, (t - 0.35) / 0.35), "brutal"
+    # late: 8×8 with few givens + plenty of edges (edges are not "given cells")
+    return 8, lerp(0.22, 0.16, (t - 0.70) / 0.30), lerp(0.18, 0.24, (t - 0.70) / 0.30), "brutal"
 
 
 # Legacy smooth curve (daily presets still use this style)
@@ -130,6 +119,31 @@ def generate_solution(size, rng):
     return grid if fill(0) else None
 
 
+def is_collinear_neighbor(a, b) -> bool:
+    """True when two edges sit on the same line and share a cell (3-cell span)."""
+    if a["horizontal"] != b["horizontal"]:
+        return False
+    if a["horizontal"]:
+        return a["row"] == b["row"] and abs(a["col"] - b["col"]) == 1
+    return a["col"] == b["col"] and abs(a["row"] - b["row"]) == 1
+
+
+def strip_redundant_crosses(edges):
+    """Drop × that sit next to an = pair on the same line (implied by no-3-in-a-row)."""
+    equals = [e for e in edges if e["mustMatch"]]
+    if not equals:
+        return edges
+    kept = []
+    for e in edges:
+        if e["mustMatch"]:
+            kept.append(e)
+            continue
+        if any(is_collinear_neighbor(e, eq) for eq in equals):
+            continue
+        kept.append(e)
+    return kept
+
+
 def generate_edges(solution, density, rng):
     size = len(solution)
     pool = []
@@ -143,7 +157,12 @@ def generate_edges(solution, density, rng):
                              "mustMatch": solution[r][c] == solution[r + 1][c]})
     rng.shuffle(pool)
     pick = max(2, int(round(len(pool) * clamp01(density))))
-    return pool[:pick]
+    chosen = []
+    for e in pool:
+        if len(chosen) >= pick:
+            break
+        chosen.append(e)
+    return strip_redundant_crosses(chosen)
 
 
 def line_complete_valid(state, index, horizontal, size):
@@ -170,24 +189,170 @@ def edges_ok(state, edges, size):
     return True
 
 
+def opposite(v):
+    return MOON if v == SUN else SUN
+
+
+def line_vals(state, index, horizontal, size):
+    if horizontal:
+        return [state[index][c] for c in range(size)]
+    return [state[r][index] for r in range(size)]
+
+
+def set_cell(state, r, c, v, trail):
+    if state[r][c] == v:
+        return True
+    if state[r][c] != EMPTY and state[r][c] != v:
+        return False
+    if state[r][c] == EMPTY:
+        trail.append((r, c))
+    state[r][c] = v
+    return True
+
+
+def undo(state, trail):
+    for r, c in trail:
+        state[r][c] = EMPTY
+    trail.clear()
+
+
+def propagate(state, edges, size):
+    """Fill forced cells. Return False on contradiction. / 填入必然格，矛盾则 False。"""
+    target = size // 2
+    trail = []
+    guard = 0
+    while True:
+        guard += 1
+        if guard > size * size * 8:
+            return False, trail
+        progressed = False
+
+        for e in edges:
+            ar, ac = e["row"], e["col"]
+            br, bc = (ar, ac + 1) if e["horizontal"] else (ar + 1, ac)
+            a, b = state[ar][ac], state[br][bc]
+            if a != EMPTY and b != EMPTY:
+                if e["mustMatch"] and a != b:
+                    return False, trail
+                if (not e["mustMatch"]) and a == b:
+                    return False, trail
+            elif a != EMPTY and b == EMPTY:
+                nv = a if e["mustMatch"] else opposite(a)
+                if not set_cell(state, br, bc, nv, trail):
+                    return False, trail
+                progressed = True
+            elif b != EMPTY and a == EMPTY:
+                nv = b if e["mustMatch"] else opposite(b)
+                if not set_cell(state, ar, ac, nv, trail):
+                    return False, trail
+                progressed = True
+
+        for horizontal in (True, False):
+            for i in range(size):
+                sun = moon = 0
+                empties = []
+                for k in range(size):
+                    r, c = (i, k) if horizontal else (k, i)
+                    v = state[r][c]
+                    if v == SUN:
+                        sun += 1
+                    elif v == MOON:
+                        moon += 1
+                    else:
+                        empties.append((r, c))
+                if sun > target or moon > target:
+                    return False, trail
+                if sun + moon + len(empties) != size:
+                    return False, trail
+
+                if sun == target and empties:
+                    for r, c in empties:
+                        if not set_cell(state, r, c, MOON, trail):
+                            return False, trail
+                    progressed = True
+                    continue
+                if moon == target and empties:
+                    for r, c in empties:
+                        if not set_cell(state, r, c, SUN, trail):
+                            return False, trail
+                    progressed = True
+                    continue
+
+                for k in range(size - 2):
+                    cells = [((i, k + d) if horizontal else (k + d, i)) for d in range(3)]
+                    vals = [state[r][c] for r, c in cells]
+                    filled = [(cells[j], vals[j]) for j in range(3) if vals[j] != EMPTY]
+                    if len(filled) == 3:
+                        if vals[0] == vals[1] == vals[2]:
+                            return False, trail
+                    elif len(filled) == 2:
+                        (p0, v0), (p1, v1) = filled
+                        if v0 == v1:
+                            hole = next(cell for cell, val in zip(cells, vals) if val == EMPTY)
+                            if not set_cell(state, hole[0], hole[1], opposite(v0), trail):
+                                return False, trail
+                            progressed = True
+
+                # AA_ / _AA / A_A with two same → the remaining pair pattern:
+                for k in range(size - 1):
+                    r0, c0 = (i, k) if horizontal else (k, i)
+                    r1, c1 = (i, k + 1) if horizontal else (k + 1, i)
+                    a, b = state[r0][c0], state[r1][c1]
+                    if a != EMPTY and a == b:
+                        if k >= 1:
+                            rp, cp = (i, k - 1) if horizontal else (k - 1, i)
+                            if state[rp][cp] == EMPTY:
+                                if not set_cell(state, rp, cp, opposite(a), trail):
+                                    return False, trail
+                                progressed = True
+                            elif state[rp][cp] == a:
+                                return False, trail
+                        if k + 2 < size:
+                            rn, cn = (i, k + 2) if horizontal else (k + 2, i)
+                            if state[rn][cn] == EMPTY:
+                                if not set_cell(state, rn, cn, opposite(a), trail):
+                                    return False, trail
+                                progressed = True
+                            elif state[rn][cn] == a:
+                                return False, trail
+
+        if not progressed:
+            for r in range(size):
+                if not line_partial_ok(state, r, True, size):
+                    return False, trail
+            for c in range(size):
+                if not line_partial_ok(state, c, False, size):
+                    return False, trail
+            return True, trail
+
+
 def count_solutions(size, state, edges, limit=2):
+    board = [row[:] for row in state]
+    ok, _ = propagate(board, edges, size)
+    if not ok:
+        return 0
+
     count = 0
 
     def find_empty():
-        best, best_score = None, 999
+        best, best_n = None, 3
         for r in range(size):
             for c in range(size):
-                if state[r][c] != EMPTY:
+                if board[r][c] != EMPTY:
                     continue
-                score = sum(1 for v in (SUN, MOON) if (setv(r, c, v) or True) and cell_ok(state, r, c, size))
-                setv(r, c, EMPTY)
-                if score < best_score:
-                    best_score, best = score, (r, c)
+                n = 0
+                for v in (SUN, MOON):
+                    board[r][c] = v
+                    if cell_ok(board, r, c, size):
+                        n += 1
+                    board[r][c] = EMPTY
+                if n == 0:
+                    return ("dead", r, c)
+                if n < best_n:
+                    best_n, best = n, (r, c)
+                    if n == 1:
+                        return best
         return best
-
-    def setv(r, c, v):
-        state[r][c] = v
-        return True
 
     def solve():
         nonlocal count
@@ -195,49 +360,49 @@ def count_solutions(size, state, edges, limit=2):
             return
         empty = find_empty()
         if empty is None:
-            ok = all(line_complete_valid(state, i, True, size) for i in range(size))
-            ok = ok and all(line_complete_valid(state, i, False, size) for i in range(size))
-            if ok and edges_ok(state, edges, size):
+            if all(line_complete_valid(board, i, True, size) for i in range(size)) \
+                    and all(line_complete_valid(board, i, False, size) for i in range(size)) \
+                    and edges_ok(board, edges, size):
                 count += 1
             return
-        r, c = empty
-        if not cell_ok(state, r, c, size):
+        if empty[0] == "dead":
             return
+        r, c = empty
         for v in (SUN, MOON):
-            state[r][c] = v
-            if cell_ok(state, r, c, size):
+            board[r][c] = v
+            if not cell_ok(board, r, c, size):
+                board[r][c] = EMPTY
+                continue
+            ok, trail = propagate(board, edges, size)
+            if ok:
                 solve()
+            undo(board, trail)
+            board[r][c] = EMPTY
             if count >= limit:
                 return
-        state[r][c] = EMPTY
 
     solve()
     return count
 
 
 def generate_givens(size, solution, edges, given_ratio, rng):
+    """Peel clues one cell at a time until the unique-solution floor or the target ratio."""
     givens = [[True] * size for _ in range(size)]
     cells = [(r, c) for r in range(size) for c in range(size)]
     rng.shuffle(cells)
-    target_hidden = max(1, int(round(size * size * (1 - clamp01(given_ratio)))))
-    interval = 4 if size >= 8 else 2
-    since = 0
+    target_given = max(3, int(round(size * size * clamp01(given_ratio))))
 
     for r, c in cells:
-        hidden = sum(1 for rr in range(size) for cc in range(size) if not givens[rr][cc])
-        if hidden >= target_hidden:
+        given_now = sum(1 for rr in range(size) for cc in range(size) if givens[rr][cc])
+        if given_now <= target_given:
             break
         givens[r][c] = False
-        since += 1
-        if since < interval and hidden + 1 < target_hidden:
-            continue
-        since = 0
         state = [[solution[rr][cc] if givens[rr][cc] else EMPTY for cc in range(size)] for rr in range(size)]
         if count_solutions(size, state, edges, 2) != 1:
             givens[r][c] = True
 
     state = [[solution[r][c] if givens[r][c] else EMPTY for c in range(size)] for r in range(size)]
-    if sum(givens[r][c] for r in range(size) for c in range(size)) < 2:
+    if sum(givens[r][c] for r in range(size) for c in range(size)) < 3:
         return None
     return givens if count_solutions(size, state, edges, 2) == 1 else None
 
@@ -332,10 +497,10 @@ def cmd_campaign(args):
         print(f"  [{index}/{args.count}] tier={tier} {size}×{size} given≈{given_ratio:.0%} edges≈{edge_density:.0%}", flush=True)
 
         result = try_generate(size, given_ratio, edge_density, seed)
+        if result is None:
+            result = try_generate(size, min(0.28, given_ratio + 0.08), max(edge_density, 0.22), seed + 17)
         if result is None and tier == "hook":
-            result = try_generate(size, min(0.68, given_ratio + 0.06), edge_density, seed + 17)
-        if result is None and tier != "hook":
-            result = try_generate(size, min(0.36, given_ratio + 0.06), edge_density, seed + 17)
+            result = try_generate(size, min(0.62, given_ratio + 0.10), edge_density, seed + 33)
         if result is None:
             print(f"Failed level {index}", file=sys.stderr)
             return 1
@@ -389,8 +554,8 @@ def main():
 
     c = sub.add_parser("campaign", help="batch for game package")
     c.add_argument("--count", type=int, default=30)
-    c.add_argument("--hook-count", type=int, default=5, dest="hook_count",
-                     help="first N levels are easy hooks; rest are hard (monetization curve)")
+    c.add_argument("--hook-count", type=int, default=2, dest="hook_count",
+                     help="first N levels stay easy; from N+1 given cells drop sharply")
     c.add_argument("--seed", type=int, default=20260709)
     c.add_argument("-o", "--output", default=str(default_campaign))
     c.set_defaults(func=cmd_campaign)

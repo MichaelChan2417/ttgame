@@ -6,11 +6,13 @@ namespace Bordy
     /// <summary>
     /// Procedural Q-style sun / moon sprites for board tokens, now skin-aware. Each skin's
     /// pair is generated once from its palette and cached. <see cref="Sun"/> / <see cref="Moon"/>
-    /// return the currently-equipped skin (see <see cref="BordySkins"/>); use
+    /// return the currently-equipped skin (see <see cref="BordySkins"/>), unless
+    /// <see cref="ForceSkinId"/> is set (tutorial always uses classic sun / moon). Use
     /// <see cref="SunFor"/> / <see cref="MoonFor"/> for a specific skin (e.g. shop previews).
     ///
     /// 程序化生成的 Q 版太阳 / 月亮棋子图，支持皮肤。每套皮肤按调色板生成一次并缓存。
-    /// <see cref="Sun"/> / <see cref="Moon"/> 返回当前装备皮肤；<see cref="SunFor"/> /
+    /// <see cref="Sun"/> / <see cref="Moon"/> 默认跟当前装备皮肤；新手引导会设置
+    /// <see cref="ForceSkinId"/> 锁死经典太阳/月亮。<see cref="SunFor"/> /
     /// <see cref="MoonFor"/> 返回指定皮肤（如商店预览）。
     /// </summary>
     public static class BordyTokenSprites
@@ -19,11 +21,22 @@ namespace Bordy
         private static readonly Dictionary<string, Sprite> s_sun = new Dictionary<string, Sprite>();
         private static readonly Dictionary<string, Sprite> s_moon = new Dictionary<string, Sprite>();
 
-        /// <summary>Currently-equipped skin's sun. / 当前装备皮肤的太阳。</summary>
-        public static Sprite Sun => SunFor(BordySkins.Selected);
+        /// <summary>
+        /// When set, <see cref="Sun"/> / <see cref="Moon"/> ignore the equipped shop skin.
+        /// Tutorial sets this to <see cref="BordySkinCatalog.ClassicId"/> so copy about
+        /// sun / moon always matches the board.
+        /// 设置后太阳/月亮图不再跟商店皮肤走。新手引导固定经典皮肤，文案才对得上。
+        /// </summary>
+        public static string ForceSkinId;
 
-        /// <summary>Currently-equipped skin's moon. / 当前装备皮肤的月亮。</summary>
-        public static Sprite Moon => MoonFor(BordySkins.Selected);
+        private static string ActiveSkinId =>
+            string.IsNullOrEmpty(ForceSkinId) ? BordySkins.Selected : ForceSkinId;
+
+        /// <summary>Currently visible sun (forced skin, else equipped). / 当前展示的太阳。</summary>
+        public static Sprite Sun => SunFor(ActiveSkinId);
+
+        /// <summary>Currently visible moon (forced skin, else equipped). / 当前展示的月亮。</summary>
+        public static Sprite Moon => MoonFor(ActiveSkinId);
 
         public static Sprite SunFor(string skinId)
         {

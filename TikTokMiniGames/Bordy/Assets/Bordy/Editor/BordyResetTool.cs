@@ -15,6 +15,7 @@ namespace Bordy.EditorTools
         // Keys must match BordyUserService.ProfileKey / BordyProgress.TutorialKey.
         private const string ProfileKey = "bordy.user.profile";
         private const string TutorialKey = "bordy.tutorial.done";
+        private const string LocaleKey = "bordy.locale";
         private static readonly string[] DailyKeys =
         {
             "bordy.daily.date", "bordy.daily.seconds", "bordy.daily.board",
@@ -35,6 +36,7 @@ namespace Bordy.EditorTools
                 // 编辑模式下 SDK 未初始化，清掉 Unity 回退存储。
                 PlayerPrefs.DeleteKey(ProfileKey);
                 PlayerPrefs.DeleteKey(TutorialKey);
+                PlayerPrefs.DeleteKey(LocaleKey);
                 foreach (var k in DailyKeys) PlayerPrefs.DeleteKey(k);
                 PlayerPrefs.Save();
             }
@@ -52,6 +54,22 @@ namespace Bordy.EditorTools
                 PlayerPrefs.Save();
             }
             Debug.Log("[Bordy] Daily challenge reset — playable again today.");
+        }
+
+        [MenuItem("Bordy/Debug/Unlock All Campaign Levels")]
+        public static void UnlockAllCampaignLevels()
+        {
+            BordyProgress.UnlockAllCampaignForDebug();
+
+            if (Application.isPlaying)
+            {
+                var campaignSelect = UnityEngine.Object.FindObjectOfType<BordyCampaignLevelSelectController>();
+                campaignSelect?.Refresh();
+                var levelSelect = UnityEngine.Object.FindObjectOfType<BordyLevelSelectController>();
+                levelSelect?.Refresh();
+            }
+
+            Debug.Log($"[Bordy] Unlocked all campaign levels (highest={BordyProgress.CampaignHighestUnlocked}). Tutorial marked complete. Boards stay playable.");
         }
 
         [MenuItem("Bordy/Print Player Profile")]

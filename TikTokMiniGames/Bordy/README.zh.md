@@ -10,12 +10,12 @@ TikTok Minis 逻辑谜题（印尼区）。Unity 2022.3 + TTSDK Native。
 
 ## 广告变现（激励视频 → Hint）★
 
-本版本已接入 TikTok **激励视频**，用于 Hint 提示变现：
+本版本已接入 TikTok **激励视频**，用于 Hint / Check：
 
 | 项 | 说明 |
 |----|------|
 | Ad Unit ID | `ad7660431701143963669`（`BordyAppConfig.RewardedVideoAdUnitId`） |
-| 触发 | 闯关免费 Hint 用完后，点 Hint 拉起广告；**看完**才给提示 |
+| 触发 | 免费次数用完后点 Hint 或 Check；**看完**才给；每关各最多 3 次 |
 | 真机测试 | **必须** Build Native 包 + TikTok App 扫码；Editor 不播真广告 |
 
 完整流程、免费次数档位、SDK 约定与排错 → **[ADS-INTEGRATION.zh.md](docs/ADS-INTEGRATION.zh.md)**（详细代码说明）。
@@ -30,7 +30,7 @@ python3 tools/generate_levels.py demo   # 4 关：简单→极难
 
 - **[开发与调试手册](docs/DEV-GUIDE.zh.md)** — 日常开发、Build、上传、排错
 - **[登录状态实现详解](docs/LOGIN-STATE.zh.md)** — Boot、云端登录、存档同步（给同伴讲代码）
-- **[广告接入实现详解](docs/ADS-INTEGRATION.zh.md)** — 激励视频 Hint、免费次数策略（给同伴讲代码）
+- **[广告接入实现详解](docs/ADS-INTEGRATION.zh.md)** — 激励视频 Hint / Check、每关 3 次上限
 - [玩法说明](docs/GAMEPLAY.zh.md)
 
 ## Build 上传（摘要）

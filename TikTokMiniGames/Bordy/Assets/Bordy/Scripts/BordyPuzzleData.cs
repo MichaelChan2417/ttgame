@@ -21,7 +21,7 @@ namespace Bordy
             Size = solution.GetLength(0);
             Solution = solution;
             Givens = givens;
-            Edges = edges;
+            Edges = BordyEdgeRules.StripRedundantCrosses(edges);
         }
 
         public bool IsGiven(int row, int col) => Givens[row, col];

@@ -18,6 +18,7 @@ namespace Bordy
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Register()
         {
+            BordyTokenSprites.ForceSkinId = null;
             SceneManager.sceneLoaded -= OnSceneLoaded;
             SceneManager.sceneLoaded += OnSceneLoaded;
             BordyLocale.Changed -= OnLocaleChanged;
@@ -51,6 +52,12 @@ namespace Bordy
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            // Tutorial copy talks about sun / moon — lock classic art before any sprites are applied.
+            // 引导文案说的是太阳/月亮，必须在贴图生效前锁死经典皮肤。
+            BordyTokenSprites.ForceSkinId = scene.name == BordyLevelCatalog.TutorialScene
+                ? BordySkinCatalog.ClassicId
+                : null;
+
             EnsureEventSystem();
             DisableDecorativeRaycasts();
             BordyLocalization.ApplyScene(scene);
