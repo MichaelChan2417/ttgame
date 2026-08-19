@@ -17,10 +17,12 @@ namespace Bordy
         private static readonly Color ColGivenCell = new Color(0.94f, 0.93f, 0.90f);
         private static readonly Color ColErrorCell = new Color(1.00f, 0.86f, 0.86f);
         private static readonly Color ColGuideCell = new Color(1.00f, 0.97f, 0.78f);
+        // Warm red (not neon) so the "look here" border pops but still fits the cozy cream palette.
+        private static readonly Color ColGuideBorder = new Color(0.945f, 0.282f, 0.235f);
         private static readonly Color ColHintCell = new Color(1.00f, 0.90f, 0.52f);
-        private static readonly Color ColCheckArmed = new Color(1.00f, 0.66f, 0.10f);
-        private static readonly Color ColCheckArmedLabel = Color.white;
         private static readonly Color ColPillLabel = new Color(0.45f, 0.45f, 0.48f);
+        private static readonly Color ColStatusOk = new Color(0.16f, 0.55f, 0.28f);   // green
+        private static readonly Color ColStatusError = new Color(0.85f, 0.20f, 0.20f); // red
 
         [SerializeField] private string _levelId = BordyLevelCatalog.Level1Id;
 
@@ -52,21 +54,17 @@ namespace Bordy
         private int _freeHintBudget = -1;
         private bool _hintAdInFlight;
 
-        private int _checksUsedThisSession;
-        private int _freeCheckBudget = 1;
-        private int _adChecksGranted;
-        private bool _checkPickMode;
-        private bool _checkAdInFlight;
-        private bool[,] _checkMarks;
         private bool[,] _hintMarks;
         private bool[,] _guideMarks;
-        private Image _checkButtonImage;
-        private Text _checkButtonLabel;
-        private Button _checkButton;
         private Button _hintButton;
-        private Color _checkButtonIdleColor;
-        private Color _checkButtonIdleLabelColor = ColPillLabel;
-        private bool _checkButtonIdleCaptured;
+
+        // Idle auto error-detection: after a few seconds without a move, highlight obvious
+        // mistakes (3-in-a-row, unbalanced line, = / × violations). Cleared on the next move.
+        // 空闲自动查错：几秒无操作后标红明显错误（连 3、行列失衡、=/× 违反），下次操作清除。
+        private const float IdleHintSeconds = 3f;
+        private float _lastActivityTime;
+        private bool _idleHintShown;
+        private bool _hasMoved; // only run idle detection after the player has actually placed something
 
         public event Action BoardWon;
         public event Action BlockedTap;
@@ -76,15 +74,7 @@ namespace Bordy
         public BordyPuzzleData Puzzle => _puzzle;
         public int Size => _size;
         public bool IsWon => _won;
-        public bool IsCheckPickMode => _checkPickMode;
         public Image GetCellImage(int row, int col) => _cells[row, col];
-
-        public bool HasCheckMark(int row, int col)
-        {
-            if (_checkMarks == null || row < 0 || col < 0 || row >= _size || col >= _size)
-                return false;
-            return _checkMarks[row, col];
-        }
 
         private void Start()
         {
@@ -100,7 +90,6 @@ namespace Bordy
             _state = new int[_size, _size];
             _tokenViews = new BordyTokenView[_size, _size];
             _cells = new Image[_size, _size];
-            _checkMarks = new bool[_size, _size];
             _hintMarks = new bool[_size, _size];
             _guideMarks = new bool[_size, _size];
 
@@ -120,7 +109,6 @@ namespace Bordy
             ApplyHeaderTitle();
             WireBackButton();
             InitHintBudget();
-            InitCheckBudget();
             RefreshToolCaps();
 
             if (_levelId == BordyLevelCatalog.DailyId && BordyDaily.CompletedToday)
@@ -143,6 +131,8 @@ namespace Bordy
                 BordyTimer.ResetClock();
                 ResetPuzzle();
             }
+
+            NoteActivity(); // start the idle-hint clock from entry / 从进入起算空闲计时
         }
 
         private bool TryLoadPuzzle(out BordyPuzzleData puzzle)
@@ -296,25 +286,32 @@ namespace Bordy
 
         private void WireActionButtons()
         {
-            if (transform.Find("CheckButton") != null)
-                WirePill("CheckButton", Check);
-            else
-                WirePill("UndoButton", Check);
+            // Check tool removed: hide its button and center the Hint button.
+            // 移除「检查」：隐藏其按钮，并把「提示」按钮居中。
+            var checkTr = transform.Find("CheckButton") ?? transform.Find("UndoButton");
+            if (checkTr != null)
+                checkTr.gameObject.SetActive(false);
+
+            var hintTr = transform.Find("HintButton");
+            if (hintTr != null)
+            {
+                var hrt = hintTr.GetComponent<RectTransform>();
+                if (hrt != null)
+                    hrt.anchoredPosition = new Vector2(0f, hrt.anchoredPosition.y);
+            }
+
             WirePill("HintButton", Hint);
             WirePill("ResetPill", OnResetPressed);
-            CacheCheckButton();
             CacheHintButton();
-        }
 
-        private void CacheCheckButton()
-        {
-            var tr = transform.Find("CheckButton") ?? transform.Find("UndoButton");
-            if (tr == null)
-                return;
-
-            _checkButtonImage = tr.GetComponent<Image>();
-            _checkButtonLabel = tr.Find("Text")?.GetComponent<Text>();
-            _checkButton = tr.GetComponent<Button>();
+            // Reset is disabled in the tutorial (its guided flow drives the board).
+            // 教程里禁用重置（由引导流程控制棋盘）。
+            if (_levelId == BordyLevelCatalog.TutorialId)
+            {
+                var resetBtn = transform.Find("ResetPill")?.GetComponent<Button>();
+                if (resetBtn != null)
+                    resetBtn.interactable = false;
+            }
         }
 
         private void CacheHintButton()
@@ -327,52 +324,10 @@ namespace Bordy
         private bool HintCapReached()
             => _freeHintBudget >= 0 && _hintsUsedThisSession >= BordyHintPolicy.MaxUsesPerLevel;
 
-        private bool CheckCapReached()
-            => _freeCheckBudget >= 0 && _checksUsedThisSession >= BordyCheckPolicy.MaxUsesPerLevel;
-
         private void RefreshToolCaps()
         {
             if (_hintButton != null)
                 _hintButton.interactable = !HintCapReached();
-            if (_checkButton != null)
-                _checkButton.interactable = !CheckCapReached() || _checkPickMode;
-        }
-
-        /// <summary>
-        /// Enter or leave check-pick mode and keep the Check button visually armed so the
-        /// player can tell the first tap registered.
-        /// 进入/退出选格模式，并让 Check 按钮保持点亮，避免玩家不确定有没有点到。
-        /// </summary>
-        private void SetCheckPickMode(bool on)
-        {
-            _checkPickMode = on;
-            if (_checkButtonImage == null)
-                CacheCheckButton();
-            if (_checkButtonImage == null)
-                return;
-
-            if (on)
-            {
-                if (!_checkButtonIdleCaptured)
-                {
-                    _checkButtonIdleColor = _checkButtonImage.color;
-                    _checkButtonIdleLabelColor = _checkButtonLabel != null
-                        ? _checkButtonLabel.color
-                        : ColPillLabel;
-                    _checkButtonIdleCaptured = true;
-                }
-
-                _checkButtonImage.color = ColCheckArmed;
-                if (_checkButtonLabel != null)
-                    _checkButtonLabel.color = ColCheckArmedLabel;
-            }
-            else if (_checkButtonIdleCaptured)
-            {
-                _checkButtonImage.color = _checkButtonIdleColor;
-                if (_checkButtonLabel != null)
-                    _checkButtonLabel.color = _checkButtonIdleLabelColor;
-                _checkButtonIdleCaptured = false;
-            }
         }
 
         private void WirePill(string name, UnityEngine.Events.UnityAction action)
@@ -541,9 +496,9 @@ namespace Bordy
             _statusLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _statusLabel.fontSize = 34;
             _statusLabel.alignment = TextAnchor.MiddleCenter;
-            _statusLabel.color = new Color(0.16f, 0.55f, 0.28f);
+            _statusLabel.color = ColStatusOk;
             _statusLabel.raycastTarget = false;
-            _statusLabel.text = BordyStrings.Get(BordyStrings.Keys.StatusTap);
+            _statusLabel.text = "";
         }
 
         /// <summary>
@@ -575,9 +530,9 @@ namespace Bordy
 
             _undo.Clear();
             _won = false;
-            SetCheckPickMode(false);
-            ClearCheckMarks();
+            _hasMoved = false; // cleared board → wait for a real move before idle-checking again
             ClearHintHighlights();
+            NoteActivity();
 
             for (int r = 0; r < _size; r++)
             {
@@ -675,8 +630,10 @@ namespace Bordy
             if (_puzzle.IsGiven(row, col))
                 return;
 
-            if (_guideMarks != null)
-                _guideMarks[row, col] = on;
+            if (_guideMarks == null || _guideMarks[row, col] == on)
+                return; // idempotent — don't reset the pulsing border every frame
+
+            _guideMarks[row, col] = on;
             ApplyCellBackground(row, col);
         }
 
@@ -703,17 +660,7 @@ namespace Bordy
                 return;
 
             ClearHintHighlights();
-
-            if (_checkPickMode)
-            {
-                if (CanTapCell != null && !CanTapCell(row, col))
-                {
-                    BlockedTap?.Invoke();
-                    return;
-                }
-                ApplyCheckAt(row, col);
-                return;
-            }
+            NoteActivity();
 
             if (_puzzle.IsGiven(row, col))
             {
@@ -731,6 +678,7 @@ namespace Bordy
             int previous = _state[row, col];
             int next = CycleToken(previous);
             _state[row, col] = next;
+            _hasMoved = true;
             _undo.Push(new MoveRecord(row, col, previous));
             RefreshCell(row, col, animate: true);
             EvaluateBoard();
@@ -749,144 +697,8 @@ namespace Bordy
 
         public void Undo()
         {
-            // Kept for baked scene listeners; gameplay uses Check instead.
-            // 场景里可能还绑着旧监听，玩法已改为 Check。
-        }
-
-        /// <summary>
-        /// Start a row/column check: tap Check, then tap a cell. Wrong filled cells in that
-        /// row and column stay marked until the player corrects them.
-        /// 点 Check 再点一格：标出该行列里填错的格子，改对前一直留着。
-        /// </summary>
-        public void Check()
-        {
-            if (_won || _reviewMode)
-                return;
-
-            ClearHintHighlights();
-
-            if (_checkPickMode)
-            {
-                SetCheckPickMode(false);
-                SetTransientStatusKey(BordyStrings.Keys.StatusTap);
-                return;
-            }
-
-            if (CheckCapReached())
-            {
-                SetTransientStatusKey(BordyStrings.Keys.StatusCheckCap, BordyCheckPolicy.MaxUsesPerLevel);
-                RefreshToolCaps();
-                return;
-            }
-
-            if (NeedsRewardedAdForCheck())
-            {
-                RequestCheckViaAd();
-                return;
-            }
-
-            BeginCheckPick();
-        }
-
-        private void InitCheckBudget()
-        {
-            _checksUsedThisSession = 0;
-            _adChecksGranted = 0;
-            SetCheckPickMode(false);
-            _checkAdInFlight = false;
-            _freeCheckBudget = BordyCheckPolicy.ResolveBudget(_levelId);
-        }
-
-        private bool NeedsRewardedAdForCheck()
-            => _freeCheckBudget >= 0
-               && _checksUsedThisSession >= _freeCheckBudget + _adChecksGranted
-               && !CheckCapReached();
-
-        private void BeginCheckPick()
-        {
-            SetCheckPickMode(true);
-            SetTransientStatusKey(BordyStrings.Keys.StatusCheckPick);
-        }
-
-        private void RequestCheckViaAd()
-        {
-            if (_checkAdInFlight)
-                return;
-
-            _checkAdInFlight = true;
-            SetTransientStatusKey(BordyStrings.Keys.StatusCheckWatchAd);
-            BordyAdsService.ShowRewarded(
-                () =>
-                {
-                    _checkAdInFlight = false;
-                    _adChecksGranted++;
-                    BeginCheckPick();
-                },
-                reason =>
-                {
-                    _checkAdInFlight = false;
-                    SetTransientStatusKey(MapAdFailReason(reason));
-                });
-        }
-
-        private void ApplyCheckAt(int row, int col)
-        {
-            SetCheckPickMode(false);
-            _checksUsedThisSession++;
-
-            int marked = 0;
-            for (int c = 0; c < _size; c++)
-            {
-                if (MarkIfWrong(row, c))
-                    marked++;
-            }
-
-            for (int r = 0; r < _size; r++)
-            {
-                if (r == row)
-                    continue;
-                if (MarkIfWrong(r, col))
-                    marked++;
-            }
-
-            RefreshCheckMarks();
-            RefreshToolCaps();
-            if (CheckCapReached())
-                SetTransientStatusKey(BordyStrings.Keys.StatusCheckCap, BordyCheckPolicy.MaxUsesPerLevel);
-            else if (marked > 0)
-                SetTransientStatusKey(BordyStrings.Keys.StatusCheckMarked);
-            else
-                SetTransientStatusKey(BordyStrings.Keys.StatusCheckNone);
-        }
-
-        private bool MarkIfWrong(int row, int col)
-        {
-            if (_puzzle.IsGiven(row, col))
-                return false;
-            if (_state[row, col] == BordyPuzzleData.Empty)
-                return false;
-            if (_state[row, col] == _puzzle.Solution[row, col])
-                return false;
-            _checkMarks[row, col] = true;
-            return true;
-        }
-
-        private bool IsCheckWrong(int row, int col)
-        {
-            if (_puzzle.IsGiven(row, col))
-                return false;
-            if (_state[row, col] == BordyPuzzleData.Empty)
-                return false;
-            return _state[row, col] != _puzzle.Solution[row, col];
-        }
-
-        private void ClearCheckMarks()
-        {
-            if (_checkMarks == null)
-                return;
-            for (int r = 0; r < _size; r++)
-                for (int c = 0; c < _size; c++)
-                    _checkMarks[r, c] = false;
+            // No-op: kept only for any baked scene button listeners. Gameplay has no Undo/Check.
+            // 空实现：仅为兼容场景里可能残留的旧监听；玩法已无撤销/检查。
         }
 
         private void MarkHintCell(int row, int col)
@@ -909,29 +721,6 @@ namespace Bordy
                         continue;
 
                     _hintMarks[r, c] = false;
-                    ApplyCellBackground(r, c);
-                }
-            }
-        }
-
-        private void RefreshCheckMarks()
-        {
-            if (_checkMarks == null || _cells == null || _cells.Length == 0)
-                return;
-
-            for (int r = 0; r < _size; r++)
-            {
-                for (int c = 0; c < _size; c++)
-                {
-                    if (!_checkMarks[r, c])
-                        continue;
-                    if (!IsCheckWrong(r, c))
-                    {
-                        _checkMarks[r, c] = false;
-                        ApplyCellBackground(r, c);
-                        continue;
-                    }
-
                     ApplyCellBackground(r, c);
                 }
             }
@@ -1103,20 +892,167 @@ namespace Bordy
                 return;
             }
 
-            if (_checkMarks != null && _checkMarks[row, col] && IsCheckWrong(row, col))
-                _cells[row, col].color = ColErrorCell;
-            else if (_hintMarks != null && _hintMarks[row, col])
+            if (_hintMarks != null && _hintMarks[row, col])
                 _cells[row, col].color = ColHintCell;
             else if (_guideMarks != null && _guideMarks[row, col])
                 _cells[row, col].color = ColGuideCell;
             else
                 _cells[row, col].color = ColCell;
+
+            ApplyGuideBorder(row, col);
+        }
+
+        /// <summary>
+        /// Red outline on the guided cell to draw the eye (kept in sync with the yellow fill).
+        /// 引导格加红色描边,配合黄色底色更醒目。
+        /// </summary>
+        private void ApplyGuideBorder(int row, int col)
+        {
+            var img = _cells[row, col];
+            if (img == null)
+                return;
+
+            bool on = _guideMarks != null && _guideMarks[row, col] && !_puzzle.IsGiven(row, col);
+            var outline = img.GetComponent<Outline>();
+            if (on)
+            {
+                if (outline == null)
+                    outline = img.gameObject.AddComponent<Outline>();
+                outline.effectColor = ColGuideBorder;
+                outline.effectDistance = new Vector2(5f, 5f);
+                outline.enabled = true;
+            }
+            else if (outline != null)
+            {
+                outline.enabled = false;
+            }
+        }
+
+        private void Update()
+        {
+            PulseGuideBorders();
+            MaybeShowIdleHint();
+        }
+
+        private void NoteActivity()
+        {
+            _lastActivityTime = Time.unscaledTime;
+            if (_idleHintShown)
+            {
+                _idleHintShown = false;
+                ClearErrorHighlights(); // remove the idle marks on the next move
+                ClearErrorStatus();     // and the red top line
+            }
+        }
+
+        /// <summary>
+        /// After a few idle seconds (no move), highlight obvious mistakes once. Skipped in the
+        /// tutorial (which has its own guidance) and in review / won states.
+        /// 空闲几秒无操作后，标红一次明显错误。教程与只读/已通关状态跳过。
+        /// </summary>
+        private void MaybeShowIdleHint()
+        {
+            if (_puzzle == null || _size == 0 || _won || _reviewMode || _idleHintShown || !_hasMoved)
+                return;
+            if (_levelId == BordyLevelCatalog.TutorialId)
+                return;
+            if (Time.unscaledTime - _lastActivityTime < IdleHintSeconds)
+                return;
+
+            _idleHintShown = true;
+            HighlightObviousErrors();
+        }
+
+        /// <summary>
+        /// Idle mid-solve check — only flags real logic errors on FILLED cells, never empty ones:
+        /// 3 identical in a row/column, more than half of one icon in a line (overflow), and
+        /// = / × edge violations. / 仅对已填格子标出真实逻辑错误：连 3、行列某图案过半、=/× 违反。
+        /// </summary>
+        private void HighlightObviousErrors()
+        {
+            var bad = new bool[_size, _size];
+            MarkRunViolations(bad);       // 3 identical adjacent
+            MarkOverflowViolations(bad);  // more than half of one icon in a row/column
+            MarkEdgeViolations(bad);      // = / × broken
+
+            bool any = false;
+            for (int r = 0; r < _size; r++)
+            {
+                for (int c = 0; c < _size; c++)
+                {
+                    if (bad[r, c] && !_puzzle.IsGiven(r, c) && _state[r, c] != BordyPuzzleData.Empty)
+                    {
+                        _cells[r, c].color = ColErrorCell;
+                        any = true;
+                    }
+                }
+            }
+
+            if (any)
+                SetErrorStatus(); // red "there are mistakes" line
+        }
+
+        /// <summary>Flag the filled cells of an icon that already exceeds half a row/column. / 某行列中已超过半数的图案，标出这些已填格。</summary>
+        private void MarkOverflowViolations(bool[,] bad)
+        {
+            for (int r = 0; r < _size; r++)
+                MarkOverflowLine(bad, r, true);
+            for (int c = 0; c < _size; c++)
+                MarkOverflowLine(bad, c, false);
+        }
+
+        private void MarkOverflowLine(bool[,] bad, int index, bool horizontal)
+        {
+            int target = _size / 2;
+            int sun = 0, moon = 0;
+            for (int i = 0; i < _size; i++)
+            {
+                int v = ReadState(index, i, horizontal);
+                if (v == BordyPuzzleData.Sun) sun++;
+                else if (v == BordyPuzzleData.Moon) moon++;
+            }
+
+            int over = sun > target ? BordyPuzzleData.Sun
+                     : moon > target ? BordyPuzzleData.Moon
+                     : BordyPuzzleData.Empty;
+            if (over == BordyPuzzleData.Empty)
+                return;
+
+            for (int i = 0; i < _size; i++)
+                if (ReadState(index, i, horizontal) == over)
+                    Mark(index, i, bad, horizontal);
+        }
+
+        /// <summary>Gentle breathing on the red guide border (tutorial). / 引导红框的轻微呼吸动效。</summary>
+        private void PulseGuideBorders()
+        {
+            if (_guideMarks == null || _cells == null || _puzzle == null)
+                return;
+
+            float k = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4.2f);
+            var col = ColGuideBorder;
+            col.a = Mathf.Lerp(0.40f, 1f, k);
+            float dist = Mathf.Lerp(3.5f, 6.5f, k);
+
+            for (int r = 0; r < _size; r++)
+            {
+                for (int c = 0; c < _size; c++)
+                {
+                    if (!_guideMarks[r, c] || _cells[r, c] == null)
+                        continue;
+                    var o = _cells[r, c].GetComponent<Outline>();
+                    if (o != null && o.enabled)
+                    {
+                        o.effectColor = col;
+                        o.effectDistance = new Vector2(dist, dist);
+                    }
+                }
+            }
         }
 
         private void EvaluateBoard()
         {
             ClearErrorHighlights();
-            RefreshCheckMarks();
 
             if (!IsBoardComplete())
             {
@@ -1126,8 +1062,7 @@ namespace Bordy
 
             if (!IsBoardValid())
             {
-                HighlightViolations();
-                SetTransientStatusKey(BordyStrings.Keys.StatusErrors);
+                HighlightObviousErrors(); // marks the red cells + the red status line
                 return;
             }
 
@@ -1195,24 +1130,6 @@ namespace Bordy
             }
         }
 
-        private void HighlightViolations()
-        {
-            var bad = new bool[_size, _size];
-
-            MarkRunViolations(bad);
-            MarkBalanceViolations(bad);
-            MarkEdgeViolations(bad);
-
-            for (int r = 0; r < _size; r++)
-            {
-                for (int c = 0; c < _size; c++)
-                {
-                    if (bad[r, c] && !_puzzle.IsGiven(r, c))
-                        _cells[r, c].color = ColErrorCell;
-                }
-            }
-        }
-
         private void MarkRunViolations(bool[,] bad)
         {
             for (int r = 0; r < _size; r++)
@@ -1236,32 +1153,6 @@ namespace Bordy
                     Mark(index, i + 1, bad, horizontal);
                     Mark(index, i + 2, bad, horizontal);
                 }
-            }
-        }
-
-        private void MarkBalanceViolations(bool[,] bad)
-        {
-            for (int r = 0; r < _size; r++)
-                MarkBalanceLine(bad, r, true);
-            for (int c = 0; c < _size; c++)
-                MarkBalanceLine(bad, c, false);
-        }
-
-        private void MarkBalanceLine(bool[,] bad, int index, bool horizontal)
-        {
-            int sun = 0;
-            int moon = 0;
-            for (int i = 0; i < _size; i++)
-            {
-                int value = ReadState(index, i, horizontal);
-                if (value == BordyPuzzleData.Sun) sun++;
-                else if (value == BordyPuzzleData.Moon) moon++;
-            }
-
-            if (sun != moon)
-            {
-                for (int i = 0; i < _size; i++)
-                    Mark(index, i, bad, horizontal);
             }
         }
 
@@ -1377,7 +1268,27 @@ namespace Bordy
         public void SetStatus(string message)
         {
             if (_statusLabel != null)
+            {
                 _statusLabel.text = message;
+                _statusLabel.color = ColStatusOk;
+            }
+        }
+
+        /// <summary>Show the red "there are mistakes" line (only when errors are highlighted). / 有错误时显示红色提示。</summary>
+        private void SetErrorStatus()
+        {
+            if (_statusLabel == null || !string.IsNullOrEmpty(_pinnedStatus))
+                return;
+            _statusLabel.text = BordyStrings.Get(BordyStrings.Keys.StatusErrors);
+            _statusLabel.color = ColStatusError;
+        }
+
+        /// <summary>Blank the status (used when clearing the idle error marks). / 清掉红色提示，回到空白。</summary>
+        private void ClearErrorStatus()
+        {
+            if (_statusLabel == null || !string.IsNullOrEmpty(_pinnedStatus))
+                return;
+            SetStatus("");
         }
 
         /// <summary>

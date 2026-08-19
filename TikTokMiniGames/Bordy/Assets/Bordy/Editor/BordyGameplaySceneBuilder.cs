@@ -143,11 +143,12 @@ namespace Bordy.EditorTools
 
         private static void BuildActionRow(Transform parent, BordyBoardController board, float actionTopY, float actionH)
         {
-            var undo = CreateClickablePill("UndoButton", parent, "Check", ColPill, ColMuted);
+            // Legacy left action button — Check was removed; the runtime hides this button.
+            var undo = CreateClickablePill("UndoButton", parent, "", ColPill, ColMuted);
             Anchor(undo.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             undo.rectTransform.sizeDelta = new Vector2(440, actionH);
             undo.rectTransform.anchoredPosition = new Vector2(-235, -actionTopY);
-            UnityEventTools.AddPersistentListener(undo.GetComponent<Button>().onClick, board.Check);
+            UnityEventTools.AddPersistentListener(undo.GetComponent<Button>().onClick, board.Undo);
 
             var hint = CreateClickablePill("HintButton", parent, "Hint", ColPill, ColMuted);
             Anchor(hint.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
