@@ -13,9 +13,7 @@ namespace Bordy
             if (canvas == null)
                 return;
 
-            // Settings button temporarily removed (not needed for now). Re-enable this line to restore.
-            // 暂时移除设置按钮（当前用不到）。需要时取消注释即可恢复。
-            // BordySettingsUi.EnsureOn(canvas);
+            BordySettingsUi.EnsureOn(canvas);
             BordyUiChrome.EnsureBackButton(canvas.transform);
             BordyFonts.ApplyAllUnder(canvas.transform);
             BordyUi.FixMissingSprites(canvas.gameObject);
@@ -43,6 +41,13 @@ namespace Bordy
 
         private static void ApplyHome(Transform root)
         {
+            var title = root.Find("Title")?.GetComponent<Text>();
+            if (title != null)
+            {
+                title.text = BordyLevelCatalog.GameTitle;
+                BordyFonts.Apply(title);
+            }
+
             SetText(root, "Subtitle", BordyStrings.Keys.HomeSubtitle);
             SetPillText(root, "StartButton", BordyStrings.Keys.HomeStart);
             SetText(root, "Footer", BordyStrings.Keys.HomeFooter);

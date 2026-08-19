@@ -150,9 +150,8 @@ namespace Bordy
             puzzle = null;
             if (_levelId == BordyLevelCatalog.DailyId)
             {
-                puzzle = BordyDailyService.GetTodayPuzzleOrNull();
-                if (puzzle == null)
-                    Debug.LogError("[BordyBoardController] Daily template not available (fetch first).");
+                puzzle = BordyDailyService.GetTodayPuzzleOrNull()
+                    ?? BordyDailyService.UseBuiltInFallback("board start without fetch");
                 return puzzle != null;
             }
 

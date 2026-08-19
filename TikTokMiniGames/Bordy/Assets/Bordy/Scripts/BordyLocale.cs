@@ -8,19 +8,28 @@ namespace Bordy
         En,
     }
 
-    /// <summary>Persisted UI language. Default is English unless the player explicitly chose Chinese. / 持久化界面语言。默认英文，只有明确选中文才用中文。</summary>
+    /// <summary>
+    /// Persisted UI language. TikTok defaults to English; WeChat Mini Game defaults to Simplified Chinese.
+    /// 持久化界面语言。TikTok 默认英文；微信小游戏默认简体中文。
+    /// </summary>
     public static class BordyLocale
     {
         private const string StoreKey = "bordy.locale";
 
         public static event Action Changed;
 
+#if WECHAT_MINIGAME
+        public static BordyLanguage Current { get; private set; } = BordyLanguage.ZhHans;
+        private const string DefaultCode = "zh";
+#else
         public static BordyLanguage Current { get; private set; } = BordyLanguage.En;
+        private const string DefaultCode = "en";
+#endif
 
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void LoadSaved()
         {
-            Current = Parse(BordyStore.GetString(StoreKey, "en"));
+            Current = Parse(BordyStore.GetString(StoreKey, DefaultCode));
         }
 
         public static void SetLanguage(BordyLanguage language)
@@ -52,7 +61,7 @@ namespace Bordy
         public static void ReloadFromStore()
         {
             var prev = Current;
-            Current = Parse(BordyStore.GetString(StoreKey, "en"));
+            Current = Parse(BordyStore.GetString(StoreKey, DefaultCode));
             if (prev != Current)
                 Changed?.Invoke();
         }
@@ -68,7 +77,7 @@ namespace Bordy
         private static BordyLanguage Parse(string raw)
         {
             if (string.IsNullOrEmpty(raw))
-                return BordyLanguage.En;
+                return DefaultCode == "zh" ? BordyLanguage.ZhHans : BordyLanguage.En;
 
             var code = raw.Trim();
             if (code.StartsWith("zh", StringComparison.OrdinalIgnoreCase))

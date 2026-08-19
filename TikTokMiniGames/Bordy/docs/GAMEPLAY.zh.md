@@ -91,7 +91,8 @@ Build、上传、云端与排错见 **[DEV-GUIDE.zh.md](DEV-GUIDE.zh.md)**。
 
 - 右下角 **⚙ 设置** → 语言：**简体中文** / **English**
 - 文案集中在 `BordyStrings.cs`（语言包）；切换后各场景自动刷新
-- 偏好保存在 `BordyStore`（`bordy.locale`）。默认英文；只有 `zh*` 才走中文。
+- 偏好保存在 `BordyStore`（`bordy.locale`）。TikTok 默认英文（只有 `zh*` 才走中文）；微信小游戏默认简体中文，设置里可切换。
+- 每日题目优先拉 CDN；失败或微信构建则用 `BordyLevelCatalog` 内置固定题，保证能进每日。
 
 ## 对局道具
 

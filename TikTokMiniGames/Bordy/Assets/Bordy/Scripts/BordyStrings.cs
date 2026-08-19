@@ -205,7 +205,7 @@ namespace Bordy
             { Keys.StatusDailyDone, "今日已完成 · 用时 {0}（只能查看，明天再来）" },
             { Keys.StatusDailyWin, "恭喜完成每日挑战！用时 {0}（只能查看）" },
 
-            { Keys.TutorialWelcome, "欢迎来到 Bordy！\n\n这是太阳和月亮的逻辑谜题。点空格会按「空 → 太阳 → 月亮 → 空」循环切换。\n\n新手引导里固定用太阳和月亮，方便你认规则。" },
+            { Keys.TutorialWelcome, "欢迎来到{0}！\n\n这是太阳和月亮的逻辑谜题。点空格会按「空 → 太阳 → 月亮 → 空」循环切换。\n\n新手引导里固定用太阳和月亮，方便你认规则。" },
             { Keys.TutorialStart, "开始" },
             { Keys.TutorialGuideSun, "点黄色高亮格一次，放入太阳。" },
             { Keys.TutorialGuideMoon, "再点这一格，变成月亮。点好后第一行就是 2 个太阳、2 个月亮。" },
@@ -318,7 +318,7 @@ namespace Bordy
             { Keys.StatusDailyDone, "Done today · Time {0} (view only — come back tomorrow)" },
             { Keys.StatusDailyWin, "Daily Challenge complete! Time {0} (view only)" },
 
-            { Keys.TutorialWelcome, "Welcome to Bordy!\n\nThis is a sun and moon logic puzzle. Tap an empty cell to cycle Empty → Sun → Moon → Empty.\n\nThe tutorial always uses sun and moon icons so the rules stay easy to read." },
+            { Keys.TutorialWelcome, "Welcome to {0}!\n\nThis is a sun and moon logic puzzle. Tap an empty cell to cycle Empty → Sun → Moon → Empty.\n\nThe tutorial always uses sun and moon icons so the rules stay easy to read." },
             { Keys.TutorialStart, "Start" },
             { Keys.TutorialGuideSun, "Tap the yellow cell once to place a Sun." },
             { Keys.TutorialGuideMoon, "Tap this cell until it becomes a Moon. That finishes row 1: 2 suns and 2 moons." },
@@ -348,7 +348,13 @@ namespace Bordy
         public static string Get(string key)
         {
             var table = BordyLocale.Current == BordyLanguage.En ? En : Zh;
-            return table.TryGetValue(key, out var value) ? value : key;
+            if (!table.TryGetValue(key, out var value) && table != En)
+                En.TryGetValue(key, out value);
+            if (string.IsNullOrEmpty(value))
+                value = key;
+            if (key == Keys.TutorialWelcome)
+                return string.Format(value, BordyLevelCatalog.GameTitle);
+            return value;
         }
 
         /// <summary>Language row label — ASCII fallback when CJK font not bundled.</summary>
