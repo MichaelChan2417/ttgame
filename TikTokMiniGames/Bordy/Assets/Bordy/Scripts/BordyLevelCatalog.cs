@@ -34,33 +34,34 @@ namespace Bordy
             const int s = BordyPuzzleData.Sun;
             const int m = BordyPuzzleData.Moon;
 
-            // Valid solution: each row/col has 2 suns + 2 moons and every edge constraint
-            // (E3 below requires (1,1) == (1,2)) is satisfied. The first row reads m s s m,
-            // so the tutorial guides (0,2)→Sun then (0,3)→Moon.
-            // 合法解：每行/列各 2 太阳 2 月亮，且满足所有边约束（E3 要求 (1,1)==(1,2)）。
-            // 第一行是 月 日 日 月，因此引导先把 (0,2) 点成太阳，再把 (0,3) 点成月亮。
+            // 6×6 tutorial. 10 empty cells are filled by the guided steps, each teaching one rule
+            // (place sun/moon, = , × , NO 3-in-a-row, count, clear-to-empty, hint). Verified valid
+            // and uniquely solvable. / 6×6 教学：10 个空格由引导逐步填入，分别教每条规则（重点：不能三连）。
             var solution = new[,]
             {
-                { m, s, s, m },
-                { s, m, m, s },
-                { s, m, s, m },
-                { m, s, m, s },
+                { m, m, s, m, s, s },
+                { s, m, m, s, s, m },
+                { s, s, m, s, m, m },
+                { m, s, s, m, m, s },
+                { s, m, m, s, s, m },
+                { m, s, s, m, m, s },
             };
 
+            // Empty (guided) cells: (0,2)(0,4)(1,4)(2,2)(3,1)(3,2)(3,4)(4,0)(4,3)(5,2).
             var givens = new[,]
             {
-                { true,  true,  false, false },
-                { true,  false, false, false },
-                { false, false, false, true  },
-                { false, false, false, false },
+                { true,  true,  false, true,  false, true  },
+                { true,  true,  true,  true,  false, true  },
+                { true,  true,  false, true,  true,  true  },
+                { true,  false, false, true,  false, true  },
+                { false, true,  true,  false, true,  true  },
+                { true,  true,  false, true,  true,  true  },
             };
 
             var edges = new[]
             {
-                new EdgeConstraint(0, 0, true,  false),
-                new EdgeConstraint(0, 1, false, false),
-                new EdgeConstraint(1, 1, true,  true),
-                new EdgeConstraint(2, 0, false, false),
+                new EdgeConstraint(0, 4, false, true),   // = between (0,4) and (1,4) → both suns
+                new EdgeConstraint(2, 2, false, false),  // × between (2,2) and (3,2) → differ
             };
 
             return new BordyPuzzleData(TutorialId, "Tutorial", solution, givens, edges);

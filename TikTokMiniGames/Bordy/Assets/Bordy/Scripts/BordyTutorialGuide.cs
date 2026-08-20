@@ -19,17 +19,16 @@ namespace Bordy
 
         private const int Sun = BordyPuzzleData.Sun;
         private const int Moon = BordyPuzzleData.Moon;
-        private const int CheckPlantStep = 9;
-        private const int CheckUseStep = 10;
-        private const int CheckFixStep = 11;
-        private const int HintUseStep = 12;
-        private const int LastCellStep = 13;
-        private const int CompleteStep = 14;
+        // 6×6 tutorial step machine.
+        private const int ClearPlantStep = 8;  // place a wrong moon
+        private const int ClearEmptyStep = 9;  // tap again → back to empty
+        private const int ClearFixStep = 10;   // place the correct sun
+        private const int HintUseStep = 11;    // hint fills the last cell → win
+        private const int CompleteStep = 12;
 
-        private const int ToolRow = 2;
-        private const int ToolCol = 2;
-        private const int HintRow = 3;
-        private const int HintCol = 1;
+        // Cell used for the "clear back to empty" lesson (solution = Sun).
+        private const int ClearRow = 4;
+        private const int ClearCol = 3;
 
         private const float IdleNudgeSeconds = 5f;
 
@@ -113,9 +112,9 @@ namespace Bordy
 
             if (_step == HintUseStep)
             {
+                // Waiting for the player to press Hint, which fills the last cell and wins
+                // (OnBoardWon then advances to the completion step).
                 MaybeIdleNudge();
-                if (_board.GetCellState(HintRow, HintCol) == Sun)
-                    EnterStep(LastCellStep);
                 return;
             }
 
@@ -225,64 +224,56 @@ namespace Bordy
                     ShowCoach(BordyStrings.Keys.TutorialWelcome, () => EnterStep(1));
                     break;
 
-                case 1:
-                    PreHighlightThenCoach(BordyStrings.Keys.TutorialGuideSun, new CellGoal(0, 2, Sun));
+                case 1: // place a sun
+                    PreHighlightThenCoach(BordyStrings.Keys.TutorialGuideSun, new CellGoal(3, 1, Sun));
                     break;
 
-                case 2:
-                    PreHighlightThenCoach(BordyStrings.Keys.TutorialGuideMoon, new CellGoal(0, 3, Moon));
+                case 2: // place a moon (+ goal)
+                    PreHighlightThenCoach(BordyStrings.Keys.TutorialGuideMoon, new CellGoal(3, 4, Moon));
                     break;
 
-                case 3:
+                case 3: // = / × intro
                     ShowCoach(BordyStrings.Keys.TutorialSymbols, () => EnterStep(4));
                     break;
 
-                case 4:
+                case 4: // = edge: both suns
                     PreHighlightThenCoach(
                         BordyStrings.Keys.TutorialEquals,
-                        new CellGoal(1, 1, Moon),
-                        new CellGoal(1, 2, Moon));
+                        new CellGoal(0, 4, Sun),
+                        new CellGoal(1, 4, Sun));
                     break;
 
-                case 5:
+                case 5: // × edge: top moon, bottom sun
                     PreHighlightThenCoach(
                         BordyStrings.Keys.TutorialCross,
-                        new CellGoal(2, 0, Sun),
-                        new CellGoal(3, 0, Moon));
+                        new CellGoal(2, 2, Moon),
+                        new CellGoal(3, 2, Sun));
                     break;
 
-                case 6:
-                    PreHighlightThenCoach(BordyStrings.Keys.TutorialRowCount, new CellGoal(1, 3, Sun));
+                case 6: // KEY: no 3 in a row — two given moons → must be sun
+                    PreHighlightThenCoach(BordyStrings.Keys.TutorialAvoidThree, new CellGoal(0, 2, Sun));
                     break;
 
-                case 7:
-                    PreHighlightThenCoach(BordyStrings.Keys.TutorialColCount, new CellGoal(3, 3, Sun));
+                case 7: // count rule — row already has three moons → must be sun
+                    PreHighlightThenCoach(BordyStrings.Keys.TutorialRowCount, new CellGoal(5, 2, Sun));
                     break;
 
-                case 8:
-                    PreHighlightThenCoach(BordyStrings.Keys.TutorialAvoidThree, new CellGoal(2, 1, Moon));
+                case ClearPlantStep: // place a wrong moon
+                    PreHighlightThenCoach(BordyStrings.Keys.TutorialCheckPlant, new CellGoal(ClearRow, ClearCol, Moon));
                     break;
 
-                case CheckPlantStep:
-                    PreHighlightThenCoach(BordyStrings.Keys.TutorialCheckPlant, new CellGoal(ToolRow, ToolCol, Moon));
-                    break;
-
-                case CheckUseStep: // "tap again to clear back to empty"
+                case ClearEmptyStep: // tap again → back to empty
                     PreHighlightThenCoach(BordyStrings.Keys.TutorialCheckUse,
-                        new CellGoal(ToolRow, ToolCol, BordyPuzzleData.Empty));
+                        new CellGoal(ClearRow, ClearCol, BordyPuzzleData.Empty));
                     break;
 
-                case CheckFixStep: // now place the correct icon
+                case ClearFixStep: // place the correct sun
                     PreHighlightThenCoach(BordyStrings.Keys.TutorialCheckFix,
-                        new CellGoal(ToolRow, ToolCol, Sun));
+                        new CellGoal(ClearRow, ClearCol, Sun));
                     break;
 
-                case HintUseStep:
+                case HintUseStep: // hint fills the last empty cell → win
                     ShowCoach(BordyStrings.Keys.TutorialHintUse, BeginHintLesson);
-                    break;
-
-                case LastCellStep:
-                    PreHighlightThenCoach(BordyStrings.Keys.TutorialLastMoon, new CellGoal(3, 2, Moon));
                     break;
 
                 case CompleteStep:
@@ -645,7 +636,7 @@ namespace Bordy
         private void OnBlockedTap()
         {
             NoteProgress();
-            if (_step == CheckUseStep)
+            if (_step == ClearEmptyStep)
                 ShowNudge(BordyStrings.Keys.TutorialNudgeCheck);
             else if (_step == HintUseStep)
                 ShowNudge(BordyStrings.Keys.TutorialNudgeHint);
@@ -678,7 +669,7 @@ namespace Bordy
                 return;
 
             _idleNudged = true;
-            if (_step == CheckUseStep)
+            if (_step == ClearEmptyStep)
                 ShowNudge(BordyStrings.Keys.TutorialNudgeCheck);
             else if (_step == HintUseStep)
                 ShowNudge(BordyStrings.Keys.TutorialNudgeHint);

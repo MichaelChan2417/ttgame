@@ -160,6 +160,7 @@ namespace Bordy
         {
             string sceneName = gameObject.scene.name;
             return sceneName == BordyLevelCatalog.PlayScene
+                || _levelId == BordyLevelCatalog.TutorialId // tutorial is now 6×6 — rebuild at runtime
                 || _levelId == BordyLevelCatalog.DailyId
                 || BordyCampaignCatalog.IsCampaignId(_levelId);
         }
