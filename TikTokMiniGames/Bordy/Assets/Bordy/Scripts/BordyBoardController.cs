@@ -1081,19 +1081,13 @@ namespace Bordy
                 _reviewMode = true;
                 PinStatusKey(BordyStrings.Keys.StatusDailyWin, BordyTimer.Format(seconds));
 
-                // Order: on the first Daily solve, prompt "add to home screen" FIRST, then the
-                // result popup (time + congrats + friends/invite). Otherwise go straight to result.
-                // 顺序：首次完成每日先弹「加桌」，关掉后再弹结算弹窗（含好友/邀请）；否则直接结算。
+                // Order: show the result popup (time + congrats + friends/invite) FIRST; when it
+                // closes, prompt "add to home screen" (until the player has actually added it).
+                // 顺序：先弹结算弹窗（用时 + 祝贺 + 好友/邀请），关掉后再弹「加桌」提示（未加桌前一直提示）。
                 var canvasT = transform;
-                int solvedSeconds = seconds;
-                if (BordyShortcut.ShouldPrompt)
-                {
-                    BordyShortcutPopup.Show(canvasT, () => BordyDailyResultPopup.Show(canvasT, solvedSeconds));
-                }
-                else
-                {
-                    BordyDailyResultPopup.Show(canvasT, solvedSeconds);
-                }
+                var resultPopup = BordyDailyResultPopup.Show(canvasT, seconds);
+                if (resultPopup != null && BordyShortcut.ShouldPrompt)
+                    resultPopup.SetOnClosed(() => BordyShortcutPopup.Show(canvasT));
             }
             else if (BordyCampaignCatalog.IsCampaignId(_levelId))
             {
