@@ -1,6 +1,6 @@
 # Bordy
 
-TikTok Minis 逻辑谜题（印尼区）。Unity 2022.3 + TTSDK Native。
+TikTok Minis 逻辑谜题（日本、印尼、菲律宾、马来西亚）。Unity 2022.3 + TTSDK Native。法律页见 `legal/`。
 
 ## 快速开始
 
