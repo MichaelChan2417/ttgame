@@ -25,7 +25,11 @@ namespace Bordy
                         return;
                 }
 
-                Object.Destroy(board.gameObject);
+                // DestroyImmediate (not Destroy) so the stale board is gone BEFORE we rebuild and
+                // re-Find("Board") — otherwise a size-mismatched baked board (e.g. the 4×4 tutorial)
+                // lingers this frame and the controller caches the wrong cells.
+                // 立即销毁旧盘，避免同名旧盘残留导致缓存到错误的格子（如 4×4 教程盘）。
+                Object.DestroyImmediate(board.gameObject);
             }
 
             LayoutMetrics metrics = ComputeMetrics(puzzle.Size);
@@ -67,6 +71,14 @@ namespace Bordy
         {
             var boardGo = CreatePanel("Board", parent, ColBoardLine);
             boardGo.raycastTarget = false;
+
+            // Keep the board low in the hierarchy (just above the Background) so UI overlays —
+            // tutorial coach, result/shortcut popups — always render ON TOP of it, even when the
+            // board is rebuilt after those overlays were shown.
+            // 让棋盘处于层级底部（仅在背景之上），保证教练/弹窗等 UI 始终盖在棋盘上方。
+            var bg = parent.Find("Background");
+            boardGo.transform.SetSiblingIndex(bg != null ? bg.GetSiblingIndex() + 1 : 0);
+
             var boardRT = boardGo.rectTransform;
             Anchor(boardRT, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             boardRT.sizeDelta = new Vector2(m.BoardSize + 8, m.BoardSize + 8);

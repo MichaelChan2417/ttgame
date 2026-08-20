@@ -1,4 +1,4 @@
-// Auto-generated word data for WordleTT.
+// Auto-generated word data for WordTT.
 // ANSWER_WORDS: curated common 5-letter words used as puzzle answers.
 // VALID_WORDS: full set of accepted 5-letter guesses.
 
