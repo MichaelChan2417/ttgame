@@ -1,6 +1,7 @@
 import {
     _decorator, Component, Node, Label, LabelOutline, UITransform, Graphics, Color, Vec3,
     view, ResolutionPolicy, input, Input, KeyCode, EventKeyboard, EventTouch, Layers, sys,
+    Sprite, SpriteFrame, Mask,
 } from 'cc';
 import { isValidGuess } from './WordList';
 import { dailyWord, puzzleId } from './Daily';
@@ -9,18 +10,20 @@ import {
     authorizeOpenContext, setUserCloudStorage, postToOpenData, navigateToSidebar,
 } from './Platform';
 
-const { ccclass } = _decorator;
+const { ccclass, property } = _decorator;
 
 const COLS = 5;
 const BASE_ROWS = 6;   // normal guesses
 const MAX_ROWS = 7;    // hard cap once the +1-row booster is used
+const DESIGN_W = 720;
+const DESIGN_H = 1280;
 
 /** Rewarded-ad slot id — configure in the TikTok dev portal before release. */
 const AD_UNIT = 'YOUR_REWARDED_AD_UNIT_ID';
 /** Cloud-storage key for the friend leaderboard. */
 const DAILY_KEY = 'wordtt_daily';
 /** Local-storage key for saving today's in-progress game. */
-const SAVE_KEY = 'wordtt_save_v1';
+const SAVE_KEY = 'wordtt_save_v2';
 
 interface SaveState {
     day: number;
@@ -52,6 +55,9 @@ const C_ACCENT = new Color(99, 102, 241);
 const C_ACCENT_DARK = new Color(67, 56, 202);
 const C_ADD = new Color(240, 150, 60);       // add-to-desktop (warm) accent
 const C_DIM = new Color(20, 22, 30);
+const C_SHADOW = new Color(28, 32, 40, 40);
+const C_SHADOW_SOFT = new Color(28, 32, 40, 18);
+const C_CARD = new Color(232, 235, 240);
 
 const FONT_FAMILY = 'Poppins, Nunito, "Trebuchet MS", Verdana, sans-serif';
 
@@ -60,16 +66,27 @@ interface Key { node: Node; graphics: Graphics; label: Label; w: number; h: numb
 
 @ccclass('GameController')
 export class GameController extends Component {
-    private W = 720;
-    private H = 1280;
+    @property(SpriteFrame)
+    hintIcon: SpriteFrame | null = null;
+    @property(SpriteFrame)
+    revealIcon: SpriteFrame | null = null;
+    @property(SpriteFrame)
+    addRowIcon: SpriteFrame | null = null;
+
+    private W = DESIGN_W;
+    private H = DESIGN_H;
     private topInset = 0;      // safe-area inset (notch / Dynamic Island)
     private bottomInset = 0;   // safe-area inset (home indicator)
+    private uiBuilt = false;
+    private stage: Node | null = null;
+    private boardRoot: Node | null = null;
+    private kbRoot: Node | null = null;
 
     private menuRoot: Node | null = null;
     private gameRoot: Node | null = null;
     private propsRoot: Node | null = null;
     private shareBtn: Node | null = null;
-    private addRowBtnLabel: Label | null = null;
+    private addRowBtnSprite: Sprite | null = null;
     private mockRankRoot: Node | null = null;
     private sidebarPopupRoot: Node | null = null;
     private menuMsg: Label | null = null;
@@ -105,27 +122,71 @@ export class GameController extends Component {
     private boardRowGap = 20;
 
     onLoad() {
-        view.setDesignResolutionSize(720, 1280, ResolutionPolicy.FIT_WIDTH);
-        const vs = view.getVisibleSize();
-        if (vs.width > 0 && vs.height > 0) { this.W = vs.width; this.H = vs.height; }
-        else {
-            const uit = this.getComponent(UITransform);
-            if (uit && uit.width > 0) { this.W = uit.width; this.H = uit.height; }
-        }
+        this.W = DESIGN_W;
+        this.H = DESIGN_H;
+        view.setDesignResolutionSize(DESIGN_W, DESIGN_H, ResolutionPolicy.SHOW_ALL);
+        view.on('canvas-resize', this.onCanvasResize, this);
+        this.buildOnce();
+    }
+
+    start() { this.fitStage(); }
+
+    onDestroy() {
+        view.off('canvas-resize', this.onCanvasResize, this);
+    }
+
+    private onCanvasResize = () => this.fitStage();
+
+    private buildOnce() {
+        if (this.uiBuilt) return;
+        this.uiBuilt = true;
+        this.setupStage();
         this.computeSafeArea();
         this.buildUI();
         this.showMenu();
+        this.fitStage();
+    }
+
+    /** All UI lives on a 720×1280 stage, uniformly scaled to fit the real canvas. */
+    private setupStage() {
+        this.stage = this.makeUiLayer('stage', this.node);
+        this.fitStage();
+    }
+
+    private fitStage() {
+        if (!this.stage) return;
+        const uit = this.getComponent(UITransform);
+        const vs = view.getVisibleSize();
+        const cw = (uit && uit.width > 1) ? uit.width : vs.width;
+        const ch = (uit && uit.height > 1) ? uit.height : vs.height;
+        if (cw <= 1 || ch <= 1) return;
+        const s = Math.min(cw / DESIGN_W, ch / DESIGN_H);
+        this.stage.setScale(s, s, 1);
+        this.stage.setPosition(0, 0, 0);
+    }
+
+    private makeUiLayer(name: string, parent: Node): Node {
+        const n = new Node(name);
+        n.layer = Layers.Enum.UI_2D;
+        n.setParent(parent);
+        const uit = n.addComponent(UITransform);
+        uit.setContentSize(this.W, this.H);
+        uit.setAnchorPoint(0.5, 0.5);
+        n.setPosition(Vec3.ZERO);
+        return n;
     }
 
     private computeSafeArea() {
         this.topInset = 0;
         this.bottomInset = 0;
         try {
+            const vs = view.getVisibleSize();
+            // Editor / landscape previews are not phones — don't steal layout with a bogus inset.
+            if (!vs || vs.height < vs.width) return;
             const sa = (sys as any).getSafeAreaRect ? (sys as any).getSafeAreaRect() : null;
             if (sa && sa.height > 0) {
-                // rect is in the same logical space as the visible size
-                this.topInset = Math.min(Math.max(0, this.H - (sa.y + sa.height)), this.H * 0.14);
-                this.bottomInset = Math.min(Math.max(0, sa.y), this.H * 0.10);
+                this.topInset = Math.min(Math.max(0, this.H - (sa.y + sa.height) * (this.H / vs.height)), this.H * 0.10);
+                this.bottomInset = Math.min(Math.max(0, sa.y * (this.H / vs.height)), this.H * 0.08);
             }
         } catch (e) { /* not supported → no inset */ }
     }
@@ -151,13 +212,9 @@ export class GameController extends Component {
     // ===== UI construction ==================================================
 
     private buildUI() {
-        this.menuRoot = new Node('menu');
-        this.menuRoot.layer = Layers.Enum.UI_2D;
-        this.menuRoot.setParent(this.node);
-
-        this.gameRoot = new Node('game');
-        this.gameRoot.layer = Layers.Enum.UI_2D;
-        this.gameRoot.setParent(this.node);
+        const root = this.stage!;
+        this.menuRoot = this.makeUiLayer('menu', root);
+        this.gameRoot = this.makeUiLayer('game', root);
 
         this.buildMenu();
         this.buildGame();
@@ -181,7 +238,10 @@ export class GameController extends Component {
         const W = this.W, H = this.H;
         const root = new Node('sidebarPopup');
         root.layer = Layers.Enum.UI_2D;
-        root.setParent(this.node);
+        root.setParent(this.stage!);
+        const ru = root.addComponent(UITransform);
+        ru.setContentSize(W, H);
+        ru.setAnchorPoint(0.5, 0.5);
 
         const dim = new Node('dim');
         dim.layer = Layers.Enum.UI_2D;
@@ -231,6 +291,9 @@ export class GameController extends Component {
 
     private buildGame() {
         const W = this.W, H = this.H, parent = this.gameRoot!;
+        this.boardRoot = this.makeUiLayer('board', parent);
+        this.kbRoot = this.makeUiLayer('keyboard', parent);
+        this.propsRoot = this.makeUiLayer('props', parent);
 
         // top button row (Menu / Rank) — pushed below the notch / Dynamic Island
         const buttonsY = H * 0.5 - this.topInset - 58;
@@ -251,32 +314,30 @@ export class GameController extends Component {
         const rows = ['QWERTYUIOP', 'ASDFGHJKL', '<ZXCVBNM>'];
         const kGap = 8;
         const keyW = (W * 0.96 - 9 * kGap) / 10;
-        const keyH = Math.min(keyW * 1.5, 92);
+        const keyH = Math.min(keyW * 1.35, 76);
         const wideW = keyW * 1.5 + kGap / 2;
         const kbRows = rows.length;
         const kbBottomMargin = H * 0.028 + this.bottomInset;
         const kbBottomRowY = -H * 0.5 + kbBottomMargin + keyH / 2;
         const kbTopEdge = kbBottomRowY + (kbRows - 1) * (keyH + kGap) + keyH / 2;
 
-        // ---- booster (prop) buttons + share button, just above keyboard ----
-        const propH = 64;
-        const propY = kbTopEdge + 20 + propH / 2;
-        const propGap = 14;
-        const propW = (W * 0.9 - 2 * propGap) / 3;
-        this.propsRoot = new Node('props');
-        this.propsRoot.layer = Layers.Enum.UI_2D;
-        this.propsRoot.setParent(parent);
-        this.makeButton(this.propsRoot, 'HINT', -(propW + propGap), propY, propW, propH, C_ACCENT, 16, () => this.onProp('hint'));
-        this.makeButton(this.propsRoot, 'REVEAL', 0, propY, propW, propH, C_ACCENT, 16, () => this.onProp('reveal'));
-        this.addRowBtnLabel = this.makeButton(this.propsRoot, '+ROW', (propW + propGap), propY, propW, propH, C_ACCENT, 16, () => this.onProp('addrow')).label;
+        // ---- booster (prop) icon buttons + share button, just above keyboard ----
+        const propSize = 110;
+        const propGap = 20;
+        const propY = kbTopEdge + 14 + propSize / 2;
+        this.makeIconButton(this.propsRoot, this.hintIcon, 'HINT', -(propSize + propGap), propY, propSize, () => this.onProp('hint'));
+        this.makeIconButton(this.propsRoot, this.revealIcon, 'REVEAL', 0, propY, propSize, () => this.onProp('reveal'));
+        this.addRowBtnSprite = this.makeIconButton(
+            this.propsRoot, this.addRowIcon, '+ROW', (propSize + propGap), propY, propSize, () => this.onProp('addrow'),
+        ).sprite;
 
-        const share = this.makeButton(parent, 'SHARE  ▸  CHALLENGE', 0, propY, W * 0.9, propH, C_CORRECT, 16, () => this.onShare());
+        const share = this.makeButton(parent, 'SHARE  ▸  CHALLENGE', 0, propY, W * 0.9, 64, C_CORRECT, 16, () => this.onShare());
         this.shareBtn = share.node;
         this.shareBtn.active = false;
 
         // ---- board region: between the message and the booster row ----
-        this.boardRegionTop = messageY - 30;
-        this.boardRegionBottom = propY + propH / 2 + 16;
+        this.boardRegionTop = messageY - 24;
+        this.boardRegionBottom = propY + propSize / 2 + 12;
 
         // create MAX_ROWS rows of cells (extra row hidden until earned), then lay out for BASE_ROWS
         for (let r = 0; r < MAX_ROWS; r++) {
@@ -303,6 +364,9 @@ export class GameController extends Component {
         }
 
         this.layoutBoard(BASE_ROWS);
+        this.boardRoot.setSiblingIndex(0);
+        this.propsRoot.setSiblingIndex(this.gameRoot!.children.length - 1);
+        this.kbRoot.setSiblingIndex(this.gameRoot!.children.length - 1);
     }
 
     // ===== element factories ================================================
@@ -310,7 +374,7 @@ export class GameController extends Component {
     private makeCell(): Cell {
         const node = new Node('cell');
         node.layer = Layers.Enum.UI_2D;
-        node.setParent(this.gameRoot!);
+        node.setParent(this.boardRoot!);
         const uit = node.addComponent(UITransform);
         uit.setContentSize(80, 80);
         uit.setAnchorPoint(0.5, 0.5);
@@ -349,7 +413,7 @@ export class GameController extends Component {
     private makeKey(id: string, face: string, x: number, y: number, w: number, h: number): Key {
         const node = new Node('key_' + id);
         node.layer = Layers.Enum.UI_2D;
-        node.setParent(this.gameRoot!);
+        node.setParent(this.kbRoot!);
         const uit = node.addComponent(UITransform);
         uit.setContentSize(w, h);
         uit.setAnchorPoint(0.5, 0.5);
@@ -410,9 +474,7 @@ export class GameController extends Component {
         uit.setAnchorPoint(0.5, 0.5);
         node.setPosition(new Vec3(x, y, 0));
         const g = node.addComponent(Graphics);
-        g.roundRect(-w / 2, -h / 2, w, h, radius);
-        g.fillColor = bg;
-        g.fill();
+        this.paintButtonChrome(g, w, h, radius, bg, false);
 
         const lblNode = new Node('lbl');
         lblNode.layer = Layers.Enum.UI_2D;
@@ -433,6 +495,102 @@ export class GameController extends Component {
 
         node.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; onClick(); }, this);
         return { node, label };
+    }
+
+    private makeIconButton(parent: Node, frame: SpriteFrame | null, fallback: string,
+                           x: number, y: number, size: number, onClick: () => void): { node: Node; sprite: Sprite | null } {
+        if (!frame) {
+            const btn = this.makeButton(parent, fallback, x, y, size * 1.4, Math.max(64, size * 0.55), C_ACCENT, 16, onClick);
+            return { node: btn.node, sprite: null };
+        }
+        const radius = Math.round(size * 0.22);
+        const node = new Node('iconBtn_' + fallback);
+        node.layer = Layers.Enum.UI_2D;
+        node.setParent(parent);
+        const uit = node.addComponent(UITransform);
+        uit.setContentSize(size, size);
+        uit.setAnchorPoint(0.5, 0.5);
+        node.setPosition(new Vec3(x, y, 0));
+
+        const chrome = new Node('chrome');
+        chrome.layer = Layers.Enum.UI_2D;
+        chrome.setParent(node);
+        const cu = chrome.addComponent(UITransform);
+        cu.setContentSize(size, size);
+        cu.setAnchorPoint(0.5, 0.5);
+        chrome.setPosition(Vec3.ZERO);
+        this.paintButtonChrome(chrome.addComponent(Graphics), size, size, radius, C_CARD, false);
+
+        const maskNode = new Node('mask');
+        maskNode.layer = Layers.Enum.UI_2D;
+        maskNode.setParent(node);
+        const mu = maskNode.addComponent(UITransform);
+        mu.setContentSize(size, size);
+        mu.setAnchorPoint(0.5, 0.5);
+        maskNode.setPosition(Vec3.ZERO);
+        const mask = maskNode.addComponent(Mask);
+        mask.type = Mask.Type.GRAPHICS_STENCIL;
+        const stencil = maskNode.getComponent(Graphics) || maskNode.addComponent(Graphics);
+        stencil.clear();
+        stencil.roundRect(-size / 2, -size / 2, size, size, radius);
+        stencil.fillColor = Color.WHITE;
+        stencil.fill();
+
+        const icon = new Node('icon');
+        icon.layer = Layers.Enum.UI_2D;
+        icon.setParent(maskNode);
+        const iu = icon.addComponent(UITransform);
+        iu.setContentSize(size, size);
+        iu.setAnchorPoint(0.5, 0.5);
+        icon.setPosition(Vec3.ZERO);
+        const sprite = icon.addComponent(Sprite);
+        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        sprite.trim = false;
+        sprite.type = Sprite.Type.SIMPLE;
+        sprite.spriteFrame = frame;
+
+        const rim = new Node('rim');
+        rim.layer = Layers.Enum.UI_2D;
+        rim.setParent(node);
+        const ru = rim.addComponent(UITransform);
+        ru.setContentSize(size, size);
+        ru.setAnchorPoint(0.5, 0.5);
+        rim.setPosition(Vec3.ZERO);
+        const rg = rim.addComponent(Graphics);
+        rg.clear();
+        rg.lineWidth = 2;
+        rg.strokeColor = C_BORDER_EMPTY;
+        rg.roundRect(-size / 2, -size / 2, size, size, radius);
+        rg.stroke();
+
+        node.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; onClick(); }, this);
+        return { node, sprite };
+    }
+
+    /** Bottom-weighted drop shadow + optional hairline so white plates lift off the game bg. */
+    private paintButtonChrome(g: Graphics, w: number, h: number, radius: number, fill: Color, bordered: boolean) {
+        g.clear();
+        const drop = Math.max(5, Math.round(h * 0.07));
+        g.roundRect(-w / 2, -h / 2 - drop, w, h, radius);
+        g.fillColor = C_SHADOW_SOFT;
+        g.fill();
+        g.roundRect(-w / 2, -h / 2 - drop * 0.55, w, h, radius);
+        g.fillColor = C_SHADOW;
+        g.fill();
+        g.roundRect(-w / 2, -h / 2, w, h, radius);
+        g.fillColor = fill;
+        g.fill();
+        if (bordered) {
+            g.lineWidth = 2;
+            g.strokeColor = C_BORDER_EMPTY;
+            g.roundRect(-w / 2, -h / 2, w, h, radius);
+            g.stroke();
+        }
+    }
+
+    private setAddRowUsedVisual(used: boolean) {
+        if (!this.addRowBtnSprite) return;
+        this.addRowBtnSprite.color = used ? new Color(255, 255, 255, 120) : new Color(255, 255, 255, 255);
     }
 
     private addOutline(label: Label, color: Color, width: number) {
@@ -492,8 +650,8 @@ export class GameController extends Component {
         const colGap = this.boardColGap, rowGap = this.boardRowGap;
         const widthFit = (this.W * 0.88 - (COLS - 1) * colGap) / COLS;
         const regionH = this.boardRegionTop - this.boardRegionBottom;
-        const heightFit = (regionH - (visibleRows - 1) * rowGap) / visibleRows;
-        const tile = Math.max(40, Math.min(100, widthFit, heightFit));
+        const heightFit = regionH > 0 ? (regionH - (visibleRows - 1) * rowGap) / visibleRows : 24;
+        const tile = Math.max(24, Math.min(96, widthFit, heightFit));
         const boardW = COLS * tile + (COLS - 1) * colGap;
         const boardH = visibleRows * tile + (visibleRows - 1) * rowGap;
         const startX = -boardW / 2 + tile / 2;
@@ -702,7 +860,7 @@ export class GameController extends Component {
         this.addRowUsed = true;
         this.layoutBoard(this.maxRows + 1);
         this.applyRevealedToRow(this.maxRows - 1); // in case a row was newly shown
-        if (this.addRowBtnLabel) this.addRowBtnLabel.string = 'ROW ✓';
+        this.setAddRowUsedVisual(true);
         this.showMessage('+1 extra guess added!', C_ACCENT);
         this.saveState();
     }
@@ -764,7 +922,7 @@ export class GameController extends Component {
         }
         this.keys.forEach(k => { k.state = LetterState.EMPTY; this.drawKey(k); });
 
-        if (this.addRowBtnLabel) this.addRowBtnLabel.string = '+ROW';
+        this.setAddRowUsedVisual(false);
         if (this.propsRoot) this.propsRoot.active = true;
         if (this.shareBtn) this.shareBtn.active = false;
         if (this.mockRankRoot) this.mockRankRoot.active = false;
@@ -778,6 +936,7 @@ export class GameController extends Component {
 
     private loadSave(): SaveState | null {
         try {
+            sys.localStorage.removeItem('wordtt_save_v1');
             const raw = sys.localStorage.getItem(SAVE_KEY);
             if (!raw) return null;
             return JSON.parse(raw) as SaveState;
@@ -864,7 +1023,7 @@ export class GameController extends Component {
             }
         }
 
-        if (this.addRowBtnLabel) this.addRowBtnLabel.string = this.addRowUsed ? 'ROW ✓' : '+ROW';
+        this.setAddRowUsedVisual(this.addRowUsed);
         if (this.mockRankRoot) this.mockRankRoot.active = false;
 
         if (this.gameOver) {
@@ -928,7 +1087,10 @@ export class GameController extends Component {
         const W = this.W, H = this.H;
         const root = new Node('mockRank');
         root.layer = Layers.Enum.UI_2D;
-        root.setParent(this.node);
+        root.setParent(this.stage!);
+        const ru = root.addComponent(UITransform);
+        ru.setContentSize(W, H);
+        ru.setAnchorPoint(0.5, 0.5);
 
         // dim background
         const dim = new Node('dim');
