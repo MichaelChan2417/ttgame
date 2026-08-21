@@ -20,11 +20,14 @@ namespace Bordy
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void LoadSaved()
         {
-            Current = Parse(BordyStore.GetString(StoreKey, "en"));
+            // TikTok listing is English-only for now.
+            Current = BordyLanguage.En;
         }
 
         public static void SetLanguage(BordyLanguage language)
         {
+            // English-only listing: ignore Chinese until we add locales back.
+            language = BordyLanguage.En;
             if (Current == language)
                 return;
 
@@ -38,21 +41,15 @@ namespace Bordy
         /// <summary>Apply locale from cloud without re-uploading. / 从云端应用语言，不触发上传。</summary>
         public static void ApplyFromCloud(string localeCode)
         {
-            var lang = Parse(localeCode);
-            if (Current == lang)
-                return;
-
-            Current = lang;
-            BordyStore.SetString(StoreKey, ToCode(lang));
-            BordyStore.Save();
-            Changed?.Invoke();
+            _ = localeCode;
+            SetLanguage(BordyLanguage.En);
         }
 
         /// <summary>Re-read persisted language (e.g. after TT.PlayerPrefs becomes available). / 重新读取已保存语言。</summary>
         public static void ReloadFromStore()
         {
             var prev = Current;
-            Current = Parse(BordyStore.GetString(StoreKey, "en"));
+            Current = BordyLanguage.En;
             if (prev != Current)
                 Changed?.Invoke();
         }

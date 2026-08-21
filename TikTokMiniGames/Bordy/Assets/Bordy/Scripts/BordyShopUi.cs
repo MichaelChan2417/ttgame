@@ -76,7 +76,7 @@ namespace Bordy
             rootRt.anchorMax = new Vector2(0f, 0f);
             rootRt.pivot = new Vector2(0f, 0f);
             rootRt.sizeDelta = new Vector2(fabW, fabH);
-            rootRt.anchoredPosition = new Vector2(32f, 40f);
+            rootRt.anchoredPosition = new Vector2(32f, 148f);
 
             var shadow = CreatePanel("Shadow", root.transform, ColFabShadow);
             BordyUi.ApplySliced(shadow);

@@ -13,9 +13,6 @@ namespace Bordy
             if (canvas == null)
                 return;
 
-            // Settings button temporarily removed (not needed for now). Re-enable this line to restore.
-            // 暂时移除设置按钮（当前用不到）。需要时取消注释即可恢复。
-            // BordySettingsUi.EnsureOn(canvas);
             BordyUiChrome.EnsureBackButton(canvas.transform);
             BordyFonts.ApplyAllUnder(canvas.transform);
             BordyUi.FixMissingSprites(canvas.gameObject);

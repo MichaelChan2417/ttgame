@@ -71,6 +71,8 @@ namespace Bordy
                         homeCanvas.gameObject.AddComponent<BordyDebugReset>();
                     BordyHomeGate.EnsureOn(homeCanvas.transform);
                     BordyShopUi.EnsureOn(homeCanvas.transform);
+                    BordySettingsUi.EnsureOn(homeCanvas.transform);
+                    BordyRetentionUi.EnsureOn(homeCanvas.transform);
                 }
                 return;
             }

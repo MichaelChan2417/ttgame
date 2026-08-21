@@ -10,9 +10,29 @@ namespace Bordy
             public const string SettingsTitle = "settings.title";
             public const string SettingsFabLabel = "settings.fab";
             public const string SettingsLanguage = "settings.language";
+            public const string SettingsLanguageButton = "settings.language.button";
             public const string SettingsLangZh = "settings.lang_zh";
             public const string SettingsLangEn = "settings.lang_en";
             public const string SettingsClose = "settings.close";
+            public const string SettingsPlayerGuest = "settings.player.guest";
+            public const string SettingsPlayerMetaFmt = "settings.player.meta_fmt";
+            public const string SettingsPrivacy = "settings.privacy";
+            public const string SettingsSidebar = "settings.sidebar";
+            public const string SettingsShortcut = "settings.shortcut";
+            public const string SettingsInvite = "settings.invite";
+            public const string SettingsInviteShare = "settings.invite.share";
+            public const string SettingsStatusPrivacy = "settings.status.privacy";
+            public const string SettingsStatusPrivacyOk = "settings.status.privacy_ok";
+            public const string SettingsStatusPrivacyFail = "settings.status.privacy_fail";
+            public const string SettingsStatusSidebar = "settings.status.sidebar";
+            public const string SettingsStatusSidebarOk = "settings.status.sidebar_ok";
+            public const string SettingsStatusSidebarFail = "settings.status.sidebar_fail";
+            public const string SettingsStatusShortcut = "settings.status.shortcut";
+            public const string SettingsStatusShortcutOk = "settings.status.shortcut_ok";
+            public const string SettingsStatusInvite = "settings.status.invite";
+            public const string SettingsStatusLanguage = "settings.status.language";
+            public const string SettingsLegalTitle = "settings.legal.title";
+            public const string SettingsLegalBody = "settings.legal.body";
 
             public const string NavBack = "nav.back";
 
@@ -119,10 +139,34 @@ namespace Bordy
         {
             { Keys.SettingsTitle, "设置" },
             { Keys.SettingsFabLabel, "设置" },
-            { Keys.SettingsLanguage, "语言" },
+            { Keys.SettingsLanguage, "Language" },
+            { Keys.SettingsLanguageButton, "Language" },
             { Keys.SettingsLangZh, "简体中文" },
             { Keys.SettingsLangEn, "English" },
             { Keys.SettingsClose, "关闭" },
+            { Keys.SettingsPlayerGuest, "玩家" },
+            { Keys.SettingsPlayerMetaFmt, "角色：{0}  ·  闯关第 {1} 关" },
+            { Keys.SettingsPrivacy, "隐私与服务条款" },
+            { Keys.SettingsSidebar, "添加侧边栏" },
+            { Keys.SettingsShortcut, "添加桌面快捷方式" },
+            { Keys.SettingsInvite, "邀请好友同玩" },
+            { Keys.SettingsInviteShare, "一起来玩 Bordy！" },
+            { Keys.SettingsStatusPrivacy, "正在打开隐私与条款…" },
+            { Keys.SettingsStatusPrivacyOk, "已打开隐私与条款" },
+            { Keys.SettingsStatusPrivacyFail, "无法打开网页，已显示政策全文" },
+            { Keys.SettingsStatusSidebar, "正在打开侧边栏…" },
+            { Keys.SettingsStatusSidebarOk, "已打开侧边栏" },
+            { Keys.SettingsStatusSidebarFail, "侧边栏暂不可用，请稍后重试" },
+            { Keys.SettingsStatusShortcut, "请在弹窗中确认添加到桌面" },
+            { Keys.SettingsStatusShortcutOk, "已添加到桌面" },
+            { Keys.SettingsStatusInvite, "正在打开邀请…" },
+            { Keys.SettingsStatusLanguage, "Language: English" },
+            { Keys.SettingsLegalTitle, "Privacy & Terms" },
+            { Keys.SettingsLegalBody,
+                "Operator: Shanghai Quanjie Technology Co., Ltd.\n\n" +
+                "Privacy: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
+                "Terms: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
+                "We collect only what the TikTok Mini Game platform provides (OpenID, cloud save, ads). Data is stored on Cloudflare. Youth / general audience. Contact: 1531362757@qq.com" },
             { Keys.NavBack, "返回" },
 
             { Keys.ShopFabLabel, "商店" },
@@ -229,9 +273,33 @@ namespace Bordy
             { Keys.SettingsTitle, "Settings" },
             { Keys.SettingsFabLabel, "Settings" },
             { Keys.SettingsLanguage, "Language" },
+            { Keys.SettingsLanguageButton, "Language" },
             { Keys.SettingsLangZh, "简体中文" },
             { Keys.SettingsLangEn, "English" },
             { Keys.SettingsClose, "Close" },
+            { Keys.SettingsPlayerGuest, "Player" },
+            { Keys.SettingsPlayerMetaFmt, "Character: {0}  ·  Campaign {1}" },
+            { Keys.SettingsPrivacy, "Privacy & Terms" },
+            { Keys.SettingsSidebar, "Add to sidebar" },
+            { Keys.SettingsShortcut, "Add desktop shortcut" },
+            { Keys.SettingsInvite, "Invite friends" },
+            { Keys.SettingsInviteShare, "Come play Bordy with me!" },
+            { Keys.SettingsStatusPrivacy, "Opening Privacy & Terms…" },
+            { Keys.SettingsStatusPrivacyOk, "Opened Privacy & Terms" },
+            { Keys.SettingsStatusPrivacyFail, "Couldn't open the page. Policy is shown below." },
+            { Keys.SettingsStatusSidebar, "Opening sidebar…" },
+            { Keys.SettingsStatusSidebarOk, "Opened sidebar" },
+            { Keys.SettingsStatusSidebarFail, "Sidebar isn't available right now. Try again." },
+            { Keys.SettingsStatusShortcut, "Confirm add-to-desktop in the prompt" },
+            { Keys.SettingsStatusShortcutOk, "Added to desktop" },
+            { Keys.SettingsStatusInvite, "Opening invite…" },
+            { Keys.SettingsStatusLanguage, "Language: English" },
+            { Keys.SettingsLegalTitle, "Privacy & Terms" },
+            { Keys.SettingsLegalBody,
+                "Operator: Shanghai Quanjie Technology Co., Ltd.\n\n" +
+                "Privacy: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
+                "Terms: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
+                "We collect only what the TikTok Mini Game platform provides (OpenID, cloud save, ads). Data is stored on Cloudflare. Youth / general audience. Contact: 1531362757@qq.com" },
             { Keys.NavBack, "Back" },
 
             { Keys.ShopFabLabel, "Shop" },

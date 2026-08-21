@@ -8,6 +8,39 @@
 //        result to Unity: SendMessage("BordyFriendCloud","OnFriendDaily", {"items":[{name,seconds}]})
 //  BordyDouyinShareInvite(title)           — tt.shareAppMessage invite card
 mergeInto(LibraryManager.library, {
+  $BordyTt: {
+    sdk: function () {
+      try {
+        if (typeof TTMinis !== 'undefined' && TTMinis && TTMinis.game) return TTMinis.game;
+      } catch (e) {}
+      try {
+        if (typeof tt !== 'undefined' && tt) return tt;
+      } catch (e2) {}
+      var root = typeof globalThis !== 'undefined' ? globalThis
+        : (typeof window !== 'undefined' ? window : null);
+      if (!root) return null;
+      if (root.TTMinis && root.TTMinis.game) return root.TTMinis.game;
+      if (root.tt) return root.tt;
+      return null;
+    },
+    send: function (method, payload) {
+      try {
+        var root = typeof globalThis !== 'undefined' ? globalThis
+          : (typeof window !== 'undefined' ? window : null);
+        var u = root && (root.bordyUnity || root.unityInstance || root.myGameInstance || root.gameInstance || root.Module);
+        if (u && typeof u.SendMessage === 'function') {
+          u.SendMessage('BordyPlatformHost', method, payload);
+          return;
+        }
+        if (typeof SendMessage === 'function') {
+          SendMessage('BordyPlatformHost', method, payload);
+        }
+      } catch (e) {
+        console.warn('[Bordy] SendMessage fail', method, e);
+      }
+    }
+  },
+
   BordyDouyinSetUserCloudStorage: function (arrJsonPtr) {
     try {
       var list = JSON.parse(UTF8ToString(arrJsonPtr));
@@ -91,5 +124,107 @@ mergeInto(LibraryManager.library, {
         fail: function (e) { console.warn('[Bordy] share fail', e); }
       });
     } catch (e) { console.warn('[Bordy] shareInvite exception', e); }
+  },
+
+  BordyNavigateToSidebar__deps: ['$BordyTt'],
+  BordyNavigateToSidebar: function () {
+    // All-in-One guide §3.2: canIUse then startEntranceMission (profile sidebar revisit).
+    try {
+      var g = BordyTt.sdk();
+      if (!g) {
+        console.warn('[Bordy] no TTMinis.game/tt for startEntranceMission');
+        BordyTt.send('OnSidebarResult', '0');
+        return;
+      }
+      if (typeof g.canIUse === 'function' && !g.canIUse('startEntranceMission')) {
+        console.warn('[Bordy] canIUse startEntranceMission = false');
+        BordyTt.send('OnSidebarResult', '0');
+        return;
+      }
+      if (typeof g.startEntranceMission !== 'function') {
+        console.warn('[Bordy] startEntranceMission unavailable');
+        BordyTt.send('OnSidebarResult', '0');
+        return;
+      }
+      g.startEntranceMission({
+        success: function () {
+          console.log('[Bordy] startEntranceMission ok');
+          BordyTt.send('OnSidebarResult', '1');
+        },
+        fail: function (e) {
+          console.warn('[Bordy] startEntranceMission fail', e);
+          BordyTt.send('OnSidebarResult', '0');
+        },
+        complete: function () {}
+      });
+    } catch (e) {
+      console.warn('[Bordy] startEntranceMission exception', e);
+      BordyTt.send('OnSidebarResult', '0');
+    }
+  },
+
+  BordyOpenLink__deps: ['$BordyTt'],
+  BordyOpenLink: function (urlPtr) {
+    try {
+      var url = UTF8ToString(urlPtr);
+      var g = BordyTt.sdk();
+      console.log('[Bordy] open url', url, 'openSchema', !!(g && g.openSchema), 'openLink', !!(g && g.openLink));
+
+      function opened() { BordyTt.send('OnOpenLinkResult', '1'); }
+      function failed() { BordyTt.send('OnOpenLinkResult', '0'); }
+
+      // TikTok Native has openSchema (in-app / system browser). tt.openLink is Douyin-only
+      // and may exist as a no-op stub, so do not return early on it.
+      if (g && typeof g.openSchema === 'function') {
+        g.openSchema({
+          schema: url,
+          success: function () { console.log('[Bordy] openSchema ok'); opened(); },
+          fail: function (e) {
+            console.warn('[Bordy] openSchema https fail', e);
+            g.openSchema({
+              schema: 'sslocal://webview?url=' + encodeURIComponent(url),
+              success: function () { console.log('[Bordy] openSchema webview ok'); opened(); },
+              fail: function (e2) {
+                console.warn('[Bordy] openSchema webview fail', e2);
+                if (typeof g.openLink === 'function') {
+                  g.openLink({
+                    url: url,
+                    success: function () { opened(); },
+                    fail: function (e3) {
+                      console.warn('[Bordy] openLink fail', e3);
+                      failed();
+                    }
+                  });
+                } else {
+                  failed();
+                }
+              }
+            });
+          }
+        });
+        return;
+      }
+
+      if (g && typeof g.openLink === 'function') {
+        g.openLink({
+          url: url,
+          success: function () { opened(); },
+          fail: function (e) {
+            console.warn('[Bordy] openLink fail', e);
+            failed();
+          }
+        });
+        return;
+      }
+
+      if (typeof window !== 'undefined' && window.open) {
+        var w = window.open(url, '_blank');
+        if (w) { opened(); return; }
+      }
+      failed();
+    } catch (e) {
+      console.warn('[Bordy] openLink exception', e);
+      BordyTt.send('OnOpenLinkResult', '0');
+    }
   }
 });
