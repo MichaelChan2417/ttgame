@@ -10,7 +10,7 @@ import { ANSWER_WORDS } from './WordList';
 
 const DAY_MS = 86400000;
 /** Launch/base date (UTC midnight) used for puzzle numbering. */
-const BASE_UTC = Date.UTC(2024, 0, 1); // 2024-01-01
+const BASE_UTC = Date.UTC(2001, 7, 22); // 2001-08-22 (month is 0-indexed)
 
 /** Whole days elapsed (UTC) since the base date. */
 export function dayNumber(now?: Date): number {

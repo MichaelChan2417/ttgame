@@ -1,7 +1,7 @@
 import {
-    _decorator, Component, Node, Label, LabelOutline, UITransform, Graphics, Color, Vec3,
-    view, ResolutionPolicy, input, Input, KeyCode, EventKeyboard, EventTouch, Layers, sys,
-    Sprite, SpriteFrame, Mask,
+    _decorator, Component, Node, Label, UITransform, Graphics, Color, Vec3,
+    view, ResolutionPolicy, input, Input, KeyCode, EventKeyboard, EventTouch, Layers, sys, tween,
+    Sprite, SpriteFrame, resources, UIOpacity,
 } from 'cc';
 import { isValidGuess } from './WordList';
 import { dailyWord, puzzleId } from './Daily';
@@ -10,20 +10,20 @@ import {
     authorizeOpenContext, setUserCloudStorage, postToOpenData, navigateToSidebar,
 } from './Platform';
 
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 const COLS = 5;
 const BASE_ROWS = 6;   // normal guesses
 const MAX_ROWS = 7;    // hard cap once the +1-row booster is used
-const DESIGN_W = 720;
-const DESIGN_H = 1280;
 
 /** Rewarded-ad slot id — configure in the TikTok dev portal before release. */
 const AD_UNIT = 'YOUR_REWARDED_AD_UNIT_ID';
 /** Cloud-storage key for the friend leaderboard. */
 const DAILY_KEY = 'wordtt_daily';
 /** Local-storage key for saving today's in-progress game. */
-const SAVE_KEY = 'wordtt_save_v2';
+const SAVE_KEY = 'wordtt_save_v1';
+/** Set false for release: hides the on-screen debug "reset" button. */
+const DEBUG = true;
 
 interface SaveState {
     day: number;
@@ -41,23 +41,22 @@ interface SaveState {
 enum LetterState { EMPTY = 0, ABSENT = 1, PRESENT = 2, CORRECT = 3 }
 
 // ---- Palette ---------------------------------------------------------------
-const C_BG = new Color(255, 255, 255);
-const C_BORDER_EMPTY = new Color(214, 217, 222);
-const C_BORDER_FILLED = new Color(150, 154, 158);
-const C_ABSENT = new Color(120, 124, 126);
-const C_PRESENT = new Color(224, 176, 76);
-const C_CORRECT = new Color(96, 176, 108);
-const C_KEY = new Color(224, 227, 231);
-const C_TEXT_DARK = new Color(38, 40, 46);
-const C_TEXT_LIGHT = new Color(255, 255, 255);
+const C_BG = new Color(255, 255, 255);           // empty tile fill
+const C_BORDER_EMPTY = new Color(219, 213, 200);
+const C_BORDER_FILLED = new Color(176, 168, 148);
+const C_ABSENT = new Color(122, 114, 102);       // warm gray
+const C_PRESENT = new Color(228, 151, 43);       // icon amber
+const C_CORRECT = new Color(84, 185, 106);       // icon green
+const C_KEY = new Color(228, 223, 208);          // warm light key
+const C_TEXT_DARK = new Color(43, 36, 29);       // warm dark ink
+const C_TEXT_LIGHT = new Color(243, 236, 221);   // cream
 const C_HALO = new Color(255, 255, 255);
-const C_ACCENT = new Color(99, 102, 241);
-const C_ACCENT_DARK = new Color(67, 56, 202);
-const C_ADD = new Color(240, 150, 60);       // add-to-desktop (warm) accent
-const C_DIM = new Color(20, 22, 30);
-const C_SHADOW = new Color(28, 32, 40, 40);
-const C_SHADOW_SOFT = new Color(28, 32, 40, 18);
-const C_CARD = new Color(232, 235, 240);
+const C_LTR_CORRECT = new Color(18, 64, 31);     // dark green letter on green tile
+const C_LTR_PRESENT = new Color(110, 67, 16);    // dark amber letter on amber tile
+const C_ACCENT = new Color(228, 151, 43);        // brand amber
+const C_ACCENT_DARK = new Color(138, 90, 18);
+const C_ADD = new Color(84, 185, 106);           // sidebar accent → brand green
+const C_DIM = new Color(36, 28, 22);
 
 const FONT_FAMILY = 'Poppins, Nunito, "Trebuchet MS", Verdana, sans-serif';
 
@@ -66,27 +65,18 @@ interface Key { node: Node; graphics: Graphics; label: Label; w: number; h: numb
 
 @ccclass('GameController')
 export class GameController extends Component {
-    @property(SpriteFrame)
-    hintIcon: SpriteFrame | null = null;
-    @property(SpriteFrame)
-    revealIcon: SpriteFrame | null = null;
-    @property(SpriteFrame)
-    addRowIcon: SpriteFrame | null = null;
-
-    private W = DESIGN_W;
-    private H = DESIGN_H;
+    private W = 720;
+    private H = 1280;
     private topInset = 0;      // safe-area inset (notch / Dynamic Island)
     private bottomInset = 0;   // safe-area inset (home indicator)
-    private uiBuilt = false;
-    private stage: Node | null = null;
-    private boardRoot: Node | null = null;
-    private kbRoot: Node | null = null;
 
     private menuRoot: Node | null = null;
     private gameRoot: Node | null = null;
     private propsRoot: Node | null = null;
     private shareBtn: Node | null = null;
-    private addRowBtnSprite: Sprite | null = null;
+    private addRowBtn: Node | null = null;
+    private propSprites: { [k: string]: Sprite } = {};
+    private propFrames: { [k: string]: SpriteFrame } = {};
     private mockRankRoot: Node | null = null;
     private sidebarPopupRoot: Node | null = null;
     private menuMsg: Label | null = null;
@@ -105,6 +95,7 @@ export class GameController extends Component {
     private hintLetters: string[] = [];
     private addRowUsed = false;
     private adBusy = false;
+    private animating = false;
     private saveAccum = 0;
 
     private lastWon = false;
@@ -122,71 +113,31 @@ export class GameController extends Component {
     private boardRowGap = 20;
 
     onLoad() {
-        this.W = DESIGN_W;
-        this.H = DESIGN_H;
-        view.setDesignResolutionSize(DESIGN_W, DESIGN_H, ResolutionPolicy.SHOW_ALL);
-        view.on('canvas-resize', this.onCanvasResize, this);
-        this.buildOnce();
-    }
-
-    start() { this.fitStage(); }
-
-    onDestroy() {
-        view.off('canvas-resize', this.onCanvasResize, this);
-    }
-
-    private onCanvasResize = () => this.fitStage();
-
-    private buildOnce() {
-        if (this.uiBuilt) return;
-        this.uiBuilt = true;
-        this.setupStage();
+        view.setDesignResolutionSize(720, 1280, ResolutionPolicy.FIT_WIDTH);
+        const vs = view.getVisibleSize();
+        if (vs.width > 0 && vs.height > 0) { this.W = vs.width; this.H = vs.height; }
+        else {
+            const uit = this.getComponent(UITransform);
+            if (uit && uit.width > 0) { this.W = uit.width; this.H = uit.height; }
+        }
         this.computeSafeArea();
         this.buildUI();
+        this.loadPropIcons();
         this.showMenu();
-        this.fitStage();
-    }
 
-    /** All UI lives on a 720×1280 stage, uniformly scaled to fit the real canvas. */
-    private setupStage() {
-        this.stage = this.makeUiLayer('stage', this.node);
-        this.fitStage();
-    }
-
-    private fitStage() {
-        if (!this.stage) return;
-        const uit = this.getComponent(UITransform);
-        const vs = view.getVisibleSize();
-        const cw = (uit && uit.width > 1) ? uit.width : vs.width;
-        const ch = (uit && uit.height > 1) ? uit.height : vs.height;
-        if (cw <= 1 || ch <= 1) return;
-        const s = Math.min(cw / DESIGN_W, ch / DESIGN_H);
-        this.stage.setScale(s, s, 1);
-        this.stage.setPosition(0, 0, 0);
-    }
-
-    private makeUiLayer(name: string, parent: Node): Node {
-        const n = new Node(name);
-        n.layer = Layers.Enum.UI_2D;
-        n.setParent(parent);
-        const uit = n.addComponent(UITransform);
-        uit.setContentSize(this.W, this.H);
-        uit.setAnchorPoint(0.5, 0.5);
-        n.setPosition(Vec3.ZERO);
-        return n;
+        // Dev helper: type wordttReset() in the console to clear the local save.
+        (globalThis as any).wordttReset = () => this.clearSave();
     }
 
     private computeSafeArea() {
         this.topInset = 0;
         this.bottomInset = 0;
         try {
-            const vs = view.getVisibleSize();
-            // Editor / landscape previews are not phones — don't steal layout with a bogus inset.
-            if (!vs || vs.height < vs.width) return;
             const sa = (sys as any).getSafeAreaRect ? (sys as any).getSafeAreaRect() : null;
             if (sa && sa.height > 0) {
-                this.topInset = Math.min(Math.max(0, this.H - (sa.y + sa.height) * (this.H / vs.height)), this.H * 0.10);
-                this.bottomInset = Math.min(Math.max(0, sa.y * (this.H / vs.height)), this.H * 0.08);
+                // rect is in the same logical space as the visible size
+                this.topInset = Math.min(Math.max(0, this.H - (sa.y + sa.height)), this.H * 0.14);
+                this.bottomInset = Math.min(Math.max(0, sa.y), this.H * 0.10);
             }
         } catch (e) { /* not supported → no inset */ }
     }
@@ -212,9 +163,13 @@ export class GameController extends Component {
     // ===== UI construction ==================================================
 
     private buildUI() {
-        const root = this.stage!;
-        this.menuRoot = this.makeUiLayer('menu', root);
-        this.gameRoot = this.makeUiLayer('game', root);
+        this.menuRoot = new Node('menu');
+        this.menuRoot.layer = Layers.Enum.UI_2D;
+        this.menuRoot.setParent(this.node);
+
+        this.gameRoot = new Node('game');
+        this.gameRoot.layer = Layers.Enum.UI_2D;
+        this.gameRoot.setParent(this.node);
 
         this.buildMenu();
         this.buildGame();
@@ -224,24 +179,43 @@ export class GameController extends Component {
 
     private buildMenu() {
         const W = this.W, H = this.H, parent = this.menuRoot!;
-        const title = this.makeText('WORD TT', 0, H * 0.18, 76, C_ACCENT, true, parent);
-        this.addOutline(title, C_ACCENT_DARK, 5);
-        this.makeText('Daily Challenge  ·  #' + puzzleId(), 0, H * 0.18 - 70, 30, C_ABSENT, false, parent);
+        this.makeTiledTitle(parent, 'WORDTT', 0, H * 0.18, 84, 9);
+        this.makeText('Daily Challenge  ·  #' + puzzleId(), 0, H * 0.18 - 78, 30, C_ABSENT, false, parent);
         this.makeButton(parent, 'PLAY', 0, -H * 0.02, W * 0.52, 104, C_ACCENT, 26, () => this.startGame());
         this.makeText('Same word for everyone, every day', 0, -H * 0.02 - 84, 24, C_ABSENT, false, parent);
 
         // Small side button (lower-right) → opens the "Add to Sidebar" popup
         this.makeButton(parent, 'SIDEBAR', W * 0.5 - 84, -H * 0.20, 132, 70, C_ADD, 18, () => this.showSidebarPopup());
+
+        // Debug-only: clear the local save for testing
+        if (DEBUG) this.makeButton(parent, 'reset', -W * 0.5 + 66, -H * 0.40, 100, 50, C_ABSENT, 14, () => this.clearSave());
+    }
+
+    private clearSave() {
+        try { sys.localStorage.removeItem(SAVE_KEY); } catch (e) { /* ignore */ }
+        // Drop in-memory progress too — showMenu() persists whatever is still in RAM.
+        this.target = '';
+        this.puzzleNo = 0;
+        this.curRow = 0;
+        this.maxRows = BASE_ROWS;
+        this.gameOver = false;
+        this.elapsed = 0;
+        this.timing = false;
+        this.revealed = ['', '', '', '', ''];
+        this.history = [];
+        this.hintLetters = [];
+        this.addRowUsed = false;
+        this.lastWon = false;
+        this.lastRows = 0;
+        this.showMenu();
+        console.log('[WordTT] local save cleared — press PLAY for a fresh game');
     }
 
     private buildSidebarPopup() {
         const W = this.W, H = this.H;
         const root = new Node('sidebarPopup');
         root.layer = Layers.Enum.UI_2D;
-        root.setParent(this.stage!);
-        const ru = root.addComponent(UITransform);
-        ru.setContentSize(W, H);
-        ru.setAnchorPoint(0.5, 0.5);
+        root.setParent(this.node);
 
         const dim = new Node('dim');
         dim.layer = Layers.Enum.UI_2D;
@@ -291,9 +265,6 @@ export class GameController extends Component {
 
     private buildGame() {
         const W = this.W, H = this.H, parent = this.gameRoot!;
-        this.boardRoot = this.makeUiLayer('board', parent);
-        this.kbRoot = this.makeUiLayer('keyboard', parent);
-        this.propsRoot = this.makeUiLayer('props', parent);
 
         // top button row (Menu / Rank) — pushed below the notch / Dynamic Island
         const buttonsY = H * 0.5 - this.topInset - 58;
@@ -302,8 +273,7 @@ export class GameController extends Component {
 
         // title sits fully BELOW the button row
         const titleY = H * 0.5 - this.topInset - 132;
-        const gTitle = this.makeText('WORD TT', 0, titleY, 40, C_ACCENT, true, parent);
-        this.addOutline(gTitle, C_ACCENT_DARK, 3);
+        this.makeTiledTitle(parent, 'WORDTT', 0, titleY, 46, 6);
 
         const timerY = titleY - 50;
         this.timerLabel = this.makeText('00:00', 0, timerY, 34, C_TEXT_DARK, true, parent);
@@ -314,30 +284,32 @@ export class GameController extends Component {
         const rows = ['QWERTYUIOP', 'ASDFGHJKL', '<ZXCVBNM>'];
         const kGap = 8;
         const keyW = (W * 0.96 - 9 * kGap) / 10;
-        const keyH = Math.min(keyW * 1.35, 76);
+        const keyH = Math.min(keyW * 1.5, 92);
         const wideW = keyW * 1.5 + kGap / 2;
         const kbRows = rows.length;
         const kbBottomMargin = H * 0.028 + this.bottomInset;
         const kbBottomRowY = -H * 0.5 + kbBottomMargin + keyH / 2;
         const kbTopEdge = kbBottomRowY + (kbRows - 1) * (keyH + kGap) + keyH / 2;
 
-        // ---- booster (prop) icon buttons + share button, just above keyboard ----
-        const propSize = 110;
-        const propGap = 20;
-        const propY = kbTopEdge + 14 + propSize / 2;
-        this.makeIconButton(this.propsRoot, this.hintIcon, 'HINT', -(propSize + propGap), propY, propSize, () => this.onProp('hint'));
-        this.makeIconButton(this.propsRoot, this.revealIcon, 'REVEAL', 0, propY, propSize, () => this.onProp('reveal'));
-        this.addRowBtnSprite = this.makeIconButton(
-            this.propsRoot, this.addRowIcon, '+ROW', (propSize + propGap), propY, propSize, () => this.onProp('addrow'),
-        ).sprite;
+        // ---- booster (prop) pill buttons + share button, just above keyboard ----
+        const propH = 84;
+        const propY = kbTopEdge + 18 + propH / 2;
+        const pgap = 26;
+        const propW = (W * 0.94 - 2 * pgap) / 3;
+        this.propsRoot = new Node('props');
+        this.propsRoot.layer = Layers.Enum.UI_2D;
+        this.propsRoot.setParent(parent);
+        this.makePropPill(this.propsRoot, 'hint', 'Hint', -(propW + pgap), propY, propW, propH, () => this.onProp('hint'));
+        this.makePropPill(this.propsRoot, 'reveal', 'Reveal', 0, propY, propW, propH, () => this.onProp('reveal'));
+        this.addRowBtn = this.makePropPill(this.propsRoot, 'addrow', '+1 Row', propW + pgap, propY, propW, propH, () => this.onProp('addrow'));
 
-        const share = this.makeButton(parent, 'SHARE  ▸  CHALLENGE', 0, propY, W * 0.9, 64, C_CORRECT, 16, () => this.onShare());
+        const share = this.makeButton(parent, 'SHARE  ▸  CHALLENGE', 0, propY, W * 0.94, propH, C_CORRECT, 18, () => this.onShare());
         this.shareBtn = share.node;
         this.shareBtn.active = false;
 
         // ---- board region: between the message and the booster row ----
-        this.boardRegionTop = messageY - 24;
-        this.boardRegionBottom = propY + propSize / 2 + 12;
+        this.boardRegionTop = messageY - 30;
+        this.boardRegionBottom = propY + propH / 2 + 16;
 
         // create MAX_ROWS rows of cells (extra row hidden until earned), then lay out for BASE_ROWS
         for (let r = 0; r < MAX_ROWS; r++) {
@@ -364,9 +336,6 @@ export class GameController extends Component {
         }
 
         this.layoutBoard(BASE_ROWS);
-        this.boardRoot.setSiblingIndex(0);
-        this.propsRoot.setSiblingIndex(this.gameRoot!.children.length - 1);
-        this.kbRoot.setSiblingIndex(this.gameRoot!.children.length - 1);
     }
 
     // ===== element factories ================================================
@@ -374,7 +343,7 @@ export class GameController extends Component {
     private makeCell(): Cell {
         const node = new Node('cell');
         node.layer = Layers.Enum.UI_2D;
-        node.setParent(this.boardRoot!);
+        node.setParent(this.gameRoot!);
         const uit = node.addComponent(UITransform);
         uit.setContentSize(80, 80);
         uit.setAnchorPoint(0.5, 0.5);
@@ -401,6 +370,7 @@ export class GameController extends Component {
     }
 
     private positionCell(cell: Cell, x: number, y: number, size: number) {
+        cell.node.setScale(1, 1, 1);
         cell.node.getComponent(UITransform)!.setContentSize(size, size);
         cell.node.setPosition(new Vec3(x, y, 0));
         cell.label.node.getComponent(UITransform)!.setContentSize(size, size);
@@ -413,7 +383,7 @@ export class GameController extends Component {
     private makeKey(id: string, face: string, x: number, y: number, w: number, h: number): Key {
         const node = new Node('key_' + id);
         node.layer = Layers.Enum.UI_2D;
-        node.setParent(this.kbRoot!);
+        node.setParent(this.gameRoot!);
         const uit = node.addComponent(UITransform);
         uit.setContentSize(w, h);
         uit.setAnchorPoint(0.5, 0.5);
@@ -464,6 +434,59 @@ export class GameController extends Component {
         return label;
     }
 
+    /** Brand-style title: each letter on its own tilted rounded tile (icon look). */
+    private makeTiledTitle(parent: Node, text: string, cx: number, cy: number, tile: number, gap: number): Node {
+        const n = text.length;
+        tile = Math.min(tile, (this.W * 0.9 - (n - 1) * gap) / n);
+        const totalW = n * tile + (n - 1) * gap;
+        const th = tile * 1.12;
+        const tileColors = [C_PRESENT, C_DIM, C_CORRECT];               // amber / dark / green
+        const letterColors = [C_LTR_PRESENT, C_TEXT_LIGHT, C_LTR_CORRECT];
+
+        const container = new Node('title');
+        container.layer = Layers.Enum.UI_2D;
+        container.setParent(parent);
+        const cu = container.addComponent(UITransform);
+        cu.setContentSize(totalW, th);
+        cu.setAnchorPoint(0.5, 0.5);
+        container.setPosition(new Vec3(cx, cy, 0));
+
+        const startX = -totalW / 2 + tile / 2;
+        for (let i = 0; i < n; i++) {
+            const ci = i % 3;
+            const t = new Node('t');
+            t.layer = Layers.Enum.UI_2D;
+            t.setParent(container);
+            const tu = t.addComponent(UITransform);
+            tu.setContentSize(tile, th);
+            tu.setAnchorPoint(0.5, 0.5);
+            t.setPosition(new Vec3(startX + i * (tile + gap), 0, 0));
+            t.setRotationFromEuler(0, 0, i % 2 === 0 ? 4 : -4);
+            const g = t.addComponent(Graphics);
+            g.roundRect(-tile / 2, -th / 2, tile, th, tile * 0.22);
+            g.fillColor = tileColors[ci];
+            g.fill();
+
+            const ln = new Node('l');
+            ln.layer = Layers.Enum.UI_2D;
+            ln.setParent(t);
+            const lu = ln.addComponent(UITransform);
+            lu.setContentSize(tile, th);
+            lu.setAnchorPoint(0.5, 0.5);
+            ln.setPosition(Vec3.ZERO);
+            const lab = ln.addComponent(Label);
+            lab.string = text[i];
+            lab.fontFamily = FONT_FAMILY;
+            lab.fontSize = Math.floor(tile * 0.6);
+            lab.lineHeight = lab.fontSize;
+            lab.horizontalAlign = Label.HorizontalAlign.CENTER;
+            lab.verticalAlign = Label.VerticalAlign.CENTER;
+            lab.color = letterColors[ci];
+            lab.isBold = true;
+        }
+        return container;
+    }
+
     private makeButton(parent: Node, text: string, x: number, y: number, w: number, h: number,
                        bg: Color, radius: number, onClick: () => void): { node: Node; label: Label } {
         const node = new Node('button');
@@ -474,7 +497,9 @@ export class GameController extends Component {
         uit.setAnchorPoint(0.5, 0.5);
         node.setPosition(new Vec3(x, y, 0));
         const g = node.addComponent(Graphics);
-        this.paintButtonChrome(g, w, h, radius, bg, false);
+        g.roundRect(-w / 2, -h / 2, w, h, radius);
+        g.fillColor = bg;
+        g.fill();
 
         const lblNode = new Node('lbl');
         lblNode.layer = Layers.Enum.UI_2D;
@@ -497,106 +522,84 @@ export class GameController extends Component {
         return { node, label };
     }
 
-    private makeIconButton(parent: Node, frame: SpriteFrame | null, fallback: string,
-                           x: number, y: number, size: number, onClick: () => void): { node: Node; sprite: Sprite | null } {
-        if (!frame) {
-            const btn = this.makeButton(parent, fallback, x, y, size * 1.4, Math.max(64, size * 0.55), C_ACCENT, 16, onClick);
-            return { node: btn.node, sprite: null };
-        }
-        const radius = Math.round(size * 0.22);
-        const node = new Node('iconBtn_' + fallback);
+    /** Wide booster pill: white rounded card + square icon (left) + caption (right). */
+    private makePropPill(parent: Node, key: string, caption: string, x: number, y: number, w: number, h: number, onClick: () => void): Node {
+        const node = new Node('prop_' + key);
         node.layer = Layers.Enum.UI_2D;
         node.setParent(parent);
         const uit = node.addComponent(UITransform);
-        uit.setContentSize(size, size);
+        uit.setContentSize(w, h);
         uit.setAnchorPoint(0.5, 0.5);
         node.setPosition(new Vec3(x, y, 0));
+        const g = node.addComponent(Graphics);
+        g.roundRect(-w / 2, -h / 2, w, h, 20);
+        g.fillColor = C_BG;
+        g.fill();
+        g.lineWidth = 2;
+        g.strokeColor = C_BORDER_EMPTY;
+        g.roundRect(-w / 2, -h / 2, w, h, 20);
+        g.stroke();
 
-        const chrome = new Node('chrome');
-        chrome.layer = Layers.Enum.UI_2D;
-        chrome.setParent(node);
-        const cu = chrome.addComponent(UITransform);
-        cu.setContentSize(size, size);
-        cu.setAnchorPoint(0.5, 0.5);
-        chrome.setPosition(Vec3.ZERO);
-        this.paintButtonChrome(chrome.addComponent(Graphics), size, size, radius, C_CARD, false);
-
-        const maskNode = new Node('mask');
-        maskNode.layer = Layers.Enum.UI_2D;
-        maskNode.setParent(node);
-        const mu = maskNode.addComponent(UITransform);
-        mu.setContentSize(size, size);
-        mu.setAnchorPoint(0.5, 0.5);
-        maskNode.setPosition(Vec3.ZERO);
-        const mask = maskNode.addComponent(Mask);
-        mask.type = Mask.Type.GRAPHICS_STENCIL;
-        const stencil = maskNode.getComponent(Graphics) || maskNode.addComponent(Graphics);
-        stencil.clear();
-        stencil.roundRect(-size / 2, -size / 2, size, size, radius);
-        stencil.fillColor = Color.WHITE;
-        stencil.fill();
-
-        const icon = new Node('icon');
-        icon.layer = Layers.Enum.UI_2D;
-        icon.setParent(maskNode);
-        const iu = icon.addComponent(UITransform);
-        iu.setContentSize(size, size);
+        const iconSize = h * 0.72;
+        const iconX = -w / 2 + 10 + iconSize / 2;
+        const iconNode = new Node('icon');
+        iconNode.layer = Layers.Enum.UI_2D;
+        iconNode.setParent(node);
+        const iu = iconNode.addComponent(UITransform);
+        iu.setContentSize(iconSize, iconSize);
         iu.setAnchorPoint(0.5, 0.5);
-        icon.setPosition(Vec3.ZERO);
-        const sprite = icon.addComponent(Sprite);
-        sprite.sizeMode = Sprite.SizeMode.CUSTOM;
-        sprite.trim = false;
-        sprite.type = Sprite.Type.SIMPLE;
-        sprite.spriteFrame = frame;
+        iconNode.setPosition(new Vec3(iconX, 0, 0));
+        const sp = iconNode.addComponent(Sprite);
+        sp.type = Sprite.Type.SIMPLE;
+        sp.sizeMode = Sprite.SizeMode.CUSTOM;
+        if (this.propFrames[key]) sp.spriteFrame = this.propFrames[key];
+        this.propSprites[key] = sp;
 
-        const rim = new Node('rim');
-        rim.layer = Layers.Enum.UI_2D;
-        rim.setParent(node);
-        const ru = rim.addComponent(UITransform);
-        ru.setContentSize(size, size);
-        ru.setAnchorPoint(0.5, 0.5);
-        rim.setPosition(Vec3.ZERO);
-        const rg = rim.addComponent(Graphics);
-        rg.clear();
-        rg.lineWidth = 2;
-        rg.strokeColor = C_BORDER_EMPTY;
-        rg.roundRect(-size / 2, -size / 2, size, size, radius);
-        rg.stroke();
+        const labLeft = iconX + iconSize / 2 + 4;
+        const labRight = w / 2 - 8;
+        const cap = new Node('cap');
+        cap.layer = Layers.Enum.UI_2D;
+        cap.setParent(node);
+        const lu = cap.addComponent(UITransform);
+        lu.setContentSize(labRight - labLeft, h);
+        lu.setAnchorPoint(0.5, 0.5);
+        cap.setPosition(new Vec3((labLeft + labRight) / 2, 0, 0));
+        const lab = cap.addComponent(Label);
+        lab.string = caption;
+        lab.fontFamily = FONT_FAMILY;
+        lab.fontSize = Math.floor(h * 0.28);
+        lab.lineHeight = lab.fontSize;
+        lab.horizontalAlign = Label.HorizontalAlign.CENTER;
+        lab.verticalAlign = Label.VerticalAlign.CENTER;
+        lab.color = C_TEXT_DARK;
+        lab.isBold = true;
 
         node.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; onClick(); }, this);
-        return { node, sprite };
+        return node;
     }
 
-    /** Bottom-weighted drop shadow + optional hairline so white plates lift off the game bg. */
-    private paintButtonChrome(g: Graphics, w: number, h: number, radius: number, fill: Color, bordered: boolean) {
-        g.clear();
-        const drop = Math.max(5, Math.round(h * 0.07));
-        g.roundRect(-w / 2, -h / 2 - drop, w, h, radius);
-        g.fillColor = C_SHADOW_SOFT;
-        g.fill();
-        g.roundRect(-w / 2, -h / 2 - drop * 0.55, w, h, radius);
-        g.fillColor = C_SHADOW;
-        g.fill();
-        g.roundRect(-w / 2, -h / 2, w, h, radius);
-        g.fillColor = fill;
-        g.fill();
-        if (bordered) {
-            g.lineWidth = 2;
-            g.strokeColor = C_BORDER_EMPTY;
-            g.roundRect(-w / 2, -h / 2, w, h, radius);
-            g.stroke();
+    private loadPropIcons() {
+        for (const k of ['hint', 'reveal', 'addrow']) {
+            resources.load('ui/' + k + '/spriteFrame', SpriteFrame, (err, sf) => {
+                if (err || !sf) { console.warn('[WordTT] booster icon load failed:', k, err); return; }
+                this.propFrames[k] = sf as SpriteFrame;
+                if (this.propSprites[k]) this.propSprites[k].spriteFrame = sf as SpriteFrame;
+            });
         }
     }
 
-    private setAddRowUsedVisual(used: boolean) {
-        if (!this.addRowBtnSprite) return;
-        this.addRowBtnSprite.color = used ? new Color(255, 255, 255, 120) : new Color(255, 255, 255, 255);
+    private setAddRowDim(dim: boolean) {
+        if (!this.addRowBtn) return;
+        let op = this.addRowBtn.getComponent(UIOpacity);
+        if (!op) op = this.addRowBtn.addComponent(UIOpacity);
+        op.opacity = dim ? 110 : 255;
     }
 
     private addOutline(label: Label, color: Color, width: number) {
-        const ol = label.node.addComponent(LabelOutline);
-        ol.color = color;
-        ol.width = width;
+        const l = label as any;
+        l.enableOutline = true;
+        l.outlineColor = color;
+        l.outlineWidth = width;
     }
 
     // ===== drawing ==========================================================
@@ -624,6 +627,9 @@ export class GameController extends Component {
             g.roundRect(-half, -half, s, s, radius);
             g.stroke();
         }
+        cell.label.color = cell.state === LetterState.CORRECT ? C_LTR_CORRECT
+            : cell.state === LetterState.PRESENT ? C_LTR_PRESENT
+            : cell.state === LetterState.ABSENT ? C_TEXT_LIGHT : C_TEXT_DARK;
     }
 
     private drawKey(key: Key) {
@@ -650,8 +656,8 @@ export class GameController extends Component {
         const colGap = this.boardColGap, rowGap = this.boardRowGap;
         const widthFit = (this.W * 0.88 - (COLS - 1) * colGap) / COLS;
         const regionH = this.boardRegionTop - this.boardRegionBottom;
-        const heightFit = regionH > 0 ? (regionH - (visibleRows - 1) * rowGap) / visibleRows : 24;
-        const tile = Math.max(24, Math.min(96, widthFit, heightFit));
+        const heightFit = (regionH - (visibleRows - 1) * rowGap) / visibleRows;
+        const tile = Math.max(40, Math.min(100, widthFit, heightFit));
         const boardW = COLS * tile + (COLS - 1) * colGap;
         const boardH = visibleRows * tile + (visibleRows - 1) * rowGap;
         const startX = -boardW / 2 + tile / 2;
@@ -683,7 +689,7 @@ export class GameController extends Component {
     }
 
     private handleInput(id: string) {
-        if (this.gameOver) return;   // ignore input after the game is over
+        if (this.gameOver || this.animating) return;   // ignore input after the game is over or mid-animation
         if (id === '<') this.submitGuess();
         else if (id === '>') this.deleteLetter();
         else if (/^[A-Za-z]$/.test(id)) this.typeLetter(id.toUpperCase());
@@ -695,6 +701,7 @@ export class GameController extends Component {
             if (row[c].label.string === '') {
                 row[c].label.string = ch;
                 this.drawTile(row[c], true);
+                this.popTile(row[c]);
                 this.saveState();
                 return;
             }
@@ -719,7 +726,7 @@ export class GameController extends Component {
             if (row[c].label.string === '') { this.showMessage('Not enough letters', C_ABSENT); return; }
         }
         const guess = row.map(cell => cell.label.string.toLowerCase()).join('');
-        if (!isValidGuess(guess)) { this.showMessage('Not in word list', C_ABSENT); return; }
+        if (!isValidGuess(guess)) { this.showMessage('Not in word list', C_ABSENT); this.shakeRow(this.curRow); return; }
         this.evaluateRow(guess);
     }
 
@@ -735,22 +742,46 @@ export class GameController extends Component {
 
     private evaluateRow(guess: string) {
         const result = this.computeResult(guess);
-        const row = this.cells[this.curRow];
-        for (let i = 0; i < COLS; i++) {
-            row[i].state = result[i];
-            this.drawTile(row[i], true);
-            this.updateKeyState(guess[i].toUpperCase(), result[i]);
-        }
         this.history.push(result);
+        const won = result.every(s => s === LetterState.CORRECT);
+        if (won) this.timing = false;               // freeze the clock at the solve moment
 
+        this.animating = true;
+        this.revealRow(this.curRow, result, guess, () => {
+            this.animating = false;
+            this.afterRow(result);
+        });
+    }
+
+    /** Sequential flip reveal: each tile flips shut, swaps to its color, flips open. */
+    private revealRow(r: number, result: LetterState[], guess: string, done: () => void) {
+        const row = this.cells[r];
+        for (let c = 0; c < COLS; c++) {
+            const cell = row[c];
+            this.scheduleOnce(() => {
+                tween(cell.node)
+                    .to(0.12, { scale: new Vec3(1, 0.02, 1) })
+                    .call(() => {
+                        cell.state = result[c];
+                        this.drawTile(cell, true);
+                        this.updateKeyState(guess[c].toUpperCase(), result[c]);
+                    })
+                    .to(0.12, { scale: new Vec3(1, 1, 1) })
+                    .start();
+            }, c * 0.16);
+        }
+        this.scheduleOnce(done, COLS * 0.16 + 0.3);
+    }
+
+    private afterRow(result: LetterState[]) {
         if (result.every(s => s === LetterState.CORRECT)) {
             this.gameOver = true; this.timing = false;
+            this.bounceRow(this.curRow);
             this.showMessage('Solved in ' + this.timerLabel!.string + '!', C_CORRECT, 0);
             this.onFinish(true, this.curRow + 1);
             this.saveState();
             return;
         }
-
         this.curRow++;
         if (this.curRow >= this.maxRows) {
             this.gameOver = true; this.timing = false;
@@ -760,6 +791,35 @@ export class GameController extends Component {
             this.applyRevealedToRow(this.curRow);
         }
         this.saveState();
+    }
+
+    private popTile(cell: Cell) {
+        cell.node.setScale(1, 1, 1);
+        tween(cell.node).to(0.05, { scale: new Vec3(1.1, 1.1, 1) }).to(0.06, { scale: new Vec3(1, 1, 1) }).start();
+    }
+
+    private shakeRow(r: number) {
+        const row = this.cells[r];
+        for (const cell of row) {
+            tween(cell.node)
+                .by(0.05, { position: new Vec3(-8, 0, 0) })
+                .by(0.05, { position: new Vec3(16, 0, 0) })
+                .by(0.05, { position: new Vec3(-16, 0, 0) })
+                .by(0.05, { position: new Vec3(8, 0, 0) })
+                .start();
+        }
+    }
+
+    private bounceRow(r: number) {
+        const row = this.cells[r];
+        for (let c = 0; c < COLS; c++) {
+            this.scheduleOnce(() => {
+                tween(row[c].node)
+                    .by(0.12, { position: new Vec3(0, 16, 0) })
+                    .by(0.14, { position: new Vec3(0, -16, 0) })
+                    .start();
+            }, c * 0.08);
+        }
     }
 
     private updateKeyState(letter: string, state: LetterState) {
@@ -859,8 +919,13 @@ export class GameController extends Component {
         if (this.addRowUsed || this.maxRows >= MAX_ROWS) return;
         this.addRowUsed = true;
         this.layoutBoard(this.maxRows + 1);
-        this.applyRevealedToRow(this.maxRows - 1); // in case a row was newly shown
-        this.setAddRowUsedVisual(true);
+        const extra = this.cells[this.maxRows - 1];
+        for (const cell of extra) {
+            cell.state = LetterState.EMPTY;
+            cell.label.string = '';
+            this.drawTile(cell, false);
+        }
+        this.setAddRowDim(true);
         this.showMessage('+1 extra guess added!', C_ACCENT);
         this.saveState();
     }
@@ -913,6 +978,7 @@ export class GameController extends Component {
         this.hintLetters = [];
         this.addRowUsed = false;
         this.adBusy = false;
+        this.animating = false;
         this.refreshTimer();
         this.hideMessage();
 
@@ -922,7 +988,7 @@ export class GameController extends Component {
         }
         this.keys.forEach(k => { k.state = LetterState.EMPTY; this.drawKey(k); });
 
-        this.setAddRowUsedVisual(false);
+        this.setAddRowDim(false);
         if (this.propsRoot) this.propsRoot.active = true;
         if (this.shareBtn) this.shareBtn.active = false;
         if (this.mockRankRoot) this.mockRankRoot.active = false;
@@ -936,7 +1002,6 @@ export class GameController extends Component {
 
     private loadSave(): SaveState | null {
         try {
-            sys.localStorage.removeItem('wordtt_save_v1');
             const raw = sys.localStorage.getItem(SAVE_KEY);
             if (!raw) return null;
             return JSON.parse(raw) as SaveState;
@@ -978,6 +1043,7 @@ export class GameController extends Component {
         this.hintLetters = s.hints ? s.hints.slice() : [];
         this.elapsed = s.elapsed || 0;
         this.adBusy = false;
+        this.animating = false;
         this.saveAccum = 0;
 
         // clear visuals
@@ -1023,7 +1089,7 @@ export class GameController extends Component {
             }
         }
 
-        this.setAddRowUsedVisual(this.addRowUsed);
+        this.setAddRowDim(this.addRowUsed);
         if (this.mockRankRoot) this.mockRankRoot.active = false;
 
         if (this.gameOver) {
@@ -1087,10 +1153,7 @@ export class GameController extends Component {
         const W = this.W, H = this.H;
         const root = new Node('mockRank');
         root.layer = Layers.Enum.UI_2D;
-        root.setParent(this.stage!);
-        const ru = root.addComponent(UITransform);
-        ru.setContentSize(W, H);
-        ru.setAnchorPoint(0.5, 0.5);
+        root.setParent(this.node);
 
         // dim background
         const dim = new Node('dim');
