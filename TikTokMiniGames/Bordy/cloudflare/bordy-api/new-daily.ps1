@@ -25,7 +25,7 @@ $file = "$Date.json"
 if (-not (Test-Path $file)) { Write-Error "expected $file was not created"; exit 1 }
 
 Write-Host "==> [2/3] Uploading to KV: daily:$Date ..."
-npx wrangler kv key put --binding=BORDY_KV "daily:$Date" --path="$file" --remote
+npx wrangler kv key put --binding=BORDY_KV "daily:$Date" --path="$file"
 if ($LASTEXITCODE -ne 0) { Write-Error "wrangler kv put failed"; exit 1 }
 
 Write-Host "==> [3/3] Verifying $WorkerUrl/api/daily/$Date.json ..."
