@@ -1,7 +1,7 @@
 import {
     _decorator, Component, Node, Label, UITransform, Graphics, Color, Vec3,
     view, ResolutionPolicy, input, Input, KeyCode, EventKeyboard, EventTouch, Layers, sys, tween,
-    Sprite, SpriteFrame, resources, UIOpacity,
+    Sprite, SpriteFrame, resources, UIOpacity, BlockInputEvents,
 } from 'cc';
 import { isValidGuess } from './WordList';
 import { dailyWord, puzzleId } from './Daily';
@@ -22,8 +22,31 @@ const AD_UNIT = 'YOUR_REWARDED_AD_UNIT_ID';
 const DAILY_KEY = 'wordtt_daily';
 /** Local-storage key for saving today's in-progress game. */
 const SAVE_KEY = 'wordtt_save_v1';
+/** First-time booster tutorial flags (persists across days). */
+const PROP_TUTORIAL_KEY = 'wordtt_prop_seen_v1';
+/** Per-user booster inventory (not reset with the daily puzzle). */
+const PROP_BAG_KEY = 'wordtt_prop_bag_v1';
+const PROP_KINDS = ['hint', 'reveal', 'addrow'] as const;
+const PROP_STARTER = 1;
+
+const PROP_COPY: { [k: string]: { title: string; body: string } } = {
+    hint: {
+        title: 'Hint',
+        body: 'Highlights a letter that is in today\'s word.\nIt won\'t tell you the position.',
+    },
+    reveal: {
+        title: 'Reveal',
+        body: 'Places one correct letter in the right spot\non your current row.',
+    },
+    addrow: {
+        title: '+1 Row',
+        body: 'Adds one extra empty guess this game.\nYou can use it once per puzzle.',
+    },
+};
 /** Set false for release: hides the on-screen debug "reset" button. */
 const DEBUG = false;
+/** Hold a booster this long to reopen its how-to popup. */
+const PROP_HOLD_SEC = 0.48;
 
 interface SaveState {
     day: number;
@@ -80,6 +103,19 @@ export class GameController extends Component {
     private mockRankRoot: Node | null = null;
     private sidebarPopupRoot: Node | null = null;
     private menuMsg: Label | null = null;
+    private propTutorRoot: Node | null = null;
+    private propTutorPanel: Node | null = null;
+    private propTutorDemo: Node | null = null;
+    private propTutorIcon: Sprite | null = null;
+    private propTutorTitle: Label | null = null;
+    private propTutorBody: Label | null = null;
+    private propTutorOpen = false;
+    private propTutorKind = '';
+    private propTutorLoop: (() => void) | null = null;
+    private seenProps: { [k: string]: boolean } = {};
+    private propBag: { [k: string]: number } = { hint: PROP_STARTER, reveal: PROP_STARTER, addrow: PROP_STARTER };
+    private propPills: { [k: string]: Node } = {};
+    private propBadges: { [k: string]: { g: Graphics; label: Label } } = {};
 
     private cells: Cell[][] = [];        // MAX_ROWS x COLS (extra row hidden until earned)
     private keys: Map<string, Key> = new Map();
@@ -121,6 +157,8 @@ export class GameController extends Component {
             if (uit && uit.width > 0) { this.W = uit.width; this.H = uit.height; }
         }
         this.computeSafeArea();
+        this.loadSeenProps();
+        this.loadPropBag();
         this.buildUI();
         this.loadPropIcons();
         this.showMenu();
@@ -174,6 +212,7 @@ export class GameController extends Component {
         this.buildGame();
         this.buildMockLeaderboard();
         this.buildSidebarPopup();
+        this.buildPropTutorial();
     }
 
     private buildMenu() {
@@ -262,6 +301,64 @@ export class GameController extends Component {
         });
     }
 
+    private buildPropTutorial() {
+        const W = this.W, H = this.H;
+        const root = new Node('propTutor');
+        root.layer = Layers.Enum.UI_2D;
+        root.setParent(this.node);
+
+        const dim = new Node('dim');
+        dim.layer = Layers.Enum.UI_2D;
+        dim.setParent(root);
+        const du = dim.addComponent(UITransform);
+        du.setContentSize(W, H); du.setAnchorPoint(0.5, 0.5); dim.setPosition(Vec3.ZERO);
+        dim.addComponent(BlockInputEvents);
+        const dg = dim.addComponent(Graphics);
+        dg.roundRect(-W / 2, -H / 2, W, H, 0);
+        dg.fillColor = new Color(C_DIM.r, C_DIM.g, C_DIM.b, 190); dg.fill();
+        dim.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; this.closePropTutorial(); }, this);
+
+        const pw = W * 0.86, ph = Math.min(H * 0.62, 780);
+        const panel = new Node('panel');
+        panel.layer = Layers.Enum.UI_2D;
+        panel.setParent(root);
+        const pu = panel.addComponent(UITransform);
+        pu.setContentSize(pw, ph); pu.setAnchorPoint(0.5, 0.5); panel.setPosition(Vec3.ZERO);
+        panel.addComponent(BlockInputEvents);
+        const pg = panel.addComponent(Graphics);
+        pg.roundRect(-pw / 2, -ph / 2, pw, ph, 28); pg.fillColor = C_BG; pg.fill();
+        panel.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; }, this);
+
+        const iconNode = new Node('icon');
+        iconNode.layer = Layers.Enum.UI_2D;
+        iconNode.setParent(panel);
+        const iu = iconNode.addComponent(UITransform);
+        iu.setContentSize(72, 72); iu.setAnchorPoint(0.5, 0.5);
+        iconNode.setPosition(new Vec3(0, ph / 2 - 70, 0));
+        const sp = iconNode.addComponent(Sprite);
+        sp.type = Sprite.Type.SIMPLE;
+        sp.sizeMode = Sprite.SizeMode.CUSTOM;
+        this.propTutorIcon = sp;
+
+        this.propTutorTitle = this.makeText('', 0, ph / 2 - 136, 40, C_TEXT_DARK, true, panel);
+
+        const demo = new Node('demo');
+        demo.layer = Layers.Enum.UI_2D;
+        demo.setParent(panel);
+        const deu = demo.addComponent(UITransform);
+        deu.setContentSize(pw * 0.88, 168); deu.setAnchorPoint(0.5, 0.5);
+        demo.setPosition(new Vec3(0, 36, 0));
+        this.propTutorDemo = demo;
+
+        this.propTutorBody = this.makeWrapText('', 0, -ph * 0.18, pw * 0.8, 26, C_TEXT_DARK, panel);
+        this.makeText('First one is free · then watch an ad', 0, -ph * 0.30, 20, C_ABSENT, false, panel);
+        this.makeButton(panel, 'GOT IT', 0, -ph / 2 + 70, pw * 0.62, 78, C_ACCENT, 22, () => this.closePropTutorial());
+
+        root.active = false;
+        this.propTutorRoot = root;
+        this.propTutorPanel = panel;
+    }
+
     private buildGame() {
         const W = this.W, H = this.H, parent = this.gameRoot!;
 
@@ -301,6 +398,7 @@ export class GameController extends Component {
         this.makePropPill(this.propsRoot, 'hint', 'Hint', -(propW + pgap), propY, propW, propH, () => this.onProp('hint'));
         this.makePropPill(this.propsRoot, 'reveal', 'Reveal', 0, propY, propW, propH, () => this.onProp('reveal'));
         this.addRowBtn = this.makePropPill(this.propsRoot, 'addrow', '+1 Row', propW + pgap, propY, propW, propH, () => this.onProp('addrow'));
+        this.refreshPropPills();
 
         const share = this.makeButton(parent, 'SHARE  ▸  CHALLENGE', 0, propY, W * 0.94, propH, C_CORRECT, 18, () => this.onShare());
         this.shareBtn = share.node;
@@ -430,6 +528,27 @@ export class GameController extends Component {
         label.verticalAlign = Label.VerticalAlign.CENTER;
         label.color = color;
         label.isBold = bold;
+        return label;
+    }
+
+    private makeWrapText(str: string, x: number, y: number, width: number, size: number, color: Color, parent: Node): Label {
+        const node = new Node('wrap');
+        node.layer = Layers.Enum.UI_2D;
+        node.setParent(parent);
+        const uit = node.addComponent(UITransform);
+        uit.setContentSize(width, size * 4);
+        uit.setAnchorPoint(0.5, 0.5);
+        node.setPosition(new Vec3(x, y, 0));
+        const label = node.addComponent(Label);
+        label.string = str;
+        label.fontFamily = FONT_FAMILY;
+        label.fontSize = size;
+        label.lineHeight = size * 1.28;
+        label.horizontalAlign = Label.HorizontalAlign.CENTER;
+        label.verticalAlign = Label.VerticalAlign.TOP;
+        label.overflow = Label.Overflow.RESIZE_HEIGHT;
+        label.enableWrapText = true;
+        label.color = color;
         return label;
     }
 
@@ -573,8 +692,77 @@ export class GameController extends Component {
         lab.color = C_TEXT_DARK;
         lab.isBold = true;
 
-        node.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; onClick(); }, this);
+        const badgeSize = 34;
+        const badge = new Node('badge');
+        badge.layer = Layers.Enum.UI_2D;
+        badge.setParent(node);
+        const bu = badge.addComponent(UITransform);
+        bu.setContentSize(badgeSize, badgeSize);
+        bu.setAnchorPoint(0.5, 0.5);
+        badge.setPosition(new Vec3(w / 2 - 16, h / 2 - 16, 0));
+        const bg = badge.addComponent(Graphics);
+        const bl = new Node('n');
+        bl.layer = Layers.Enum.UI_2D;
+        bl.setParent(badge);
+        const blu = bl.addComponent(UITransform);
+        blu.setContentSize(badgeSize, badgeSize);
+        blu.setAnchorPoint(0.5, 0.5);
+        bl.setPosition(Vec3.ZERO);
+        const bLab = bl.addComponent(Label);
+        bLab.string = '';
+        bLab.fontFamily = FONT_FAMILY;
+        bLab.fontSize = 15;
+        bLab.lineHeight = 15;
+        bLab.horizontalAlign = Label.HorizontalAlign.CENTER;
+        bLab.verticalAlign = Label.VerticalAlign.CENTER;
+        bLab.color = C_TEXT_LIGHT;
+        bLab.isBold = true;
+        this.propBadges[key] = { g: bg, label: bLab };
+        this.propPills[key] = node;
+
+        this.bindPropPress(node, key, onClick);
         return node;
+    }
+
+    private bindPropPress(node: Node, key: string, onClick: () => void) {
+        let holding = false;
+        let heldLong = false;
+        let sx = 0, sy = 0;
+        const onHold = () => {
+            if (!holding || heldLong) return;
+            heldLong = true;
+            this.showPropTutorial(key);
+        };
+        const restore = () => { node.setScale(1, 1, 1); };
+        node.on(Node.EventType.TOUCH_START, (e: EventTouch) => {
+            e.propagationStopped = true;
+            holding = true;
+            heldLong = false;
+            const p = e.getLocation();
+            sx = p.x; sy = p.y;
+            node.setScale(0.96, 0.96, 1);
+            this.unschedule(onHold);
+            this.scheduleOnce(onHold, PROP_HOLD_SEC);
+        }, this);
+        node.on(Node.EventType.TOUCH_MOVE, (e: EventTouch) => {
+            if (!holding) return;
+            const p = e.getLocation();
+            const dx = p.x - sx, dy = p.y - sy;
+            if (dx * dx + dy * dy > 26 * 26) {
+                holding = false;
+                this.unschedule(onHold);
+                restore();
+            }
+        }, this);
+        const finish = (e: EventTouch) => {
+            e.propagationStopped = true;
+            this.unschedule(onHold);
+            restore();
+            if (holding && !heldLong) onClick();
+            holding = false;
+        };
+        node.on(Node.EventType.TOUCH_END, finish, this);
+        node.on(Node.EventType.TOUCH_CANCEL, finish, this);
     }
 
     private loadPropIcons() {
@@ -583,15 +771,64 @@ export class GameController extends Component {
                 if (err || !sf) { console.warn('[WordTT] booster icon load failed:', k, err); return; }
                 this.propFrames[k] = sf as SpriteFrame;
                 if (this.propSprites[k]) this.propSprites[k].spriteFrame = sf as SpriteFrame;
+                if (this.propTutorOpen && this.propTutorKind === k && this.propTutorIcon) {
+                    this.propTutorIcon.spriteFrame = sf as SpriteFrame;
+                }
             });
         }
     }
 
-    private setAddRowDim(dim: boolean) {
-        if (!this.addRowBtn) return;
-        let op = this.addRowBtn.getComponent(UIOpacity);
-        if (!op) op = this.addRowBtn.addComponent(UIOpacity);
+    private setPropDim(kind: string, dim: boolean) {
+        const node = this.propPills[kind];
+        if (!node) return;
+        let op = node.getComponent(UIOpacity);
+        if (!op) op = node.addComponent(UIOpacity);
         op.opacity = dim ? 110 : 255;
+    }
+
+    private refreshPropPills() {
+        for (const kind of PROP_KINDS) {
+            const n = this.propCount(kind);
+            const badge = this.propBadges[kind];
+            if (badge) {
+                const empty = n <= 0;
+                const s = 34;
+                badge.g.clear();
+                badge.g.circle(0, 0, s / 2 - 1);
+                badge.g.fillColor = empty ? C_ACCENT : C_CORRECT;
+                badge.g.fill();
+                badge.label.string = empty ? 'AD' : String(n);
+                badge.label.fontSize = empty ? 12 : 16;
+                badge.label.lineHeight = badge.label.fontSize;
+            }
+            const lockAdd = kind === 'addrow' && this.addRowUsed;
+            this.setPropDim(kind, lockAdd);
+        }
+    }
+
+    private propCount(kind: string): number {
+        return Math.max(0, this.propBag[kind] | 0);
+    }
+
+    private loadPropBag() {
+        try {
+            const raw = sys.localStorage.getItem(PROP_BAG_KEY);
+            if (raw) {
+                const o = JSON.parse(raw) || {};
+                this.propBag = {
+                    hint: Math.max(0, o.hint | 0),
+                    reveal: Math.max(0, o.reveal | 0),
+                    addrow: Math.max(0, o.addrow | 0),
+                };
+                return;
+            }
+        } catch (e) { /* first run */ }
+        this.propBag = { hint: PROP_STARTER, reveal: PROP_STARTER, addrow: PROP_STARTER };
+        this.savePropBag();
+    }
+
+    private savePropBag() {
+        try { sys.localStorage.setItem(PROP_BAG_KEY, JSON.stringify(this.propBag)); } catch (e) { /* ignore */ }
     }
 
     private addOutline(label: Label, color: Color, width: number) {
@@ -688,7 +925,7 @@ export class GameController extends Component {
     }
 
     private handleInput(id: string) {
-        if (this.gameOver || this.animating) return;   // ignore input after the game is over or mid-animation
+        if (this.propTutorOpen || this.gameOver || this.animating) return;
         if (id === '<') this.submitGuess();
         else if (id === '>') this.deleteLetter();
         else if (/^[A-Za-z]$/.test(id)) this.typeLetter(id.toUpperCase());
@@ -840,28 +1077,48 @@ export class GameController extends Component {
     // ===== boosters (props) =================================================
 
     private onProp(kind: string) {
-        if (this.gameOver || this.adBusy) return;
+        if (this.gameOver || this.adBusy || this.propTutorOpen) return;
+        if (!this.seenProps[kind]) { this.showPropTutorial(kind); return; }
+        if (!this.canUseProp(kind)) return;
 
-        // pre-checks that must not burn an ad
-        if (kind === 'hint' && this.hintCandidates().length === 0) {
-            this.showMessage('No new letters to reveal', C_ABSENT); return;
-        }
-        if (kind === 'reveal' && this.revealCandidates().length === 0) {
-            this.showMessage('All positions already known', C_ABSENT); return;
-        }
-        if (kind === 'addrow' && (this.addRowUsed || this.maxRows >= MAX_ROWS)) {
-            this.showMessage('Extra row already used', C_ABSENT); return;
+        if (this.propCount(kind) > 0) {
+            this.spendAndApply(kind);
+            return;
         }
 
         this.adBusy = true;
-        this.showMessage('Loading ad…', C_ABSENT, 0);
+        this.showMessage('Watch an ad to get 1', C_ABSENT, 0);
         showRewardedAd(AD_UNIT).then(ok => {
             this.adBusy = false;
             if (!ok) { this.showMessage('Ad not completed', C_ABSENT); return; }
-            if (kind === 'hint') this.applyHint();
-            else if (kind === 'reveal') this.applyReveal();
-            else if (kind === 'addrow') this.applyAddRow();
+            if (!this.canUseProp(kind)) return;
+            this.spendAndApply(kind, true);
         });
+    }
+
+    private canUseProp(kind: string): boolean {
+        if (kind === 'hint' && this.hintCandidates().length === 0) {
+            this.showMessage('No new letters to reveal', C_ABSENT); return false;
+        }
+        if (kind === 'reveal' && this.revealCandidates().length === 0) {
+            this.showMessage('All positions already known', C_ABSENT); return false;
+        }
+        if (kind === 'addrow' && (this.addRowUsed || this.maxRows >= MAX_ROWS)) {
+            this.showMessage('Extra row already used', C_ABSENT); return false;
+        }
+        return true;
+    }
+
+    private spendAndApply(kind: string, fromAd = false) {
+        if (!fromAd) {
+            if (this.propCount(kind) <= 0) return;
+            this.propBag[kind] = this.propCount(kind) - 1;
+            this.savePropBag();
+            this.refreshPropPills();
+        }
+        if (kind === 'hint') this.applyHint();
+        else if (kind === 'reveal') this.applyReveal();
+        else if (kind === 'addrow') this.applyAddRow();
     }
 
     /** Letters that are in the answer but not yet discovered (yellow/green) or hinted. */
@@ -924,9 +1181,208 @@ export class GameController extends Component {
             cell.label.string = '';
             this.drawTile(cell, false);
         }
-        this.setAddRowDim(true);
+        this.refreshPropPills();
         this.showMessage('+1 extra guess added!', C_ACCENT);
         this.saveState();
+    }
+
+    // ===== first-time booster tutorial ======================================
+
+    private loadSeenProps() {
+        try {
+            const raw = sys.localStorage.getItem(PROP_TUTORIAL_KEY);
+            if (raw) this.seenProps = JSON.parse(raw) || {};
+        } catch (e) { this.seenProps = {}; }
+    }
+
+    private markPropSeen(kind: string) {
+        this.seenProps[kind] = true;
+        try { sys.localStorage.setItem(PROP_TUTORIAL_KEY, JSON.stringify(this.seenProps)); } catch (e) { /* ignore */ }
+    }
+
+    private showPropTutorial(kind: string) {
+        const copy = PROP_COPY[kind];
+        if (!copy || !this.propTutorRoot) return;
+        this.propTutorKind = kind;
+        this.propTutorOpen = true;
+        if (this.propTutorTitle) this.propTutorTitle.string = copy.title;
+        if (this.propTutorBody) this.propTutorBody.string = copy.body;
+        if (this.propTutorIcon) this.propTutorIcon.spriteFrame = this.propFrames[kind] || null;
+        this.playPropTutorDemo(kind);
+        this.propTutorRoot.active = true;
+        if (this.propTutorPanel) {
+            this.propTutorPanel.setScale(0.86, 0.86, 1);
+            tween(this.propTutorPanel)
+                .to(0.22, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' })
+                .start();
+        }
+    }
+
+    private closePropTutorial() {
+        if (!this.propTutorOpen) return;
+        if (this.propTutorKind) this.markPropSeen(this.propTutorKind);
+        this.stopPropTutorDemo();
+        this.propTutorOpen = false;
+        this.propTutorKind = '';
+        if (this.propTutorRoot) this.propTutorRoot.active = false;
+    }
+
+    private stopPropTutorDemo() {
+        if (this.propTutorLoop) {
+            this.unschedule(this.propTutorLoop);
+            this.propTutorLoop = null;
+        }
+        if (this.propTutorDemo) this.propTutorDemo.removeAllChildren();
+    }
+
+    private playPropTutorDemo(kind: string) {
+        this.stopPropTutorDemo();
+        if (!this.propTutorDemo) return;
+        if (kind === 'hint') this.playHintDemo(this.propTutorDemo);
+        else if (kind === 'reveal') this.playRevealDemo(this.propTutorDemo);
+        else if (kind === 'addrow') this.playAddRowDemo(this.propTutorDemo);
+    }
+
+    private makeDemoBox(parent: Node, x: number, y: number, w: number, h: number, letter: string,
+                        fill: Color, ink: Color, border: Color | null): { node: Node; g: Graphics; label: Label; w: number; h: number } {
+        const node = new Node('box');
+        node.layer = Layers.Enum.UI_2D;
+        node.setParent(parent);
+        const uit = node.addComponent(UITransform);
+        uit.setContentSize(w, h);
+        uit.setAnchorPoint(0.5, 0.5);
+        node.setPosition(new Vec3(x, y, 0));
+        const g = node.addComponent(Graphics);
+        const ln = new Node('l');
+        ln.layer = Layers.Enum.UI_2D;
+        ln.setParent(node);
+        const lu = ln.addComponent(UITransform);
+        lu.setContentSize(w, h); lu.setAnchorPoint(0.5, 0.5); ln.setPosition(Vec3.ZERO);
+        const label = ln.addComponent(Label);
+        label.string = letter;
+        label.fontFamily = FONT_FAMILY;
+        label.fontSize = Math.floor(h * 0.46);
+        label.lineHeight = label.fontSize;
+        label.horizontalAlign = Label.HorizontalAlign.CENTER;
+        label.verticalAlign = Label.VerticalAlign.CENTER;
+        label.color = ink;
+        label.isBold = true;
+        this.paintDemoBox(g, w, h, fill, border);
+        return { node, g, label, w, h };
+    }
+
+    private paintDemoBox(g: Graphics, w: number, h: number, fill: Color, border: Color | null) {
+        g.clear();
+        const radius = Math.min(14, h * 0.2);
+        g.roundRect(-w / 2, -h / 2, w, h, radius);
+        g.fillColor = fill;
+        g.fill();
+        if (border) {
+            g.lineWidth = 3;
+            g.strokeColor = border;
+            g.roundRect(-w / 2, -h / 2, w, h, radius);
+            g.stroke();
+        }
+    }
+
+    private playHintDemo(host: Node) {
+        const letters = ['Q', 'W', 'E', 'R'];
+        const kw = 58, kh = 70, gap = 10;
+        const total = letters.length * kw + (letters.length - 1) * gap;
+        const startX = -total / 2 + kw / 2;
+        const keys = letters.map((ch, i) =>
+            this.makeDemoBox(host, startX + i * (kw + gap), 0, kw, kh, ch, C_KEY, C_TEXT_DARK, null));
+        const target = keys[2];
+        const loop = () => {
+            if (!this.propTutorOpen) return;
+            this.paintDemoBox(target.g, target.w, target.h, C_KEY, null);
+            target.label.color = C_TEXT_DARK;
+            target.node.setScale(1, 1, 1);
+            this.scheduleOnce(() => {
+                if (!this.propTutorOpen) return;
+                this.paintDemoBox(target.g, target.w, target.h, C_PRESENT, null);
+                target.label.color = C_LTR_PRESENT;
+                tween(target.node)
+                    .to(0.14, { scale: new Vec3(1.14, 1.14, 1) })
+                    .to(0.16, { scale: new Vec3(1, 1, 1) })
+                    .start();
+            }, 0.4);
+        };
+        this.propTutorLoop = loop;
+        loop();
+        this.schedule(loop, 2.1);
+    }
+
+    private playRevealDemo(host: Node) {
+        const tile = 56, gap = 8;
+        const total = COLS * tile + (COLS - 1) * gap;
+        const startX = -total / 2 + tile / 2;
+        const tiles = [];
+        for (let i = 0; i < COLS; i++) {
+            tiles.push(this.makeDemoBox(host, startX + i * (tile + gap), 0, tile, tile, '', C_BG, C_LTR_CORRECT, C_BORDER_EMPTY));
+        }
+        const target = tiles[1];
+        const loop = () => {
+            if (!this.propTutorOpen) return;
+            this.paintDemoBox(target.g, target.w, target.h, C_BG, C_BORDER_EMPTY);
+            target.label.string = '';
+            target.node.setScale(1, 1, 1);
+            this.scheduleOnce(() => {
+                if (!this.propTutorOpen) return;
+                tween(target.node)
+                    .to(0.12, { scale: new Vec3(1, 0.08, 1) })
+                    .call(() => {
+                        if (!this.propTutorOpen) return;
+                        target.label.string = 'O';
+                        this.paintDemoBox(target.g, target.w, target.h, C_CORRECT, null);
+                    })
+                    .to(0.14, { scale: new Vec3(1, 1, 1) })
+                    .start();
+            }, 0.35);
+        };
+        this.propTutorLoop = loop;
+        loop();
+        this.schedule(loop, 2.2);
+    }
+
+    private playAddRowDemo(host: Node) {
+        const tile = 40, gap = 7, rowGap = 12;
+        const total = COLS * tile + (COLS - 1) * gap;
+        const startX = -total / 2 + tile / 2;
+        const rowsY = [28, 28 - tile - rowGap, 28 - 2 * (tile + rowGap)];
+        for (let r = 0; r < 2; r++) {
+            for (let c = 0; c < COLS; c++) {
+                this.makeDemoBox(host, startX + c * (tile + gap), rowsY[r], tile, tile, '', C_BG, C_TEXT_DARK, C_BORDER_EMPTY);
+            }
+        }
+        const extra = [];
+        for (let c = 0; c < COLS; c++) {
+            extra.push(this.makeDemoBox(host, startX + c * (tile + gap), rowsY[2], tile, tile, '', C_BG, C_TEXT_DARK, C_BORDER_EMPTY));
+        }
+        const loop = () => {
+            if (!this.propTutorOpen) return;
+            for (const cell of extra) {
+                cell.node.setScale(0.2, 0.2, 1);
+                let op = cell.node.getComponent(UIOpacity);
+                if (!op) op = cell.node.addComponent(UIOpacity);
+                op.opacity = 0;
+            }
+            this.scheduleOnce(() => {
+                if (!this.propTutorOpen) return;
+                for (let i = 0; i < extra.length; i++) {
+                    const cell = extra[i];
+                    const op = cell.node.getComponent(UIOpacity);
+                    tween(cell.node)
+                        .delay(i * 0.05)
+                        .to(0.22, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' })
+                        .start();
+                    if (op) tween(op).delay(i * 0.05).to(0.18, { opacity: 255 }).start();
+                }
+            }, 0.28);
+        };
+        this.propTutorLoop = loop;
+        loop();
+        this.schedule(loop, 2.3);
     }
 
     // ===== messages / timer =================================================
@@ -949,6 +1405,7 @@ export class GameController extends Component {
     // ===== screens / lifecycle ==============================================
 
     private showMenu() {
+        if (this.propTutorOpen) this.closePropTutorial();
         this.saveState();               // persist progress before leaving
         this.timing = false;
         if (this.mockRankRoot) this.mockRankRoot.active = false;
@@ -987,7 +1444,7 @@ export class GameController extends Component {
         }
         this.keys.forEach(k => { k.state = LetterState.EMPTY; this.drawKey(k); });
 
-        this.setAddRowDim(false);
+        this.refreshPropPills();
         if (this.propsRoot) this.propsRoot.active = true;
         if (this.shareBtn) this.shareBtn.active = false;
         if (this.mockRankRoot) this.mockRankRoot.active = false;
@@ -1088,7 +1545,7 @@ export class GameController extends Component {
             }
         }
 
-        this.setAddRowDim(this.addRowUsed);
+        this.refreshPropPills();
         if (this.mockRankRoot) this.mockRankRoot.active = false;
 
         if (this.gameOver) {
