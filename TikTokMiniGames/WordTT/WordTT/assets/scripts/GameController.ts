@@ -23,7 +23,7 @@ const DAILY_KEY = 'wordtt_daily';
 /** Local-storage key for saving today's in-progress game. */
 const SAVE_KEY = 'wordtt_save_v1';
 /** Set false for release: hides the on-screen debug "reset" button. */
-const DEBUG = true;
+const DEBUG = false;
 
 interface SaveState {
     day: number;
@@ -125,8 +125,7 @@ export class GameController extends Component {
         this.loadPropIcons();
         this.showMenu();
 
-        // Dev helper: type wordttReset() in the console to clear the local save.
-        (globalThis as any).wordttReset = () => this.clearSave();
+        if (DEBUG) (globalThis as any).wordttReset = () => this.clearSave();
     }
 
     private computeSafeArea() {
