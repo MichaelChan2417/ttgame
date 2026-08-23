@@ -1710,16 +1710,32 @@ export class GameController extends Component {
         return this.history.map(r => r.map(s => em[s]).join('')).join('\n');
     }
 
-    private onShare() {
-        const rowsStr = this.lastRows + '/' + this.maxRows;
+    /** Build the boast text (title) + result body (subtitle w/ emoji grid) for a share. */
+    private buildShareTexts(): { title: string; subtitle: string } {
         const time = this.fmtTime(this.elapsed);
-        const title = this.lastWon
-            ? 'I cracked WordTT #' + this.puzzleNo + ' in ' + rowsStr + ' (' + time + ')!'
-            : 'WordTT #' + this.puzzleNo + ' beat me today…';
-        const subtitle = this.lastWon ? 'Fewer rows = smarter. Can you beat me?' : 'Think you can solve it?';
+        const grid = this.buildShareGrid();
+        if (this.lastWon) {
+            const rows = this.lastRows;
+            // cockier the fewer guesses it took
+            const brag = rows <= 2 ? 'One-shot genius 🤯 ' : rows <= 3 ? 'Too easy 😎 ' : '';
+            const title = 'I solved WordTT #' + this.puzzleNo + ' in ' + rows + '/' + this.maxRows + ' · ' + time + ' ⏱️';
+            const subtitle = brag + 'Only ' + rows + ' guesses in ' + time + '.\n' + grid + '\nThink you can beat my time? 👀';
+            return { title, subtitle };
+        }
+        const title = 'WordTT #' + this.puzzleNo + ' got me today 😤 (' + time + ')';
+        const subtitle = grid + '\nCan you crack today\'s word?';
+        return { title, subtitle };
+    }
+
+    private onShare() {
         if (!canShare()) { this.showMessage('Sharing needs a newer app version', C_ABSENT); return; }
-        console.log('[WordTT] share grid:\n' + this.buildShareGrid());
-        if (!isTikTok()) { this.showMessage('Preview only · real share opens on TikTok', C_ABSENT); return; }
+        const { title, subtitle } = this.buildShareTexts();
+        console.log('[WordTT] share message:\n' + title + '\n' + subtitle);
+        if (!isTikTok()) {
+            // Editor / browser preview: real share sheet only exists on TikTok, so show the caption.
+            this.showMessage(title, C_ACCENT, 0);
+            return;
+        }
         shareAppMessage({ title, subtitle, query: 'day=' + this.puzzleNo, templateType: 1 })
             .then(ok => this.showMessage(ok ? 'Shared!' : 'Share cancelled', ok ? C_ACCENT : C_ABSENT));
     }
