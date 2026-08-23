@@ -7,7 +7,7 @@ import { isValidGuess } from './WordList';
 import { dailyWord, puzzleId } from './Daily';
 import {
     isTikTok, showRewardedAd, shareAppMessage, canShare,
-    authorizeOpenContext, setUserCloudStorage, postToOpenData, navigateToSidebar,
+    authorizeOpenContext, setUserCloudStorage, postToOpenData, navigateToSidebar, addShortcut,
 } from './Platform';
 
 const { ccclass } = _decorator;
@@ -28,6 +28,10 @@ const PROP_TUTORIAL_KEY = 'wordtt_prop_seen_v1';
 const PROP_BAG_KEY = 'wordtt_prop_bag_v1';
 const PROP_KINDS = ['hint', 'reveal', 'addrow'] as const;
 const PROP_STARTER = 1;
+/** One-time retention rewards — each grantable only once, ever. */
+const REWARD_KEY = 'wordtt_rewards_v1';
+const SIDEBAR_REWARD = 2;   // Hint cards for adding WordTT to the sidebar
+const DESKTOP_REWARD = 2;   // Reveal cards for adding WordTT to the home screen
 
 const PROP_COPY: { [k: string]: { title: string; body: string } } = {
     hint: {
@@ -103,6 +107,11 @@ export class GameController extends Component {
     private mockRankRoot: Node | null = null;
     private sidebarPopupRoot: Node | null = null;
     private menuMsg: Label | null = null;
+    private desktopPopupRoot: Node | null = null;
+    private desktopMsg: Label | null = null;
+    private sidebarRewardIcon: Sprite | null = null;
+    private desktopRewardIcon: Sprite | null = null;
+    private rewardsClaimed: { sidebar: boolean; desktop: boolean } = { sidebar: false, desktop: false };
     private propTutorRoot: Node | null = null;
     private propTutorPanel: Node | null = null;
     private propTutorDemo: Node | null = null;
@@ -159,6 +168,7 @@ export class GameController extends Component {
         this.computeSafeArea();
         this.loadSeenProps();
         this.loadPropBag();
+        this.loadRewards();
         this.buildUI();
         this.loadPropIcons();
         this.showMenu();
@@ -212,6 +222,7 @@ export class GameController extends Component {
         this.buildGame();
         this.buildMockLeaderboard();
         this.buildSidebarPopup();
+        this.buildDesktopPopup();
         this.buildPropTutorial();
     }
 
@@ -222,8 +233,9 @@ export class GameController extends Component {
         this.makeButton(parent, 'PLAY', 0, -H * 0.02, W * 0.52, 104, C_ACCENT, 26, () => this.startGame());
         this.makeText('Same word for everyone, every day', 0, -H * 0.02 - 84, 24, C_ABSENT, false, parent);
 
-        // Small side button (lower-right) → opens the "Add to Sidebar" popup
-        this.makeButton(parent, 'SIDEBAR', W * 0.5 - 84, -H * 0.20, 132, 70, C_ADD, 18, () => this.showSidebarPopup());
+        // Small side buttons (lower-right) → "Add to Desktop" (top) / "Add to Sidebar" (below)
+        this.makeButton(parent, 'DESKTOP', W * 0.5 - 84, -H * 0.20 + 82, 132, 70, C_ADD, 18, () => this.showDesktopPopup());
+        this.makeButton(parent, 'SIDEBAR', W * 0.5 - 84, -H * 0.20, 132, 70, C_ACCENT, 18, () => this.showSidebarPopup());
 
         // Debug-only: clear the local save for testing
         if (DEBUG) this.makeButton(parent, 'reset', -W * 0.5 + 66, -H * 0.40, 100, 50, C_ABSENT, 14, () => this.clearSave());
@@ -249,9 +261,10 @@ export class GameController extends Component {
         console.log('[WordTT] local save cleared — press PLAY for a fresh game');
     }
 
-    private buildSidebarPopup() {
+    /** Shared translucent-dim + white rounded panel used by the retention popups. */
+    private makePopupShell(name: string): { root: Node; panel: Node; pw: number; ph: number } {
         const W = this.W, H = this.H;
-        const root = new Node('sidebarPopup');
+        const root = new Node(name);
         root.layer = Layers.Enum.UI_2D;
         root.setParent(this.node);
 
@@ -265,7 +278,7 @@ export class GameController extends Component {
         dg.fillColor = new Color(C_DIM.r, C_DIM.g, C_DIM.b, 190); dg.fill();
         dim.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; root.active = false; }, this);
 
-        const pw = W * 0.82, ph = H * 0.42;
+        const pw = W * 0.82, ph = H * 0.44;
         const panel = new Node('panel');
         panel.layer = Layers.Enum.UI_2D;
         panel.setParent(root);
@@ -273,12 +286,58 @@ export class GameController extends Component {
         pu.setContentSize(pw, ph); pu.setAnchorPoint(0.5, 0.5); panel.setPosition(Vec3.ZERO);
         const pg = panel.addComponent(Graphics);
         pg.roundRect(-pw / 2, -ph / 2, pw, ph, 28); pg.fillColor = C_BG; pg.fill();
+        panel.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; }, this);
 
-        const t = this.makeText('Add to Sidebar', 0, ph / 2 - 54, 40, C_ADD, true, panel);
-        this.addOutline(t, new Color(200, 120, 40), 3);
-        this.makeText('Pin WordTT to your TikTok sidebar\nfor one-tap daily access.', 0, ph * 0.12, 26, C_TEXT_DARK, false, panel);
-        this.menuMsg = this.makeText('', 0, -ph * 0.12, 22, C_ABSENT, false, panel);
-        this.makeButton(panel, 'ADD TO SIDEBAR', 0, -ph / 2 + 122, pw * 0.74, 86, C_ADD, 20, () => this.onSidebarConfirm());
+        return { root, panel, pw, ph };
+    }
+
+    /** Brand-styled popup title: bold colored word, dark outline, accent underline. */
+    private makePopupTitle(panel: Node, text: string, topY: number, color: Color) {
+        const t = this.makeText(text, 0, topY, 48, color, true, panel);
+        this.addOutline(t, new Color(43, 36, 29), 4);
+        const bar = new Node('titlebar');
+        bar.layer = Layers.Enum.UI_2D;
+        bar.setParent(panel);
+        const bu = bar.addComponent(UITransform);
+        bu.setContentSize(160, 8); bu.setAnchorPoint(0.5, 0.5);
+        bar.setPosition(new Vec3(0, topY - 36, 0));
+        const bg = bar.addComponent(Graphics);
+        bg.roundRect(-80, -4, 160, 8, 4); bg.fillColor = color; bg.fill();
+    }
+
+    /** A framed reward-prop icon (the booster art) centered at y. */
+    private makeRewardIcon(panel: Node, y: number, tint: Color): Sprite {
+        const size = 96, pad = 14;
+        const plate = new Node('rewardPlate');
+        plate.layer = Layers.Enum.UI_2D;
+        plate.setParent(panel);
+        const plu = plate.addComponent(UITransform);
+        plu.setContentSize(size + pad * 2, size + pad * 2); plu.setAnchorPoint(0.5, 0.5);
+        plate.setPosition(new Vec3(0, y, 0));
+        const pg = plate.addComponent(Graphics);
+        const hs = (size + pad * 2) / 2;
+        pg.roundRect(-hs, -hs, size + pad * 2, size + pad * 2, 22);
+        pg.fillColor = new Color(tint.r, tint.g, tint.b, 34); pg.fill();
+
+        const iconNode = new Node('rewardIcon');
+        iconNode.layer = Layers.Enum.UI_2D;
+        iconNode.setParent(plate);
+        const iu = iconNode.addComponent(UITransform);
+        iu.setContentSize(size, size); iu.setAnchorPoint(0.5, 0.5);
+        iconNode.setPosition(Vec3.ZERO);
+        const sp = iconNode.addComponent(Sprite);
+        sp.type = Sprite.Type.SIMPLE;
+        sp.sizeMode = Sprite.SizeMode.CUSTOM;
+        return sp;
+    }
+
+    private buildSidebarPopup() {
+        const { root, panel, pw, ph } = this.makePopupShell('sidebarPopup');
+        this.makePopupTitle(panel, 'Add to Sidebar', ph / 2 - 62, C_ACCENT);
+        this.makeText('Pin WordTT to your TikTok sidebar\nfor one-tap daily access.', 0, ph * 0.20, 26, C_TEXT_DARK, false, panel);
+        this.sidebarRewardIcon = this.makeRewardIcon(panel, -ph * 0.02, C_ACCENT);
+        this.menuMsg = this.makeText('', 0, -ph * 0.24, 26, C_ACCENT, true, panel);
+        this.makeButton(panel, 'ADD TO SIDEBAR', 0, -ph / 2 + 122, pw * 0.74, 86, C_ACCENT, 20, () => this.onSidebarConfirm());
         this.makeButton(panel, 'Not now', 0, -ph / 2 + 46, pw * 0.5, 54, C_ABSENT, 16, () => { root.active = false; });
 
         root.active = false;
@@ -286,7 +345,8 @@ export class GameController extends Component {
     }
 
     private showSidebarPopup() {
-        if (this.menuMsg) this.menuMsg.string = '';
+        this.setRewardLine(this.menuMsg, this.rewardsClaimed.sidebar, SIDEBAR_REWARD, 'Hint');
+        if (this.sidebarRewardIcon && this.propFrames['hint']) this.sidebarRewardIcon.spriteFrame = this.propFrames['hint'];
         if (this.sidebarPopupRoot) this.sidebarPopupRoot.active = true;
     }
 
@@ -296,9 +356,76 @@ export class GameController extends Component {
             return;
         }
         navigateToSidebar().then(ok => {
-            if (ok) { if (this.sidebarPopupRoot) this.sidebarPopupRoot.active = false; }
-            else if (this.menuMsg) { this.menuMsg.string = 'Sidebar not available'; this.menuMsg.color = C_ABSENT; }
+            if (!ok) { if (this.menuMsg) { this.menuMsg.string = 'Sidebar not available'; this.menuMsg.color = C_ABSENT; } return; }
+            this.claimReward('sidebar', 'hint', SIDEBAR_REWARD, this.menuMsg, 'Hint');
         });
+    }
+
+    private buildDesktopPopup() {
+        const { root, panel, pw, ph } = this.makePopupShell('desktopPopup');
+        this.makePopupTitle(panel, 'Add to Desktop', ph / 2 - 62, C_ADD);
+        this.makeText('Add WordTT to your home screen\nfor one-tap daily access.', 0, ph * 0.20, 26, C_TEXT_DARK, false, panel);
+        this.desktopRewardIcon = this.makeRewardIcon(panel, -ph * 0.02, C_ADD);
+        this.desktopMsg = this.makeText('', 0, -ph * 0.24, 26, C_ACCENT, true, panel);
+        this.makeButton(panel, 'ADD TO DESKTOP', 0, -ph / 2 + 122, pw * 0.74, 86, C_ADD, 20, () => this.onDesktopConfirm());
+        this.makeButton(panel, 'Not now', 0, -ph / 2 + 46, pw * 0.5, 54, C_ABSENT, 16, () => { root.active = false; });
+
+        root.active = false;
+        this.desktopPopupRoot = root;
+    }
+
+    private showDesktopPopup() {
+        this.setRewardLine(this.desktopMsg, this.rewardsClaimed.desktop, DESKTOP_REWARD, 'Reveal');
+        if (this.desktopRewardIcon && this.propFrames['reveal']) this.desktopRewardIcon.spriteFrame = this.propFrames['reveal'];
+        if (this.desktopPopupRoot) this.desktopPopupRoot.active = true;
+    }
+
+    private onDesktopConfirm() {
+        if (!isTikTok()) {
+            if (this.desktopMsg) { this.desktopMsg.string = 'Preview only · works on TikTok'; this.desktopMsg.color = C_ABSENT; }
+            return;
+        }
+        addShortcut().then(ok => {
+            if (!ok) { if (this.desktopMsg) { this.desktopMsg.string = 'Could not add shortcut'; this.desktopMsg.color = C_ABSENT; } return; }
+            this.claimReward('desktop', 'reveal', DESKTOP_REWARD, this.desktopMsg, 'Reveal');
+        });
+    }
+
+    /** Set the popup's reward line to "get N X cards" or the claimed state. */
+    private setRewardLine(lbl: Label | null, claimed: boolean, n: number, propName: string) {
+        if (!lbl) return;
+        if (claimed) { lbl.string = 'Reward already claimed ✓'; lbl.color = C_CORRECT; }
+        else { lbl.string = 'Reward: ' + n + ' ' + propName + ' cards'; lbl.color = C_ACCENT; }
+    }
+
+    /** Grant a one-time retention reward (only the first success ever counts). */
+    private claimReward(rewardKey: 'sidebar' | 'desktop', prop: string, n: number, lbl: Label | null, propName: string) {
+        if (this.rewardsClaimed[rewardKey]) {
+            if (lbl) { lbl.string = 'Already added ✓'; lbl.color = C_CORRECT; }
+            return;
+        }
+        this.rewardsClaimed[rewardKey] = true;
+        this.saveRewards();
+        this.propBag[prop] = this.propCount(prop) + n;
+        this.savePropBag();
+        this.refreshPropPills();
+        if (lbl) { lbl.string = 'You got ' + n + ' ' + propName + ' cards! ✓'; lbl.color = C_CORRECT; }
+    }
+
+    private loadRewards() {
+        try {
+            const raw = sys.localStorage.getItem(REWARD_KEY);
+            if (raw) {
+                const o = JSON.parse(raw) || {};
+                this.rewardsClaimed = { sidebar: !!o.sidebar, desktop: !!o.desktop };
+                return;
+            }
+        } catch (e) { /* first run */ }
+        this.rewardsClaimed = { sidebar: false, desktop: false };
+    }
+
+    private saveRewards() {
+        try { sys.localStorage.setItem(REWARD_KEY, JSON.stringify(this.rewardsClaimed)); } catch (e) { /* ignore */ }
     }
 
     private buildPropTutorial() {
@@ -771,6 +898,8 @@ export class GameController extends Component {
                 if (err || !sf) { console.warn('[WordTT] booster icon load failed:', k, err); return; }
                 this.propFrames[k] = sf as SpriteFrame;
                 if (this.propSprites[k]) this.propSprites[k].spriteFrame = sf as SpriteFrame;
+                if (k === 'hint' && this.sidebarRewardIcon) this.sidebarRewardIcon.spriteFrame = sf as SpriteFrame;
+                if (k === 'reveal' && this.desktopRewardIcon) this.desktopRewardIcon.spriteFrame = sf as SpriteFrame;
                 if (this.propTutorOpen && this.propTutorKind === k && this.propTutorIcon) {
                     this.propTutorIcon.spriteFrame = sf as SpriteFrame;
                 }
