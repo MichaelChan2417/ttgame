@@ -126,19 +126,43 @@ export function checkSidebar(): Promise<boolean> {
     });
 }
 
-/** Guide the user to add / enter the game via the TikTok sidebar. Preview: mock. */
+/**
+ * Open TikTok's profile-sidebar flow (All-in-One guide §3.2).
+ * Primary API: startEntranceMission. Falls back to navigateToScene('sidebar').
+ * Preview (no TikTok SDK): mock success.
+ */
 export function navigateToSidebar(): Promise<boolean> {
     const a = api();
-    if (!a || typeof a.navigateToScene !== 'function') {
-        console.log('[WordTT][mock navigateToScene sidebar]');
+    if (!a) {
+        console.log('[WordTT][mock startEntranceMission]');
         return Promise.resolve(true);
     }
     return new Promise(resolve => {
-        a.navigateToScene({
-            scene: 'sidebar',
-            success: () => resolve(true),
-            fail: () => resolve(false),
-        });
+        let done = false;
+        const finish = (ok: boolean) => { if (!done) { done = true; resolve(ok); } };
+        try {
+            const canMission = typeof a.canIUse !== 'function' || !!a.canIUse('startEntranceMission');
+            if (canMission && typeof a.startEntranceMission === 'function') {
+                a.startEntranceMission({
+                    success: () => finish(true),
+                    fail: () => tryNavigateScene(a, finish),
+                    complete: () => { /* no-op */ },
+                });
+                return;
+            }
+            tryNavigateScene(a, finish);
+        } catch (e) {
+            finish(false);
+        }
+    });
+}
+
+function tryNavigateScene(a: AnyObj, finish: (ok: boolean) => void) {
+    if (typeof a.navigateToScene !== 'function') { finish(false); return; }
+    a.navigateToScene({
+        scene: 'sidebar',
+        success: () => finish(true),
+        fail: () => finish(false),
     });
 }
 

@@ -112,6 +112,7 @@ export class GameController extends Component {
     private sidebarRewardIcon: Sprite | null = null;
     private desktopRewardIcon: Sprite | null = null;
     private rewardsClaimed: { sidebar: boolean; desktop: boolean } = { sidebar: false, desktop: false };
+    private sidebarBusy = false;
     private propTutorRoot: Node | null = null;
     private propTutorPanel: Node | null = null;
     private propTutorDemo: Node | null = null;
@@ -233,7 +234,7 @@ export class GameController extends Component {
         this.makeButton(parent, 'PLAY', 0, -H * 0.02, W * 0.52, 104, C_ACCENT, 26, () => this.startGame());
         this.makeText('Same word for everyone, every day', 0, -H * 0.02 - 84, 24, C_ABSENT, false, parent);
 
-        // Small side buttons (lower-right) → "Add to Desktop" (top) / "Add to Sidebar" (below)
+        // Lower-right retention: first tap opens a popup; confirm then starts the platform flow.
         this.makeButton(parent, 'DESKTOP', W * 0.5 - 84, -H * 0.20 + 82, 132, 70, C_ADD, 18, () => this.showDesktopPopup());
         this.makeButton(parent, 'SIDEBAR', W * 0.5 - 84, -H * 0.20, 132, 70, C_ACCENT, 18, () => this.showSidebarPopup());
 
@@ -351,13 +352,23 @@ export class GameController extends Component {
     }
 
     private onSidebarConfirm() {
-        if (!isTikTok()) {
-            if (this.menuMsg) { this.menuMsg.string = 'Preview only · works on TikTok'; this.menuMsg.color = C_ABSENT; }
-            return;
-        }
+        this.launchSidebar(this.menuMsg);
+    }
+
+    private launchSidebar(lbl: Label | null) {
+        if (this.sidebarBusy) return;
+        this.sidebarBusy = true;
+        if (lbl) { lbl.string = 'Opening sidebar…'; lbl.color = C_ABSENT; }
         navigateToSidebar().then(ok => {
-            if (!ok) { if (this.menuMsg) { this.menuMsg.string = 'Sidebar not available'; this.menuMsg.color = C_ABSENT; } return; }
-            this.claimReward('sidebar', 'hint', SIDEBAR_REWARD, this.menuMsg, 'Hint');
+            this.sidebarBusy = false;
+            if (!ok) {
+                if (lbl) {
+                    lbl.string = isTikTok() ? 'Sidebar not available' : 'Preview only · works on TikTok';
+                    lbl.color = C_ABSENT;
+                }
+                return;
+            }
+            this.claimReward('sidebar', 'hint', SIDEBAR_REWARD, lbl, 'Hint');
         });
     }
 
