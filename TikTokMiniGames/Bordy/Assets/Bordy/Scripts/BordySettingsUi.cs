@@ -13,8 +13,6 @@ namespace Bordy
         private static readonly Color ColPill = new Color(0.92f, 0.91f, 0.88f);
         private static readonly Color ColAccent = new Color(1.00f, 0.66f, 0.10f);
         private static readonly Color ColOverlay = new Color(0f, 0f, 0f, 0.45f);
-        private static readonly Color ColFabShadow = new Color(0f, 0f, 0f, 0.28f);
-        private static readonly Color ColFabBorder = new Color(0.85f, 0.45f, 0.02f);
         private static readonly Color ColAction = new Color(0.36f, 0.44f, 0.86f);
 
         private GameObject _panelRoot;
@@ -77,47 +75,8 @@ namespace Bordy
 
         private void BuildFab()
         {
-            const float fabW = 240f;
-            const float fabH = 88f;
-
-            var root = new GameObject("SettingsFab", typeof(RectTransform));
-            root.transform.SetParent(transform, false);
-            var rootRt = root.GetComponent<RectTransform>();
-            rootRt.anchorMin = new Vector2(1f, 0f);
-            rootRt.anchorMax = new Vector2(1f, 0f);
-            rootRt.pivot = new Vector2(1f, 0f);
-            rootRt.sizeDelta = new Vector2(fabW, fabH);
-            rootRt.anchoredPosition = new Vector2(-32f, 148f);
-
-            var shadow = CreatePanel("Shadow", root.transform, ColFabShadow);
-            BordyUi.ApplySliced(shadow);
-            shadow.raycastTarget = false;
-            Stretch(shadow.rectTransform);
-            shadow.rectTransform.anchoredPosition = new Vector2(-4f, -6f);
-
-            var border = CreatePanel("Border", root.transform, ColFabBorder);
-            BordyUi.ApplySliced(border);
-            border.raycastTarget = false;
-            Stretch(border.rectTransform);
-            border.rectTransform.offsetMin = new Vector2(-4f, -4f);
-            border.rectTransform.offsetMax = new Vector2(4f, 4f);
-
-            var fab = CreatePanel("Fill", root.transform, ColAccent);
-            BordyUi.ApplySliced(fab);
-            Stretch(fab.rectTransform);
-
-            _fabLabel = CreateText("Label", fab.transform, "", 34, FontStyle.Bold);
-            _fabLabel.alignment = TextAnchor.MiddleCenter;
-            _fabLabel.color = Color.white;
-            _fabLabel.raycastTarget = false;
-            Stretch(_fabLabel.rectTransform);
-            var outline = _fabLabel.gameObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0f, 0f, 0f, 0.35f);
-            outline.effectDistance = new Vector2(1.5f, -1.5f);
-
-            var btn = root.AddComponent<Button>();
-            btn.targetGraphic = fab;
-            btn.onClick.AddListener(() => SetPanelVisible(true));
+            _fabLabel = BordyUi.CreateHomeChip(transform, "SettingsFab", ColAccent, () => SetPanelVisible(true));
+            BordyUi.PlaceHomeChipByPlay(_fabLabel, BordyUi.HomeChipSettings);
         }
 
         private void BuildPanel()

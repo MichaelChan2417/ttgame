@@ -6,7 +6,7 @@
 //  BordyDouyinSetUserCloudStorage(arrJson) — arrJson = [{"key":"daily_YYYYMMDD","value":"<json>"}]
 //  BordyDouyinFetchFriendDaily(dateKey)    — authorize → getFriendCloudStorage, then push the
 //        result to Unity: SendMessage("BordyFriendCloud","OnFriendDaily", {"items":[{name,seconds}]})
-//  BordyDouyinShareInvite(title)           — tt.shareAppMessage invite card
+//  BordyDouyinShareInvite(title, subtitle) — tt.shareAppMessage DM card (title = 留言)
 mergeInto(LibraryManager.library, {
   $BordyTt: {
     sdk: function () {
@@ -113,17 +113,68 @@ mergeInto(LibraryManager.library, {
     } catch (e) { console.warn('[Bordy] fetchFriendDaily exception', e); }
   },
 
-  BordyDouyinShareInvite: function (titlePtr) {
+  BordyDouyinShareInvite__deps: ['$BordyTt'],
+  BordyDouyinShareInvite: function (titlePtr, subtitlePtr) {
     try {
-      var title = UTF8ToString(titlePtr);
-      var g = (typeof tt !== 'undefined') ? tt : (typeof window !== 'undefined' ? window.tt : null);
-      if (!g || !g.shareAppMessage) { console.warn('[Bordy] shareAppMessage unavailable'); return; }
-      g.shareAppMessage({
+      var title = titlePtr ? UTF8ToString(titlePtr) : '';
+      var subtitle = subtitlePtr ? UTF8ToString(subtitlePtr) : '';
+      var root = typeof globalThis !== 'undefined' ? globalThis
+        : (typeof window !== 'undefined' ? window : {});
+      var gMini = (root.TTMinis && root.TTMinis.game) ? root.TTMinis.game : null;
+      var gTt = root.tt || null;
+      var g = BordyTt.sdk();
+
+      var dump = function (label, obj) {
+        var s = '';
+        try { s = JSON.stringify(obj); } catch (e) { s = String(obj); }
+        console.log('[Bordy][share]', label, obj, s);
+      };
+
+      console.log('[Bordy][share] -------- shareAppMessage --------');
+      console.log('[Bordy][share] title   =', JSON.stringify(title));
+      console.log('[Bordy][share] subtitle=', JSON.stringify(subtitle));
+      console.log('[Bordy][share] desc    =', JSON.stringify(title));
+      console.log('[Bordy][share] TTMinis.game?', !!gMini,
+        'shareAppMessage=', !!(gMini && typeof gMini.shareAppMessage === 'function'),
+        'canIUse=', gMini && typeof gMini.canIUse === 'function' ? gMini.canIUse('shareAppMessage') : 'n/a');
+      console.log('[Bordy][share] tt?', !!gTt,
+        'shareAppMessage=', !!(gTt && typeof gTt.shareAppMessage === 'function'),
+        'canIUse=', gTt && typeof gTt.canIUse === 'function' ? gTt.canIUse('shareAppMessage') : 'n/a');
+      console.log('[Bordy][share] sdk picked=', g === gMini ? 'TTMinis.game' : (g === gTt ? 'tt' : String(g)),
+        'sameObject=', gMini === gTt);
+
+      if (!g || typeof g.shareAppMessage !== 'function') {
+        console.warn('[Bordy][share] shareAppMessage UNAVAILABLE — not calling native share');
+        return;
+      }
+
+      // TikTok Global card uses title + subtitle; Douyin-style hosts put 分享文案 in `desc`.
+      // The portal "Description" is the fallback when `desc` is omitted — pass the taunt in all three.
+      var payload = {
         title: title,
-        success: function () { console.log('[Bordy] share ok'); },
-        fail: function (e) { console.warn('[Bordy] share fail', e); }
-      });
-    } catch (e) { console.warn('[Bordy] shareInvite exception', e); }
+        subtitle: subtitle,
+        desc: title,
+        templateType: 1,
+        success: function (res) {
+          console.log('[Bordy][share] SUCCESS');
+          dump('success res', res);
+        },
+        fail: function (e) {
+          console.warn('[Bordy][share] FAIL');
+          dump('fail err', e);
+          if (e) console.warn('[Bordy][share] fail errMsg=', e.errMsg || e.error || e.message);
+        },
+        complete: function (res) {
+          console.log('[Bordy][share] COMPLETE');
+          dump('complete res', res);
+        }
+      };
+      root.__bordyLastShare = { title: title, subtitle: subtitle, desc: title, templateType: 1 };
+      console.log('[Bordy][share] calling shareAppMessage with', JSON.stringify(root.__bordyLastShare));
+      g.shareAppMessage(payload);
+    } catch (e) {
+      console.warn('[Bordy][share] exception', e && e.message ? e.message : e, e);
+    }
   },
 
   BordyNavigateToSidebar__deps: ['$BordyTt'],

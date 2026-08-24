@@ -108,6 +108,15 @@ namespace Bordy.EditorTools
             btnImg.rectTransform.sizeDelta = new Vector2(560, 150);
             btnImg.rectTransform.anchoredPosition = new Vector2(0, -80);
 
+            var shadow = CreatePanel("StartButtonShadow", canvasGo.transform, new Color(0f, 0f, 0f, 0.28f));
+            shadow.sprite = BordyUi.Rounded();
+            shadow.type = Image.Type.Sliced;
+            shadow.raycastTarget = false;
+            Anchor(shadow.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            shadow.rectTransform.sizeDelta = btnImg.rectTransform.sizeDelta;
+            shadow.rectTransform.anchoredPosition = btnImg.rectTransform.anchoredPosition + new Vector2(0f, -10f);
+            shadow.transform.SetSiblingIndex(btnImg.transform.GetSiblingIndex());
+
             var btn = btnImg.gameObject.AddComponent<Button>();
             btn.targetGraphic = btnImg;
             // Serialize a persistent onClick → nav.StartGame so it survives into the build.

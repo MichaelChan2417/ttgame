@@ -159,7 +159,7 @@ namespace Bordy
                 var ibtn = invite.gameObject.AddComponent<Button>();
                 ibtn.targetGraphic = invite;
                 ibtn.onClick.AddListener(() =>
-                    BordyFriendCloud.ShareInvite("Can you beat my Bordy time?"));
+                    BordyFriendCloud.ShareDailyResult(seconds));
                 var ilabel = CreateText("Text", invite.transform, "Invite friends", 30, FontStyle.Bold, Color.white);
                 Stretch(ilabel.rectTransform);
                 ilabel.alignment = TextAnchor.MiddleCenter;

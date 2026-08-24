@@ -86,7 +86,10 @@ namespace Bordy
 
         public static void InviteFriends()
         {
-            BordyFriendCloud.ShareInvite(BordyStrings.Get(BordyStrings.Keys.SettingsInviteShare));
+            if (BordyDaily.CompletedToday)
+                BordyFriendCloud.ShareDailyResult(BordyDaily.CompletedSeconds);
+            else
+                BordyFriendCloud.ShareInvite(BordyStrings.Get(BordyStrings.Keys.SettingsInviteShare));
         }
 
         internal static void NotifySidebar(bool ok)

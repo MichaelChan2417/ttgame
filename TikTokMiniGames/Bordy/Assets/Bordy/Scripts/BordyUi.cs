@@ -116,6 +116,150 @@ namespace Bordy
             }
         }
 
+        /// <summary>
+        /// Compact Home chips. Slots:
+        /// 1 Shop = screen bottom-left, 2 Settings = screen bottom-right,
+        /// 3 Sidebar / 4 Desktop = stacked under Play's right edge.
+        /// </summary>
+        public const float HomeSideW = 168f;
+        public const float HomeSideH = 64f;
+        public const float HomeSideGap = 28f;
+        public const int HomeSideFont = 24;
+        public const float HomeCornerW = 220f;
+        public const float HomeCornerH = 84f;
+        public const int HomeCornerFont = 30;
+        public const float HomeChipPad = 16f;
+        public const float HomeChipDown = 16f;
+        public const float HomeChipCorner = 36f;
+        public const int HomeChipSidebar = 0;
+        public const int HomeChipShortcut = 1;
+        public const int HomeChipShop = 2;
+        public const int HomeChipSettings = 3;
+
+        public static Text CreateHomeChip(Transform parent, string name, Color fill, UnityEngine.Events.UnityAction onClick)
+        {
+            var root = new GameObject(name, typeof(RectTransform));
+            root.transform.SetParent(parent, false);
+            var rt = root.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(HomeSideW, HomeSideH);
+
+            var shadowGo = new GameObject("Shadow", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            shadowGo.transform.SetParent(root.transform, false);
+            var shadow = shadowGo.GetComponent<Image>();
+            shadow.color = new Color(0f, 0f, 0f, 0.28f);
+            shadow.raycastTarget = false;
+            ApplySliced(shadow);
+            StretchRect(shadow.rectTransform);
+            shadow.rectTransform.anchoredPosition = new Vector2(0f, -5f);
+
+            var fillGo = new GameObject("Fill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            fillGo.transform.SetParent(root.transform, false);
+            var pill = fillGo.GetComponent<Image>();
+            pill.color = fill;
+            ApplySliced(pill);
+            StretchRect(pill.rectTransform);
+
+            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            labelGo.transform.SetParent(pill.transform, false);
+            var label = labelGo.GetComponent<Text>();
+            label.font = BordyFonts.Ui;
+            label.fontSize = HomeSideFont;
+            label.fontStyle = FontStyle.Bold;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            label.raycastTarget = false;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+            StretchRect(label.rectTransform);
+
+            var btn = root.AddComponent<Button>();
+            btn.targetGraphic = pill;
+            btn.onClick.AddListener(onClick);
+            return label;
+        }
+
+        public static RectTransform HomeChipRoot(Text label)
+            => label != null ? label.GetComponentInParent<Button>()?.transform as RectTransform : null;
+
+        /// <summary>
+        /// Shop → bottom-left, Settings → bottom-right,
+        /// Sidebar then Desktop stacked just under Play's right side.
+        /// </summary>
+        public static void PlaceHomeChipByPlay(Text label, int slot)
+        {
+            var chip = HomeChipRoot(label);
+            if (chip == null)
+                return;
+
+            bool corner = slot == HomeChipShop || slot == HomeChipSettings;
+            chip.sizeDelta = corner
+                ? new Vector2(HomeCornerW, HomeCornerH)
+                : new Vector2(HomeSideW, HomeSideH);
+            if (label != null)
+                label.fontSize = corner ? HomeCornerFont : HomeSideFont;
+
+            if (slot == HomeChipShop)
+            {
+                chip.anchorMin = chip.anchorMax = new Vector2(0f, 0f);
+                chip.pivot = new Vector2(0f, 0f);
+                chip.anchoredPosition = new Vector2(HomeChipCorner, HomeChipCorner);
+                return;
+            }
+
+            if (slot == HomeChipSettings)
+            {
+                chip.anchorMin = chip.anchorMax = new Vector2(1f, 0f);
+                chip.pivot = new Vector2(1f, 0f);
+                chip.anchoredPosition = new Vector2(-HomeChipCorner, HomeChipCorner);
+                return;
+            }
+
+            var canvas = chip.parent;
+            var play = canvas != null ? canvas.Find("StartButton") as RectTransform : null;
+            chip.anchorMin = chip.anchorMax = new Vector2(0.5f, 0.5f);
+            chip.pivot = new Vector2(0f, 1f);
+
+            float playRight = play != null ? play.anchoredPosition.x + play.sizeDelta.x * 0.5f : 280f;
+            float playBottom = play != null ? play.anchoredPosition.y - play.sizeDelta.y * 0.5f : -155f;
+            int row = slot == HomeChipShortcut ? 2 : 1;
+            chip.anchoredPosition = new Vector2(
+                playRight + HomeChipPad,
+                playBottom - HomeChipDown - row * (HomeSideH + HomeSideGap));
+        }
+
+        /// <summary>Drop-shadow sibling behind the Home Play button.</summary>
+        public static void EnsurePlayButtonShadow(Transform canvas)
+        {
+            if (canvas == null)
+                return;
+            var play = canvas.Find("StartButton") as RectTransform;
+            if (play == null || canvas.Find("StartButtonShadow") != null)
+                return;
+
+            var shadowGo = new GameObject("StartButtonShadow", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            shadowGo.transform.SetParent(canvas, false);
+            shadowGo.transform.SetSiblingIndex(play.GetSiblingIndex());
+            var img = shadowGo.GetComponent<Image>();
+            img.color = new Color(0f, 0f, 0f, 0.28f);
+            img.raycastTarget = false;
+            ApplySliced(img);
+
+            var rt = shadowGo.GetComponent<RectTransform>();
+            rt.anchorMin = play.anchorMin;
+            rt.anchorMax = play.anchorMax;
+            rt.pivot = play.pivot;
+            rt.sizeDelta = play.sizeDelta;
+            rt.anchoredPosition = play.anchoredPosition + new Vector2(0f, -10f);
+        }
+
+        private static void StretchRect(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+        }
+
         /// <summary>Full-screen page fills must stay rectangular — not rounded 9-slice tiles.</summary>
         public static bool IsFlatBackground(Image image)
         {

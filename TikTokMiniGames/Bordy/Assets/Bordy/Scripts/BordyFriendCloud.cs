@@ -21,7 +21,7 @@ namespace Bordy
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")] private static extern void BordyDouyinSetUserCloudStorage(string arrJson);
         [DllImport("__Internal")] private static extern void BordyDouyinFetchFriendDaily(string dateKey);
-        [DllImport("__Internal")] private static extern void BordyDouyinShareInvite(string title);
+        [DllImport("__Internal")] private static extern void BordyDouyinShareInvite(string title, string subtitle);
 #endif
 
         [System.Serializable] private class DailyVal { public int seconds; public string date; }
@@ -48,18 +48,39 @@ namespace Bordy
 #endif
         }
 
-        /// <summary>Open the TikTok IM share sheet to invite friends. / 拉起 IM 分享面板邀请好友。</summary>
-        public static void ShareInvite(string title)
+        /// <summary>
+        /// Open the TikTok IM share sheet. <paramref name="title"/> is the DM card headline
+        /// (the "留言"); <paramref name="subtitle"/> is the card's second line.
+        /// 拉起 IM 分享面板。<paramref name="title"/> 是私信卡片主文案，<paramref name="subtitle"/> 是副标题。
+        /// </summary>
+        public static void ShareInvite(string title, string subtitle = "")
         {
             if (BordyAppConfig.WebStandalone)
                 return;
 
+            if (subtitle == null)
+                subtitle = "";
+
+            Debug.Log("[BordyFriendCloud] share title=" + title + " subtitle=" + subtitle);
+
 #if UNITY_WEBGL && !UNITY_EDITOR
-            try { BordyDouyinShareInvite(title); }
+            try { BordyDouyinShareInvite(title, subtitle); }
             catch (System.Exception e) { Debug.LogWarning("[BordyFriendCloud] share failed: " + e.Message); }
 #else
-            Debug.Log("[BordyFriendCloud] (editor) would share: " + title);
+            Debug.Log("[BordyFriendCloud] (editor) would share: " + title + " | " + subtitle);
 #endif
+        }
+
+        /// <summary>
+        /// Boast today's daily time and dare the friend to beat it.
+        /// 用今日挑战用时发起挑衅分享。
+        /// </summary>
+        public static void ShareDailyResult(int seconds)
+        {
+            var time = BordyTimer.Format(Mathf.Max(0, seconds));
+            ShareInvite(
+                BordyStrings.Format(BordyStrings.Keys.ShareDailyTitle, time),
+                BordyStrings.Get(BordyStrings.Keys.ShareDailySubtitle));
         }
 
         /// <summary>

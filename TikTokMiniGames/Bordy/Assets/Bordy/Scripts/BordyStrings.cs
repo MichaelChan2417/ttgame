@@ -19,8 +19,12 @@ namespace Bordy
             public const string SettingsPrivacy = "settings.privacy";
             public const string SettingsSidebar = "settings.sidebar";
             public const string SettingsShortcut = "settings.shortcut";
+            public const string HomeChipSidebar = "home.chip.sidebar";
+            public const string HomeChipShortcut = "home.chip.shortcut";
             public const string SettingsInvite = "settings.invite";
             public const string SettingsInviteShare = "settings.invite.share";
+            public const string ShareDailyTitle = "share.daily.title";
+            public const string ShareDailySubtitle = "share.daily.subtitle";
             public const string SettingsStatusPrivacy = "settings.status.privacy";
             public const string SettingsStatusPrivacyOk = "settings.status.privacy_ok";
             public const string SettingsStatusPrivacyFail = "settings.status.privacy_fail";
@@ -149,8 +153,12 @@ namespace Bordy
             { Keys.SettingsPrivacy, "隐私与服务条款" },
             { Keys.SettingsSidebar, "添加侧边栏" },
             { Keys.SettingsShortcut, "添加桌面快捷方式" },
+            { Keys.HomeChipSidebar, "侧边栏" },
+            { Keys.HomeChipShortcut, "桌面" },
             { Keys.SettingsInvite, "邀请好友同玩" },
             { Keys.SettingsInviteShare, "一起来玩 Bordy！" },
+            { Keys.ShareDailyTitle, "今日挑战我 {0} 就过了，你能 beat 我吗？" },
+            { Keys.ShareDailySubtitle, "同一道题，敢不敢来比？" },
             { Keys.SettingsStatusPrivacy, "正在打开隐私与条款…" },
             { Keys.SettingsStatusPrivacyOk, "已打开隐私与条款" },
             { Keys.SettingsStatusPrivacyFail, "无法打开网页，已显示政策全文" },
@@ -282,8 +290,12 @@ namespace Bordy
             { Keys.SettingsPrivacy, "Privacy & Terms" },
             { Keys.SettingsSidebar, "Add to sidebar" },
             { Keys.SettingsShortcut, "Add desktop shortcut" },
+            { Keys.HomeChipSidebar, "Sidebar" },
+            { Keys.HomeChipShortcut, "Desktop" },
             { Keys.SettingsInvite, "Invite friends" },
             { Keys.SettingsInviteShare, "Come play Bordy with me!" },
+            { Keys.ShareDailyTitle, "I finished today's Bordy in {0} — can you beat me?" },
+            { Keys.ShareDailySubtitle, "Same puzzle. Think you're faster?" },
             { Keys.SettingsStatusPrivacy, "Opening Privacy & Terms…" },
             { Keys.SettingsStatusPrivacyOk, "Opened Privacy & Terms" },
             { Keys.SettingsStatusPrivacyFail, "Couldn't open the page. Policy is shown below." },
