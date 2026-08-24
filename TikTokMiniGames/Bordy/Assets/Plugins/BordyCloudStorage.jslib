@@ -41,76 +41,140 @@ mergeInto(LibraryManager.library, {
     }
   },
 
+  BordyDouyinSetUserCloudStorage__deps: ['$BordyTt'],
   BordyDouyinSetUserCloudStorage: function (arrJsonPtr) {
     try {
       var list = JSON.parse(UTF8ToString(arrJsonPtr));
-      var g = (typeof tt !== 'undefined') ? tt : (typeof window !== 'undefined' ? window.tt : null);
-      if (!g || !g.setUserCloudStorage) { console.warn('[Bordy] setUserCloudStorage unavailable'); return; }
+      var g = BordyTt.sdk();
+      console.log('[Bordy][friends] setUserCloudStorage sdk=',
+        g ? (g === (typeof TTMinis !== 'undefined' && TTMinis.game) ? 'TTMinis.game' : 'tt') : 'none',
+        'fn=', !!(g && g.setUserCloudStorage), 'data=', JSON.stringify(list));
+      if (!g || typeof g.setUserCloudStorage !== 'function') {
+        console.warn('[Bordy][friends] setUserCloudStorage unavailable');
+        return;
+      }
       g.setUserCloudStorage({
         data: list,
-        success: function () { console.log('[Bordy] setUserCloudStorage ok'); },
-        fail: function (e) { console.warn('[Bordy] setUserCloudStorage fail', e); }
+        success: function () { console.log('[Bordy][friends] setUserCloudStorage ok'); },
+        fail: function (e) { console.warn('[Bordy][friends] setUserCloudStorage fail', e); }
       });
-    } catch (e) { console.warn('[Bordy] setUserCloudStorage exception', e); }
+    } catch (e) { console.warn('[Bordy][friends] setUserCloudStorage exception', e); }
   },
 
+  BordyDouyinFetchFriendDaily__deps: ['$BordyTt'],
   BordyDouyinFetchFriendDaily: function (dateKeyPtr) {
     try {
       var dateKey = UTF8ToString(dateKeyPtr);
       var key = 'daily_' + dateKey;
-      var g = (typeof tt !== 'undefined') ? tt : (typeof window !== 'undefined' ? window.tt : null);
-      if (!g) { console.warn('[Bordy] tt unavailable'); return; }
-
-      function unity() {
-        return (typeof window !== 'undefined' &&
-          (window.bordyUnity || window.unityInstance || window.myGameInstance || window.gameInstance)) || null;
+      var g = BordyTt.sdk();
+      console.log('[Bordy][friends] fetch date=', dateKey, 'key=', key,
+        'sdk=', !!g,
+        'authorizeOpenContext=', !!(g && g.authorizeOpenContext),
+        'authorize=', !!(g && g.authorize),
+        'getFriendCloudStorage=', !!(g && g.getFriendCloudStorage));
+      if (!g) {
+        console.warn('[Bordy][friends] no TTMinis.game/tt');
+        return;
       }
+
       function send(json) {
-        var u = unity();
-        try { if (u && u.SendMessage) u.SendMessage('BordyFriendCloud', 'OnFriendDaily', json); }
-        catch (e) { console.warn('[Bordy] SendMessage fail', e); }
+        var root = typeof globalThis !== 'undefined' ? globalThis
+          : (typeof window !== 'undefined' ? window : null);
+        var u = root && (root.bordyUnity || root.unityInstance || root.myGameInstance || root.gameInstance);
+        try {
+          if (u && typeof u.SendMessage === 'function') {
+            u.SendMessage('BordyFriendCloud', 'OnFriendDaily', json);
+            return;
+          }
+          if (typeof SendMessage === 'function') {
+            SendMessage('BordyFriendCloud', 'OnFriendDaily', json);
+          }
+        } catch (e) { console.warn('[Bordy][friends] SendMessage fail', e); }
       }
 
-      function fetch() {
-        if (!g.getFriendCloudStorage) { console.warn('[Bordy] getFriendCloudStorage unavailable'); return; }
+      function parseSeconds(raw) {
+        if (raw == null) return -1;
+        if (typeof raw === 'number' && isFinite(raw)) return raw;
+        try {
+          var v = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          if (v && typeof v.seconds === 'number') return v.seconds;
+        } catch (e) {}
+        var n = parseInt(raw, 10);
+        return isFinite(n) ? n : -1;
+      }
+
+      function fetchFriends() {
+        if (typeof g.getFriendCloudStorage !== 'function') {
+          console.warn('[Bordy][friends] getFriendCloudStorage unavailable');
+          send(JSON.stringify({ items: [] }));
+          return;
+        }
         g.getFriendCloudStorage({
           keyList: [key],
           success: function (res) {
             var items = [];
             try {
-              var arr = (res && res.data) ? res.data : [];
+              var arr = (res && (res.data || res.KVDataList)) ? (res.data || res.KVDataList) : [];
+              console.log('[Bordy][friends] getFriendCloudStorage ok count=', arr.length);
               for (var i = 0; i < arr.length; i++) {
-                var f = arr[i];
-                var name = f.display_name || f.nickname || '';
+                var f = arr[i] || {};
+                var name = f.displayName || f.display_name || f.nickname || f.nickName || '';
                 var kv = f.data || f.KVDataList || [];
                 var secs = -1;
                 for (var j = 0; j < kv.length; j++) {
-                  if (kv[j].key === key) {
-                    try { var v = JSON.parse(kv[j].value); secs = (v && typeof v.seconds === 'number') ? v.seconds : parseInt(kv[j].value, 10); }
-                    catch (e2) { secs = parseInt(kv[j].value, 10); }
+                  if (kv[j] && kv[j].key === key) {
+                    secs = parseSeconds(kv[j].value);
+                    break;
                   }
                 }
-                if (secs >= 0) items.push({ name: name, seconds: secs });
+                if (secs >= 0)
+                  items.push({ name: name || 'Friend', seconds: secs });
               }
-            } catch (e) { console.warn('[Bordy] parse friend data', e); }
+            } catch (e) { console.warn('[Bordy][friends] parse fail', e); }
+            console.log('[Bordy][friends] parsed items=', JSON.stringify(items));
             send(JSON.stringify({ items: items }));
           },
-          fail: function (e) { console.warn('[Bordy] getFriendCloudStorage fail', e); send(JSON.stringify({ items: [] })); }
+          fail: function (e) {
+            console.warn('[Bordy][friends] getFriendCloudStorage fail', e);
+            send(JSON.stringify({ items: [] }));
+          }
         });
       }
 
-      // Consent for avatar/nickname + friend relationship is required before reading friends.
-      if (g.authorizeOpenContext) {
+      function afterAuth(ok, via) {
+        console.log('[Bordy][friends] auth', ok ? 'ok' : 'fail/skip', 'via=', via);
+        fetchFriends();
+      }
+
+      function tryScopeAuthorize() {
+        if (typeof g.authorize !== 'function') {
+          afterAuth(true, 'none');
+          return;
+        }
+        g.authorize({
+          scope: 'scope.userInfo',
+          success: function () { afterAuth(true, 'authorize'); },
+          fail: function (e) {
+            console.warn('[Bordy][friends] authorize fail', e);
+            afterAuth(false, 'authorize');
+          }
+        });
+      }
+
+      if (typeof g.authorizeOpenContext === 'function') {
         g.authorizeOpenContext({
           get_status_only: false,
-          success: function () { fetch(); },
-          fail: function (e) { console.warn('[Bordy] authorizeOpenContext fail', e); },
-          complete: function () { }
+          success: function () { afterAuth(true, 'authorizeOpenContext'); },
+          fail: function (e) {
+            console.warn('[Bordy][friends] authorizeOpenContext fail', e);
+            tryScopeAuthorize();
+          },
+          complete: function () {}
         });
       } else {
-        fetch();
+        tryScopeAuthorize();
       }
-    } catch (e) { console.warn('[Bordy] fetchFriendDaily exception', e); }
+    } catch (e) { console.warn('[Bordy][friends] fetchFriendDaily exception', e); }
   },
 
   BordyDouyinShareInvite__deps: ['$BordyTt'],

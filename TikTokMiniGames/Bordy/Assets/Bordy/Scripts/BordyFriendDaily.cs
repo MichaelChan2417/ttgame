@@ -4,16 +4,7 @@ namespace Bordy
 {
     /// <summary>
     /// Holds friends' daily-challenge times for today, so the result popup can show a ranking.
-    ///
-    /// SOURCE IS NOT WIRED YET. TikTok/Douyin does not hand friend openIDs to your server; the
-    /// platform way is the relationship-chain "open data domain" (tt.setUserCloudStorage /
-    /// tt.getFriendCloudStorage), which the Unity C# SDK does not expose. Once we pick an
-    /// approach, that layer calls <see cref="SetFriends"/> with the fetched data. For now the
-    /// list is empty, so the popup shows the "invite friends" empty state.
-    ///
-    /// 好友今日成绩的容器,供结算弹窗做排名。数据源尚未接入:TikTok/抖音不会把好友 openID 给服务器,
-    /// 官方走关系链"开放数据域",而 Unity C# SDK 未暴露相关 API。方案定了之后由那层调用
-    /// <see cref="SetFriends"/> 灌数据;当前为空,弹窗显示"邀请好友"空状态。
+    /// Filled by <see cref="BordyFriendCloudReceiver"/> after authorize + getFriendCloudStorage.
     /// </summary>
     public static class BordyFriendDaily
     {

@@ -1,0 +1,8 @@
+{
+  "name": "FishOff",
+  "uuid": "a7c2e91b-4d58-4f0a-9c31-6b8e2f0d14a3",
+  "creator": {
+    "version": "3.8.8"
+  },
+  "description": "Fish Off — two-player catch and compare toy fish lengths."
+}
