@@ -6,7 +6,7 @@ TikTok 审核会核对：**业务运营地区、用户所在地区、服务提�
 
 | 项 | 内容 |
 |---|---|
-| 运营主体 | 上海诠界科技有限公司，中国上海 |
+| 运营主体 | Shanghai Quanjie Technology Co., Ltd. |
 | 上架地区 | **日本、印度尼西亚、菲律宾、马来西亚** |
 | 渠道 | TikTok Mini Games（不是国内抖音/微信小游戏） |
 | 隐私 | `privacy.html` |

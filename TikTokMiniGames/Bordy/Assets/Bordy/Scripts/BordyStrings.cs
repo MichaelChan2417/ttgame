@@ -176,7 +176,7 @@ namespace Bordy
                 "Operator: Shanghai Quanjie Technology Co., Ltd.\n\n" +
                 "Privacy: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
                 "Terms: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
-                "We collect only what the TikTok Mini Game platform provides (OpenID, cloud save, ads). Data is stored on Cloudflare. Youth / general audience. Contact: 1531362757@qq.com" },
+                "We collect only gameplay, optional social data you authorize, device info, and rewarded-ad data. We do not sell personal data. Contact: 1531362757@qq.com" },
             { Keys.NavBack, "返回" },
 
             { Keys.ShopFabLabel, "商店" },
@@ -314,7 +314,7 @@ namespace Bordy
                 "Operator: Shanghai Quanjie Technology Co., Ltd.\n\n" +
                 "Privacy: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
                 "Terms: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
-                "We collect only what the TikTok Mini Game platform provides (OpenID, cloud save, ads). Data is stored on Cloudflare. Youth / general audience. Contact: 1531362757@qq.com" },
+                "We collect only gameplay, optional social data you authorize, device info, and rewarded-ad data. We do not sell personal data. Contact: 1531362757@qq.com" },
             { Keys.NavBack, "Back" },
 
             { Keys.ShopFabLabel, "Shop" },
@@ -452,7 +452,7 @@ namespace Bordy
                 "Operator: Shanghai Quanjie Technology Co., Ltd.\n\n" +
                 "Privacy: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
                 "Terms: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
-                "We collect only what the TikTok Mini Game platform provides (OpenID, cloud save, ads). Data is stored on Cloudflare. Youth / general audience. Contact: 1531362757@qq.com" },
+                "We collect only gameplay, optional social data you authorize, device info, and rewarded-ad data. We do not sell personal data. Contact: 1531362757@qq.com" },
             { Keys.NavBack, "戻る" },
 
             { Keys.ShopFabLabel, "ショップ" },
@@ -590,7 +590,7 @@ namespace Bordy
                 "Operador: Shanghai Quanjie Technology Co., Ltd.\n\n" +
                 "Privacidad: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
                 "Términos: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
-                "Solo recopilamos lo que proporciona la plataforma de minijuegos de TikTok (OpenID, guardado en la nube, anuncios). Los datos se almacenan en Cloudflare. Público general. Contacto: 1531362757@qq.com" },
+                "Solo recopilamos progreso de juego, datos sociales si los autorizas, datos del dispositivo y anuncios recompensados. No vendemos datos personales. Contacto: 1531362757@qq.com" },
             { Keys.NavBack, "Atrás" },
 
             { Keys.ShopFabLabel, "Tienda" },
@@ -728,7 +728,7 @@ namespace Bordy
                 "Operator: Shanghai Quanjie Technology Co., Ltd.\n\n" +
                 "Privasi: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
                 "Ketentuan: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
-                "Kami hanya mengumpulkan data yang disediakan platform Mini Game TikTok (OpenID, simpanan awan, iklan). Data disimpan di Cloudflare. Untuk umum. Kontak: 1531362757@qq.com" },
+                "Kami hanya mengumpulkan progres game, data sosial jika diizinkan, data perangkat, dan iklan berhadiah. Kami tidak menjual data pribadi. Kontak: 1531362757@qq.com" },
             { Keys.NavBack, "Kembali" },
 
             { Keys.ShopFabLabel, "Toko" },

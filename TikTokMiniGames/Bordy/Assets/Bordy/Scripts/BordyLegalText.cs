@@ -1,89 +1,78 @@
 namespace Bordy
 {
     /// <summary>
-    /// In-game Privacy Policy and Terms. English first. No contact details.
-    /// Territory matches the TikTok listing: JP / ID / PH / MY.
+    /// In-game Privacy Policy and Terms. English only so the BordyUI font subset does not
+    /// need extra CJK glyphs from this long text. The hosted HTML pages remain the canonical copy.
     /// </summary>
     public static class BordyLegalText
     {
         public const string Full =
             "PRIVACY POLICY\n\n" +
-            "Bordy Privacy Policy\n\n" +
-            "Operator: Shanghai Quanjie Technology Co., Ltd. (上海诠界科技有限公司)\n\n" +
-            "Business operating region: Shanghai, People’s Republic of China\n" +
-            "User region: Japan, Indonesia, the Philippines, and Malaysia\n" +
-            "Service region: TikTok Mini Games in Japan, Indonesia, the Philippines, and Malaysia only. Bordy is not a Douyin or WeChat mini program for mainland China, and it is not listed in other TikTok Mini Game markets unless this policy is updated first.\n\n" +
-            "Effective: 21 August 2026\n\n" +
-            "This policy explains how we handle information when you play Bordy, a sun/moon logic puzzle, through TikTok Mini Games in the regions above.\n\n" +
-            "1. Information we collect\n" +
-            "- TikTok login / session: if you sign in, TikTok may give us a one-time code so we can identify your session (OpenID). We do not store TikTok client secrets in the game client.\n" +
-            "- Game progress: tutorial status, campaign levels, daily-challenge records, language, and similar settings. Saved locally in the TikTok mini-game container and, when login works, on our cloud save API.\n" +
-            "- Device / runtime: basic device type, OS, and locale from the TikTok SDK, used to run and debug the game.\n" +
-            "- Advertising: rewarded video ads (for extra Hint / Check) are served by TikTok’s ad system. TikTok may process ad-related data under its own policies.\n" +
-            "We do not ask for your name, phone number, national ID, or home address.\n\n" +
-            "2. How we use information\n" +
-            "To run Bordy for TikTok users in Japan, Indonesia, the Philippines, and Malaysia; save progress; show rewarded ads; fix bugs; and meet TikTok and legal requirements. We do not sell personal data.\n\n" +
-            "3. Sharing and international transfer\n" +
-            "We may share or process data with TikTok / ByteDance platform services needed to run Mini Games and ads in the listed countries; our cloud host (Cloudflare Workers), which may process data outside your country (including the United States) for cloud save; and authorities when required by law.\n" +
-            "Because the operator is in China and players are in Japan, Indonesia, the Philippines, or Malaysia, information may be transferred among those places, China, and our cloud provider’s regions — only to provide this game.\n\n" +
-            "4. Storage and security\n" +
-            "Local progress stays in TikTok container storage. Cloud progress is stored on our API keyed by TikTok OpenID. We use reasonable safeguards but cannot promise absolute security.\n\n" +
-            "5. Your rights\n" +
-            "You can clear local progress in Settings or by removing the mini game. Local personal-data laws apply where they cover this service, including Japan’s APPI, Indonesia’s personal-data rules, the Philippines’ Data Privacy Act, and Malaysia’s PDPA.\n\n" +
-            "6. Children and youth\n" +
-            "Bordy is a general-audience logic puzzle. It is not directed at children as the primary audience and does not depict or target youths in a sexual, violent, or exploitative way. If you are under the age required by local law or by TikTok to use Mini Games, use it only with a parent or guardian.\n\n" +
-            "7. Content\n" +
-            "Bordy is an abstract sun/moon grid puzzle. It does not include prohibited Mini content such as hate, sexual content, self-harm, graphic violence, scams, or regulated goods.\n\n" +
-            "8. Updates\n" +
-            "We may update this policy. The effective date above will change when we do. If we add or remove a launch country, we will say so here before that listing goes live.\n\n" +
-            "————\n\n" +
-            "TERMS OF SERVICE\n\n" +
-            "Bordy Terms of Service\n\n" +
-            "Operator: Shanghai Quanjie Technology Co., Ltd. (上海诠界科技有限公司)\n\n" +
-            "Business operating region: Shanghai, People’s Republic of China\n" +
-            "User region: Japan, Indonesia, the Philippines, and Malaysia\n" +
-            "Service region: TikTok Mini Games in Japan, Indonesia, the Philippines, and Malaysia only. Bordy is not a Douyin or WeChat mini program for mainland China.\n\n" +
-            "Effective: 21 August 2026\n\n" +
-            "By playing Bordy you agree to these Terms and to TikTok’s Mini Games Content Requirements and Community Guidelines.\n\n" +
-            "1. The service\n" +
-            "Bordy is a sun/moon logic-grid puzzle. It includes a tutorial, campaign levels, a daily challenge, optional rewarded ads for extra Hint / Check, and (where available) TikTok login and cloud save. The service is provided through TikTok Mini Games in Japan, Indonesia, the Philippines, and Malaysia.\n\n" +
-            "2. Content standard\n" +
-            "Bordy is an abstract puzzle. The game, its name, icon, description, and any promotional text do not include and must not be used to promote violent or hateful organizations, suicide or self-harm, sexual or nude content, abuse, hate speech, harmful misinformation, graphic gore, harassment, gambling or other regulated goods, scams, or other material banned by TikTok Mini Games Content Requirements.\n\n" +
-            "3. Acceptable use\n" +
-            "You must follow TikTok’s rules and applicable law in your country (Japan, Indonesia, the Philippines, or Malaysia). You may not cheat, disrupt the service, reverse engineer the game, or infringe others’ rights.\n\n" +
-            "4. Account and data\n" +
-            "You may play with local progress or TikTok login. Progress is stored in the TikTok container and, when login succeeds, on our cloud API. We cannot guarantee recovery after device changes, version updates, or platform policy changes.\n\n" +
-            "5. Intellectual property\n" +
-            "Game code, art, and writing belong to Shanghai Quanjie Technology Co., Ltd. or its licensors.\n\n" +
-            "6. Disclaimer\n" +
-            "The game is provided as-is. To the extent allowed by law, we are not liable for outages, ads that fail to fill, or data loss caused by networks, devices, TikTok, or events outside our control. Mandatory consumer protections in your country still apply where they cannot be waived.\n\n" +
-            "7. Changes\n" +
-            "We may update, pause, or stop the service. If we add or remove a country, we will update this page before that change goes live.\n\n" +
-            "8. Governing law\n" +
-            "The operator is established in the People’s Republic of China. These terms are governed by the laws of the PRC, excluding conflict-of-law rules, except that mandatory local law in Japan, Indonesia, the Philippines, or Malaysia (including consumer and personal-data rules) continues to apply to users in that country to the extent it cannot be excluded.\n\n" +
-            "————\n\n" +
-            "プライバシーポリシー / 利用規約（日本語）\n\n" +
-            "事業者：上海诠界科技有限公司\n" +
-            "事業運営地域：中華人民共和国・上海市\n" +
-            "ユーザー所在地域：日本、インドネシア、フィリピン、マレーシア\n" +
-            "サービス提供地域：上記4か国の TikTok Mini Games のみ。中国本土の Douyin / WeChat ミニプログラムではありません。\n" +
-            "施行日：2026年8月21日\n\n" +
-            "Bordy（太陽／月の論理パズル）を上記地域の TikTok Mini Games でプレイする際の取扱いです。取得するのは TikTok ログイン時のセッション識別、ゲーム進行、SDK の端末情報、および TikTok が配信するリワード広告に関するデータです。氏名・電話番号・身分証明書・住所は求めません。個人データの販売はしません。日本の個人情報保護法（APPI）が適用される範囲でこれに従います。\n\n" +
-            "————\n\n" +
-            "Kebijakan Privasi / Ketentuan Layanan (Bahasa Indonesia)\n\n" +
             "Operator: Shanghai Quanjie Technology Co., Ltd.\n" +
-            "Wilayah operasi bisnis: Shanghai, Tiongkok\n" +
-            "Wilayah pengguna: Jepang, Indonesia, Filipina, dan Malaysia\n" +
-            "Wilayah layanan: TikTok Mini Games di empat negara tersebut saja, bukan mini program Douyin/WeChat Tiongkok daratan.\n" +
-            "Berlaku: 21 Agustus 2026\n\n" +
-            "Kebijakan ini berlaku saat Anda bermain Bordy melalui TikTok Mini Games di wilayah di atas. Kami mengumpulkan login/sesi TikTok (OpenID), progres game, data perangkat dari SDK, serta iklan video berhadiah yang dilayani TikTok. Kami tidak meminta nama, telepon, KTP, atau alamat, dan tidak menjual data pribadi. Aturan pelindungan data di negara Anda berlaku sepanjang mengatur layanan ini.\n\n" +
-            "————\n\n" +
-            "隐私政策 / 服务条款（中文）\n\n" +
-            "运营主体：上海诠界科技有限公司\n" +
-            "业务运营地区：中华人民共和国上海市\n" +
-            "用户所在地区：日本、印度尼西亚、菲律宾、马来西亚\n" +
-            "服务提供地区：仅作为上述四国的 TikTok Mini Games 提供。不是中国大陆抖音/微信小游戏。\n" +
-            "生效日期：2026年8月21日\n\n" +
-            "本政策说明您在上述地区的 TikTok 小游戏中游玩 Bordy 时我们如何处理信息。收集范围为 TikTok 登录会话（OpenID）、游戏进度、SDK 设备信息，以及 TikTok 广告系统投放的激励视频。不收集姓名、手机号、身份证或住址，不出售个人信息。在适用范围内遵守日本 APPI、印尼个人数据规则、菲律宾 Data Privacy Act、马来西亚 PDPA。";
+            "Distribution: TikTok Mini Games and other platforms\n" +
+            "Contact: 1531362757@qq.com\n" +
+            "Effective: 21 August 2026 / Last updated: 23 August 2026\n\n" +
+            "This Privacy Policy explains how we collect, use, share, and protect information when you use our games and related services (the Services). The Services are accessed through TikTok and other platforms; those platforms have their own privacy policies. If you do not agree, do not use the Services.\n\n" +
+            "1. How we collect and use information\n" +
+            "We collect only what is needed to run the Services:\n" +
+            "- Gameplay data: progress, results, scores, time, and settings, so we can save and restore your game.\n" +
+            "- Social data (only if you authorize it): nickname, avatar, an in-game open ID, and mutual-friend data, so we can show leaderboards or sharing.\n" +
+            "- Device and technical data: approximate device model, operating system, language, and diagnostic logs, so we can run, secure, and fix the Services.\n" +
+            "- Advertising data: if you watch a rewarded ad, the ad provider may process an advertising identifier and limited device information to serve and measure that ad.\n" +
+            "We do not collect your real name, phone number, government ID, email for marketing, payment details, precise location, contacts, camera, or microphone. We do not sell items for real money in the Services, and we do not sell your personal data.\n" +
+            "We use this information to provide the Services, save progress, run optional items and boosters, show social features you opt into, serve rewarded ads, prevent cheating and abuse, and comply with law and platform rules.\n\n" +
+            "2. Local storage\n" +
+            "The Services may store small amounts of data on your device (through the host platform) to keep progress, settings, and items. This is not used for website tracking. You can clear it through the host platform.\n\n" +
+            "3. How we share information\n" +
+            "We share information only as needed to provide the Services: host platforms (such as TikTok) for login, cloud save, sharing, and ads; advertising and analytics partners; service providers for hosting and infrastructure; legal and safety when required by law; and business transfers if we merge or sell assets, subject to this policy.\n" +
+            "We do not share your information for unrelated marketing. Third-party services (including the host platform and ads) have their own policies.\n\n" +
+            "4. How we protect information\n" +
+            "We use reasonable measures to protect information. No method of transmission or storage is completely secure. We keep information only as long as needed for the purposes in this policy or as required by law, then delete or anonymize it.\n\n" +
+            "5. Your rights\n" +
+            "Subject to the laws of your country of residence, you may have the right to access, correct, delete, or restrict processing of your personal data, to object, to withdraw consent, and to lodge a complaint with a local authority. Contact us at the email above. You can also clear local game data and manage permissions in the host platform.\n\n" +
+            "6. Children\n" +
+            "The Services are not directed to children under 13, or below the minimum age required in your country or by the host platform. We do not knowingly collect personal data from such children. If you believe a child has provided us personal data, contact us and we will delete it.\n\n" +
+            "7. Processing outside your country\n" +
+            "We and our service providers may process information in countries other than your country of residence, only to provide the Services. Where local law requires it, we use appropriate safeguards for those transfers.\n\n" +
+            "8. Changes\n" +
+            "We may update this policy from time to time. The Last updated date shows when it last changed. If you do not agree with an update, stop using the Services. Continued use means you accept the revised policy.\n\n" +
+            "9. Contact us\n" +
+            "Shanghai Quanjie Technology Co., Ltd.\n" +
+            "Email: 1531362757@qq.com\n\n" +
+            "---\n\n" +
+            "TERMS OF SERVICE\n\n" +
+            "Operator: Shanghai Quanjie Technology Co., Ltd.\n" +
+            "Distribution: TikTok Mini Games and other platforms\n" +
+            "Contact: 1531362757@qq.com\n" +
+            "Effective: 21 August 2026 / Last updated: 23 August 2026\n\n" +
+            "These Terms govern your access to and use of our games and related services (the Services). The Services may be accessed through TikTok and other platforms and are also subject to those platforms' own terms. By using the Services, you agree to these Terms. If you do not agree, do not use the Services.\n\n" +
+            "1. Eligibility\n" +
+            "You may use the Services only if you can form a binding agreement and meet the minimum age required in your country of residence and by the host platform (such as TikTok). If you are a minor, you may use the Services only with the consent and supervision of a parent or legal guardian who agrees to these Terms on your behalf.\n\n" +
+            "2. Limited license\n" +
+            "We grant you a limited, non-exclusive, non-transferable, non-sublicensable, and revocable license to access and play the Services for your personal, non-commercial entertainment. All other rights are reserved by us and our licensors.\n\n" +
+            "3. Accounts and access\n" +
+            "The Services generally do not require a separate account. You access them through the host platform, which handles your identity and login. Progress may be stored on your device and, where available, in cloud save. You are responsible for activity through your device and platform account.\n\n" +
+            "4. Virtual items and advertisements\n" +
+            "The Services may include optional in-game items or boosters (for example, after watching a rewarded ad). Virtual items are licensed, not sold, have no real-world monetary value, and cannot be exchanged, transferred, or cashed out. We do not sell items for real money in the Services. Ads are provided by third parties through the host platform. We may change or discontinue items, ads, or features at any time.\n\n" +
+            "5. Player conduct\n" +
+            "You agree not to, and not to help others: cheat, use bots, automation, macros, hacks, or modified clients, or exploit bugs; interfere with or damage the Services; reverse engineer the Services except where permitted by law; copy or create derivative works except as expressly allowed; harass, harm, impersonate, or infringe the rights of others, or violate applicable law or platform rules; scrape data from the Services, or use the Services or their data to train or validate any AI system, except as expressly authorized.\n\n" +
+            "6. User content\n" +
+            "If you use social features (such as leaderboards or sharing), your nickname, avatar, and results may be shown to mutual friends who play, subject to your authorization. You grant us a non-exclusive, royalty-free, worldwide license to host and display that content solely to operate the Services.\n\n" +
+            "7. Intellectual property\n" +
+            "The Services, including names, logos, artwork, design, text, and software, are owned by us or our licensors. You may not use our names, logos, or brand features without prior written permission.\n\n" +
+            "8. Updates, suspension, and termination\n" +
+            "We may update, modify, suspend, or discontinue the Services at any time, to the extent permitted by law. You may stop using the Services at any time. We may suspend or terminate your access if you breach these Terms, if required by law or the platform, or if we discontinue a Service.\n\n" +
+            "9. Third-party services\n" +
+            "The Services rely on host platforms (such as TikTok Mini Games) and third-party advertising, analytics, and infrastructure. Your use of those services is subject to their own terms and privacy policies. We do not control and are not responsible for third-party services or content.\n\n" +
+            "10. Disclaimers and limitation of liability\n" +
+            "To the maximum extent permitted by applicable law, the Services are provided as is and as available, without warranties of any kind. We do not warrant that the Services will be uninterrupted, secure, or error-free.\n" +
+            "To the maximum extent permitted by applicable law, we will not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of data, profits, or goodwill, arising from your use of the Services. Nothing in these Terms limits rights that cannot be waived under the mandatory consumer-protection laws of your country of residence.\n\n" +
+            "11. Governing law\n" +
+            "These Terms are governed by the laws of your country of residence, without limiting any mandatory consumer-protection rights available to you there.\n\n" +
+            "12. Changes\n" +
+            "We may modify these Terms from time to time. The Last updated date shows when they last changed. Your continued use after an update means you accept the revised Terms. If you do not agree, you must stop using the Services.\n\n" +
+            "13. Contact us\n" +
+            "Shanghai Quanjie Technology Co., Ltd.\n" +
+            "Email: 1531362757@qq.com";
     }
 }
