@@ -42,5 +42,11 @@ namespace Bordy
         /// 仅测试用：为 true 时商店直接免广告解锁皮肤。上线前改回 false，让解锁必须看广告。
         /// </summary>
         public const bool ShopFreeUnlockForTesting = false;
+
+        /// <summary>
+        /// TESTING ONLY: when true, every skin is treated as already unlocked (no ad, no tap).
+        /// Set back to false before shipping. / 仅测试用：所有皮肤视为已解锁。上线前改回 false。
+        /// </summary>
+        public const bool UnlockAllSkinsForTesting = true;
     }
 }

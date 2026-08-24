@@ -66,9 +66,31 @@ namespace Bordy
                 case BordySkinCatalog.TokenArt.Pig: return BuildPig();
                 case BordySkinCatalog.TokenArt.ColaRed: return BuildColaRed();
                 case BordySkinCatalog.TokenArt.ColaBlue: return BuildColaBlue();
+                case BordySkinCatalog.TokenArt.Basketball: return LoadTokenImage("basketball");
+                case BordySkinCatalog.TokenArt.Football: return LoadTokenImage("soccer");
                 case BordySkinCatalog.TokenArt.Moon: return BuildMoon(skin);
                 default: return BuildSun(skin);
             }
+        }
+
+        /// <summary>
+        /// Load a real photo token from Resources/Bordy/tokens/&lt;name&gt;.png (transparent circular
+        /// PNG) and wrap it as a Sprite. Used for the sports skin (basketball / soccer).
+        /// 从 Resources/Bordy/tokens 加载真实球图（透明圆形 PNG）作为棋子精灵——用于体育皮肤。
+        /// </summary>
+        private static Sprite LoadTokenImage(string name)
+        {
+            var tex = Resources.Load<Texture2D>("Bordy/tokens/" + name);
+            if (tex == null)
+            {
+                Debug.LogWarning("[BordyTokenSprites] Missing Resources/Bordy/tokens/" + name + " — falling back to a blank sun.");
+                return BuildSun(BordySkinCatalog.Get(BordySkinCatalog.ClassicId));
+            }
+            var sprite = Sprite.Create(
+                tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f),
+                100f, 0, SpriteMeshType.FullRect);
+            sprite.name = "BordyImg_" + name;
+            return sprite;
         }
 
         private static Sprite BuildSun(BordySkinCatalog.SkinDef skin)
@@ -216,7 +238,185 @@ namespace Bordy
             return ToSprite(tex, "BordyPig");
         }
 
-        /// <summary>Red cola CAN (sun slot). Generic, no logo. / 红色可乐易拉罐（太阳位），通用无标识。</summary>
+        /// <summary>Toy-style basketball (sun slot). / Q 版篮球（太阳位）。</summary>
+        private static Sprite BuildBasketball()
+        {
+            var tex = Blank();
+            var c = new Vector2(Size * 0.5f, Size * 0.5f);
+            float r = Size * 0.40f;
+            Color leather = Hex("#F08C2B");
+            Color shade = Hex("#C85A10");
+            Color light = Hex("#FFC56A");
+            Color outline = Hex("#8A3A0C");
+            Color seam = Hex("#3A2216");
+            Color seamSoft = Hex("#6A3A1C");
+
+            FillEllipse(tex, c + new Vector2(3f, -10f), r * 0.78f, r * 0.22f, new Color(0f, 0f, 0f, 0.16f));
+            FillCircle(tex, c, r + 3.5f, outline);
+            FillCircle(tex, c, r, leather);
+            FillCircleClipped(tex, c + new Vector2(r * 0.28f, -r * 0.32f), r * 0.62f, new Color(shade.r, shade.g, shade.b, 0.38f), c, r);
+            FillCircleClipped(tex, c + new Vector2(-r * 0.28f, r * 0.30f), r * 0.42f, new Color(light.r, light.g, light.b, 0.55f), c, r);
+
+            float inset = r * 0.86f;
+            float t = 4.2f;
+            DrawLineClipped(tex, c + new Vector2(0f, inset), c + new Vector2(0f, -inset), t + 1.2f, seamSoft, c, r);
+            DrawLineClipped(tex, c + new Vector2(0f, inset), c + new Vector2(0f, -inset), t, seam, c, r);
+            DrawArcStrokeClipped(tex, c + new Vector2(r * 0.40f, 0f), r * 0.90f, 122f, 238f, t + 1.0f, seamSoft, c, r);
+            DrawArcStrokeClipped(tex, c + new Vector2(r * 0.40f, 0f), r * 0.90f, 122f, 238f, t, seam, c, r);
+            DrawArcStrokeClipped(tex, c + new Vector2(-r * 0.40f, 0f), r * 0.90f, -58f, 58f, t + 1.0f, seamSoft, c, r);
+            DrawArcStrokeClipped(tex, c + new Vector2(-r * 0.40f, 0f), r * 0.90f, -58f, 58f, t, seam, c, r);
+
+            FillCircleClipped(tex, c + new Vector2(-r * 0.34f, r * 0.36f), r * 0.13f, new Color(1f, 1f, 1f, 0.42f), c, r);
+            FillCircleClipped(tex, c + new Vector2(-r * 0.28f, r * 0.42f), r * 0.06f, new Color(1f, 1f, 1f, 0.55f), c, r);
+            return ToSprite(tex, "BordyBasketball");
+        }
+
+        /// <summary>Toy-style soccer ball (moon slot). / Q 版足球（月亮位）。</summary>
+        private static Sprite BuildFootball()
+        {
+            var tex = Blank();
+            var c = new Vector2(Size * 0.5f, Size * 0.5f);
+            float r = Size * 0.40f;
+            Color white = Hex("#F7F8FB");
+            Color shade = Hex("#C5CDD8");
+            Color outline = Hex("#2B3340");
+            Color patch = Hex("#1C222C");
+            Color seam = Hex("#3A4452");
+
+            FillEllipse(tex, c + new Vector2(3f, -10f), r * 0.78f, r * 0.22f, new Color(0f, 0f, 0f, 0.16f));
+            FillCircle(tex, c, r + 3.5f, outline);
+            FillCircle(tex, c, r, white);
+            FillCircleClipped(tex, c + new Vector2(r * 0.26f, -r * 0.34f), r * 0.60f, new Color(shade.r, shade.g, shade.b, 0.40f), c, r);
+
+            var face = c + new Vector2(0f, r * 0.06f);
+            FillRegularPolygonClipped(tex, face, 5, r * 0.24f, patch, -90f, c, r);
+            DrawRegularPolygonStrokeClipped(tex, face, 6, r * 0.40f, seam, 2.4f, -90f, c, r);
+
+            for (int i = 0; i < 5; i++)
+            {
+                float deg = -90f + 36f + i * 72f;
+                float ang = deg * Mathf.Deg2Rad;
+                var p = c + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * (r * 0.72f);
+                FillRegularPolygonClipped(tex, p, 5, r * 0.16f, patch, deg - 90f, c, r);
+
+                var inner = face + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * (r * 0.40f);
+                DrawLineClipped(tex, inner, p, 2.2f, seam, c, r);
+            }
+
+            FillCircleClipped(tex, c + new Vector2(-r * 0.32f, r * 0.38f), r * 0.12f, new Color(1f, 1f, 1f, 0.50f), c, r);
+            FillCircleClipped(tex, c + new Vector2(-r * 0.26f, r * 0.44f), r * 0.055f, new Color(1f, 1f, 1f, 0.62f), c, r);
+            return ToSprite(tex, "BordyFootball");
+        }
+
+        private static void DrawLine(Texture2D tex, Vector2 a, Vector2 b, float thickness, Color color)
+        {
+            DrawLineClipped(tex, a, b, thickness, color, default, -1f);
+        }
+
+        private static void DrawLineClipped(Texture2D tex, Vector2 a, Vector2 b, float thickness, Color color, Vector2 clip, float clipR)
+        {
+            int steps = Mathf.Max(1, Mathf.CeilToInt(Vector2.Distance(a, b) * 1.4f));
+            for (int i = 0; i <= steps; i++)
+                FillCircleClipped(tex, Vector2.Lerp(a, b, i / (float)steps), thickness * 0.5f, color, clip, clipR);
+        }
+
+        private static void FillRegularPolygon(Texture2D tex, Vector2 center, int sides, float radius, Color color, float rotationDeg)
+            => FillRegularPolygonClipped(tex, center, sides, radius, color, rotationDeg, default, -1f);
+
+        private static void FillRegularPolygonClipped(Texture2D tex, Vector2 center, int sides, float radius, Color color, float rotationDeg, Vector2 clip, float clipR)
+        {
+            var pts = new Vector2[sides];
+            for (int i = 0; i < sides; i++)
+            {
+                float a = (rotationDeg + i * 360f / sides) * Mathf.Deg2Rad;
+                pts[i] = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius;
+            }
+            for (int i = 1; i < sides - 1; i++)
+                FillTriangleClipped(tex, pts[0], pts[i], pts[i + 1], color, clip, clipR);
+        }
+
+        private static void DrawRegularPolygonStrokeClipped(Texture2D tex, Vector2 center, int sides, float radius, Color color, float thickness, float rotationDeg, Vector2 clip, float clipR)
+        {
+            Vector2 prev = default;
+            for (int i = 0; i <= sides; i++)
+            {
+                float a = (rotationDeg + (i % sides) * 360f / sides) * Mathf.Deg2Rad;
+                var p = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius;
+                if (i > 0)
+                    DrawLineClipped(tex, prev, p, thickness, color, clip, clipR);
+                prev = p;
+            }
+        }
+
+        private static void FillCircleClipped(Texture2D tex, Vector2 center, float radius, Color color, Vector2 clip, float clipR)
+        {
+            int minX = Mathf.Max(0, Mathf.FloorToInt(center.x - radius));
+            int maxX = Mathf.Min(Size - 1, Mathf.CeilToInt(center.x + radius));
+            int minY = Mathf.Max(0, Mathf.FloorToInt(center.y - radius));
+            int maxY = Mathf.Min(Size - 1, Mathf.CeilToInt(center.y + radius));
+            float r2 = radius * radius;
+            float clipR2 = clipR > 0f ? clipR * clipR : -1f;
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    float dx = x + 0.5f - center.x;
+                    float dy = y + 0.5f - center.y;
+                    if (dx * dx + dy * dy > r2)
+                        continue;
+                    if (clipR2 > 0f)
+                    {
+                        float cx = x + 0.5f - clip.x;
+                        float cy = y + 0.5f - clip.y;
+                        if (cx * cx + cy * cy > clipR2)
+                            continue;
+                    }
+                    Blend(tex, x, y, color);
+                }
+            }
+        }
+
+        private static void FillTriangleClipped(Texture2D tex, Vector2 a, Vector2 b, Vector2 c, Color color, Vector2 clip, float clipR)
+        {
+            float minX = Mathf.Min(a.x, Mathf.Min(b.x, c.x));
+            float maxX = Mathf.Max(a.x, Mathf.Max(b.x, c.x));
+            float minY = Mathf.Min(a.y, Mathf.Min(b.y, c.y));
+            float maxY = Mathf.Max(a.y, Mathf.Max(b.y, c.y));
+            float clipR2 = clipR > 0f ? clipR * clipR : -1f;
+
+            for (int y = Mathf.FloorToInt(minY); y <= Mathf.CeilToInt(maxY); y++)
+            {
+                for (int x = Mathf.FloorToInt(minX); x <= Mathf.CeilToInt(maxX); x++)
+                {
+                    if (x < 0 || y < 0 || x >= Size || y >= Size)
+                        continue;
+                    var p = new Vector2(x + 0.5f, y + 0.5f);
+                    if (!PointInTriangle(p, a, b, c))
+                        continue;
+                    if (clipR2 > 0f)
+                    {
+                        float dx = p.x - clip.x;
+                        float dy = p.y - clip.y;
+                        if (dx * dx + dy * dy > clipR2)
+                            continue;
+                    }
+                    Blend(tex, x, y, color);
+                }
+            }
+        }
+
+        private static void DrawArcStrokeClipped(Texture2D tex, Vector2 center, float radius, float startDeg, float endDeg, float thickness, Color color, Vector2 clip, float clipR)
+        {
+            int steps = 56;
+            for (int i = 0; i <= steps; i++)
+            {
+                float t = i / (float)steps;
+                float deg = Mathf.Lerp(startDeg, endDeg, t) * Mathf.Deg2Rad;
+                FillCircleClipped(tex, center + Polar(radius, deg), thickness * 0.5f, color, clip, clipR);
+            }
+        }
+
         private static Sprite BuildColaRed()
             => BuildCan(Hex("#E8232E"), Hex("#B0141F"), Hex("#F2707A"), "BordyColaRed");
 

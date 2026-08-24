@@ -20,6 +20,8 @@ namespace Bordy
 
         public static bool IsUnlocked(string skinId)
         {
+            if (BordyAppConfig.UnlockAllSkinsForTesting)
+                return true; // testing: everything unlocked
             var def = BordySkinCatalog.Get(skinId);
             if (def.Free)
                 return true;

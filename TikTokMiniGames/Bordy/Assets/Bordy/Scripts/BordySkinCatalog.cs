@@ -19,7 +19,7 @@ namespace Bordy
         /// the illustrated kinds (Cow/Pig/ColaRed/ColaBlue) draw fixed art and ignore the palette.
         /// 图案类型。Sun/Moon 使用下面的调色板；插画类型（奶牛/母猪/红蓝可乐）绘制固定美术，忽略调色板。
         /// </summary>
-        public enum TokenArt { Sun, Moon, Cow, Pig, ColaRed, ColaBlue }
+        public enum TokenArt { Sun, Moon, Cow, Pig, ColaRed, ColaBlue, Basketball, Football }
 
         /// <summary>One token skin: a themed sun-slot + moon-slot pair. / 一套皮肤：太阳位 + 月亮位一对。</summary>
         public sealed class SkinDef
@@ -27,6 +27,7 @@ namespace Bordy
             public string Id;
             public string NameEn;
             public string NameZh;
+            public string NameJa;
             public bool Free;
             public bool DrawFace;
 
@@ -51,29 +52,35 @@ namespace Bordy
         {
             new SkinDef
             {
-                Id = ClassicId, NameEn = "Classic", NameZh = "经典", Free = true, DrawFace = true,
+                Id = ClassicId, NameEn = "Classic", NameZh = "经典", NameJa = "クラシック", Free = true, DrawFace = true,
                 SunRay = "#FFB347", SunRim = "#FF9A1F", SunFace = "#FFD35A",
                 MoonRim = "#5A7FD4", MoonFace = "#8EB4FF", MoonShade = "#6E9EF0",
             },
             new SkinDef
             {
-                Id = "farm", NameEn = "Cow & Pig", NameZh = "奶牛 & 母猪", Free = false, DrawFace = true,
+                Id = "sports", NameEn = "Basket & Soccer", NameZh = "篮球 & 足球", NameJa = "バスケ & サッカー",
+                Free = false, DrawFace = false,
+                SunArt = TokenArt.Basketball, MoonArt = TokenArt.Football,
+            },
+            new SkinDef
+            {
+                Id = "farm", NameEn = "Cow & Pig", NameZh = "奶牛 & 母猪", NameJa = "ウシ & ブタ", Free = false, DrawFace = true,
                 SunArt = TokenArt.Cow, MoonArt = TokenArt.Pig,
             },
             new SkinDef
             {
-                Id = "cola", NameEn = "Cola", NameZh = "可乐", Free = false, DrawFace = false,
+                Id = "cola", NameEn = "Cola", NameZh = "可乐", NameJa = "コーラ", Free = false, DrawFace = false,
                 SunArt = TokenArt.ColaRed, MoonArt = TokenArt.ColaBlue,
             },
             new SkinDef
             {
-                Id = "berry", NameEn = "Berry", NameZh = "莓果", Free = false, DrawFace = false,
+                Id = "berry", NameEn = "Berry", NameZh = "莓果", NameJa = "ベリー", Free = false, DrawFace = false,
                 SunRay = "#FF9DB0", SunRim = "#FF6F91", SunFace = "#FFC2CE",
                 MoonRim = "#A23E97", MoonFace = "#C86FBE", MoonShade = "#B455AB",
             },
             new SkinDef
             {
-                Id = "mono", NameEn = "Slate", NameZh = "石墨", Free = false, DrawFace = false,
+                Id = "mono", NameEn = "Slate", NameZh = "石墨", NameJa = "スレート", Free = false, DrawFace = false,
                 SunRay = "#FFC65C", SunRim = "#F2A93B", SunFace = "#FFD98A",
                 MoonRim = "#4A5568", MoonFace = "#718096", MoonShade = "#5A667A",
             },
@@ -100,6 +107,15 @@ namespace Bordy
         }
 
         public static string DisplayName(SkinDef def)
-            => BordyLocale.Current == BordyLanguage.En ? def.NameEn : def.NameZh;
+        {
+            if (def == null)
+                return "";
+            switch (BordyLocale.Current)
+            {
+                case BordyLanguage.ZhHans: return def.NameZh;
+                case BordyLanguage.Ja: return string.IsNullOrEmpty(def.NameJa) ? def.NameEn : def.NameJa;
+                default: return def.NameEn;
+            }
+        }
     }
 }

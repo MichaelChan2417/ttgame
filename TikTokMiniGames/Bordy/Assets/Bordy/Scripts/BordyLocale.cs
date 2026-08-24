@@ -1,14 +1,22 @@
 using System;
+using TTSDK;
+using UnityEngine;
 
 namespace Bordy
 {
     public enum BordyLanguage
     {
         ZhHans,
+        Ja,
         En,
+        Es,
+        Id,
     }
 
-    /// <summary>Persisted UI language. Default is English unless the player explicitly chose Chinese. / 持久化界面语言。默认英文，只有明确选中文才用中文。</summary>
+    /// <summary>
+    /// Persisted UI language. First launch follows TikTok <c>GetSystemInfo().language</c>
+    /// (or Unity system language in Editor). After the player picks in Settings, that choice wins.
+    /// </summary>
     public static class BordyLocale
     {
         private const string StoreKey = "bordy.locale";
@@ -17,17 +25,14 @@ namespace Bordy
 
         public static BordyLanguage Current { get; private set; } = BordyLanguage.En;
 
-        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void LoadSaved()
         {
-            // TikTok listing is English-only for now.
-            Current = BordyLanguage.En;
+            Current = Resolve();
         }
 
         public static void SetLanguage(BordyLanguage language)
         {
-            // English-only listing: ignore Chinese until we add locales back.
-            language = BordyLanguage.En;
             if (Current == language)
                 return;
 
@@ -41,35 +46,111 @@ namespace Bordy
         /// <summary>Apply locale from cloud without re-uploading. / 从云端应用语言，不触发上传。</summary>
         public static void ApplyFromCloud(string localeCode)
         {
-            _ = localeCode;
-            SetLanguage(BordyLanguage.En);
+            if (string.IsNullOrEmpty(localeCode))
+                return;
+
+            var lang = Parse(localeCode);
+            if (Current == lang)
+                return;
+
+            Current = lang;
+            BordyStore.SetString(StoreKey, ToCode(lang));
+            BordyStore.Save();
+            Changed?.Invoke();
         }
 
-        /// <summary>Re-read persisted language (e.g. after TT.PlayerPrefs becomes available). / 重新读取已保存语言。</summary>
+        /// <summary>Re-read persisted language after TT.PlayerPrefs / SDK is available.</summary>
         public static void ReloadFromStore()
         {
             var prev = Current;
-            Current = BordyLanguage.En;
+            Current = Resolve();
             if (prev != Current)
                 Changed?.Invoke();
         }
 
         public static string ToCode(BordyLanguage language)
-            => language == BordyLanguage.ZhHans ? "zh" : "en";
+        {
+            switch (language)
+            {
+                case BordyLanguage.ZhHans: return "zh";
+                case BordyLanguage.Ja: return "ja";
+                case BordyLanguage.Es: return "es";
+                case BordyLanguage.Id: return "id";
+                default: return "en";
+            }
+        }
 
-        /// <summary>
-        /// English unless the value is explicitly Chinese. Empty / unknown codes (including
-        /// "en-US") must not fall through to Chinese.
-        /// 只有明确是中文才返回中文；空值、未知码（包括 en-US）都走英文。
-        /// </summary>
+        /// <summary>TikTok host language, e.g. "en", "zh-Hans", "ja". Empty if unavailable.</summary>
+        public static string HostLanguageCode()
+        {
+            try
+            {
+                var info = TT.GetSystemInfo();
+                if (info != null && !string.IsNullOrEmpty(info.language))
+                    return info.language.Trim();
+            }
+            catch (Exception e)
+            {
+                Debug.Log("[BordyLocale] GetSystemInfo language unavailable: " + e.Message);
+            }
+
+            return "";
+        }
+
+        private static BordyLanguage Resolve()
+        {
+            var saved = "";
+            try { saved = BordyStore.GetString(StoreKey, ""); }
+            catch { /* store may not be ready yet */ }
+
+            if (!string.IsNullOrEmpty(saved))
+                return Parse(saved);
+
+            var host = HostLanguageCode();
+            if (!string.IsNullOrEmpty(host))
+            {
+                Debug.Log("[BordyLocale] TikTok system language=" + host);
+                return Parse(host);
+            }
+
+            return ParseUnitySystemLanguage();
+        }
+
+        private static BordyLanguage ParseUnitySystemLanguage()
+        {
+            switch (Application.systemLanguage)
+            {
+                case SystemLanguage.Chinese:
+                case SystemLanguage.ChineseSimplified:
+                    return BordyLanguage.ZhHans;
+                case SystemLanguage.Japanese:
+                    return BordyLanguage.Ja;
+                case SystemLanguage.Spanish:
+                    return BordyLanguage.Es;
+                case SystemLanguage.Indonesian:
+                    return BordyLanguage.Id;
+                default:
+                    return BordyLanguage.En;
+            }
+        }
+
         private static BordyLanguage Parse(string raw)
         {
             if (string.IsNullOrEmpty(raw))
                 return BordyLanguage.En;
 
-            var code = raw.Trim();
+            var code = raw.Trim().Replace("_", "-");
             if (code.StartsWith("zh", StringComparison.OrdinalIgnoreCase))
                 return BordyLanguage.ZhHans;
+            if (code.StartsWith("ja", StringComparison.OrdinalIgnoreCase))
+                return BordyLanguage.Ja;
+            if (code.StartsWith("es", StringComparison.OrdinalIgnoreCase))
+                return BordyLanguage.Es;
+            // Indonesian: modern "id", legacy "in".
+            if (code.StartsWith("id", StringComparison.OrdinalIgnoreCase)
+                || code.StartsWith("in-", StringComparison.OrdinalIgnoreCase)
+                || code.Equals("in", StringComparison.OrdinalIgnoreCase))
+                return BordyLanguage.Id;
 
             return BordyLanguage.En;
         }

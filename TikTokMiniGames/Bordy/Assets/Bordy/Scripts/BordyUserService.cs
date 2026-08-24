@@ -138,6 +138,7 @@ namespace Bordy
 
         private static void FinishOfflineBoot()
         {
+            BordyLocale.ReloadFromStore();
             LoadProfileAndReport();
             MarkReady();
         }

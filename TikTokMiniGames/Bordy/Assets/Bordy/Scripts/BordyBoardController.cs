@@ -361,7 +361,7 @@ namespace Bordy
             if (titleLabel == null || _puzzle == null)
                 return;
 
-            // English: keep partner's baked puzzle title (e.g. CDN daily). Chinese: localized label.
+            // English: keep partner's baked puzzle title (e.g. CDN daily). Other locales: localized label.
             titleLabel.text = BordyLocale.Current == BordyLanguage.En
                 ? _puzzle.Title
                 : BordyStrings.LevelTitle(_levelId);

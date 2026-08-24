@@ -33,7 +33,13 @@ namespace Bordy
             if (text == null)
                 return;
 
-            if (NeedsCjkFont(text.text) && HasCjk)
+            // BordyUI is a Noto Sans CJK subset that also carries full Latin + accents,
+            // so once it's bundled we use it for everything — CJK, Spanish/Indonesian
+            // accents, and ASCII all render from one embedded face. LegacyRuntime (Arial)
+            // has no CJK glyphs and shows blank on device, so it's only a last-resort dev
+            // fallback when the font asset is missing.
+            // BordyUI 是含完整拉丁+重音的 Noto Sans CJK 子集，打进包后统一用它，避免真机空字。
+            if (HasCjk)
                 text.font = Ui;
             else
                 text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -46,6 +52,10 @@ namespace Bordy
 
             foreach (char ch in value)
             {
+                if (ch >= 0x3040 && ch <= 0x30FF)
+                    return true;
+                if (ch >= 0xFF66 && ch <= 0xFF9D)
+                    return true;
                 if (ch >= 0x2E80 && ch <= 0x9FFF)
                     return true;
                 if (ch >= 0xF900 && ch <= 0xFAFF)

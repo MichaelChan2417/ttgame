@@ -27,8 +27,16 @@ namespace Bordy
         private Text _languageLabel;
         private Text _langTitleLabel;
         private Text _langCloseLabel;
+        private Text _langZhLabel;
+        private Text _langJaLabel;
         private Text _langEnLabel;
+        private Text _langEsLabel;
+        private Text _langIdLabel;
+        private Image _langZhCheck;
+        private Image _langJaCheck;
         private Image _langEnCheck;
+        private Image _langEsCheck;
+        private Image _langIdCheck;
         private Text _legalTitleLabel;
         private Text _legalBodyLabel;
         private Text _legalCloseLabel;
@@ -50,7 +58,6 @@ namespace Bordy
 
         private void Awake()
         {
-            BordyLocale.SetLanguage(BordyLanguage.En);
             BuildFab();
             BuildPanel();
             BuildLanguagePanel();
@@ -159,9 +166,33 @@ namespace Bordy
             SetLanguagePanelVisible(true);
         }
 
+        private void OnSelectChinese()
+        {
+            BordyLocale.SetLanguage(BordyLanguage.ZhHans);
+            RefreshLanguagePanel();
+        }
+
+        private void OnSelectJapanese()
+        {
+            BordyLocale.SetLanguage(BordyLanguage.Ja);
+            RefreshLanguagePanel();
+        }
+
         private void OnSelectEnglish()
         {
             BordyLocale.SetLanguage(BordyLanguage.En);
+            RefreshLanguagePanel();
+        }
+
+        private void OnSelectSpanish()
+        {
+            BordyLocale.SetLanguage(BordyLanguage.Es);
+            RefreshLanguagePanel();
+        }
+
+        private void OnSelectIndonesian()
+        {
+            BordyLocale.SetLanguage(BordyLanguage.Id);
             RefreshLanguagePanel();
         }
 
@@ -195,9 +226,29 @@ namespace Bordy
 
             _langTitleLabel.text = BordyStrings.Get(BordyStrings.Keys.SettingsLanguage);
             _langCloseLabel.text = BordyStrings.Get(BordyStrings.Keys.SettingsClose);
-            _langEnLabel.text = BordyStrings.Get(BordyStrings.Keys.SettingsLangEn);
+            if (_langZhLabel != null)
+                _langZhLabel.text = BordyStrings.SettingsLangZhLabel();
+            if (_langJaLabel != null)
+                _langJaLabel.text = BordyStrings.SettingsLangJaLabel();
+            if (_langEnLabel != null)
+                _langEnLabel.text = BordyStrings.Get(BordyStrings.Keys.SettingsLangEn);
+            if (_langEsLabel != null)
+                _langEsLabel.text = "Español";
+            if (_langIdLabel != null)
+                _langIdLabel.text = "Bahasa Indonesia";
+            if (_langZhCheck != null)
+                _langZhCheck.gameObject.SetActive(BordyLocale.Current == BordyLanguage.ZhHans);
+            if (_langJaCheck != null)
+                _langJaCheck.gameObject.SetActive(BordyLocale.Current == BordyLanguage.Ja);
             if (_langEnCheck != null)
                 _langEnCheck.gameObject.SetActive(BordyLocale.Current == BordyLanguage.En);
+            if (_langEsCheck != null)
+                _langEsCheck.gameObject.SetActive(BordyLocale.Current == BordyLanguage.Es);
+            if (_langIdCheck != null)
+                _langIdCheck.gameObject.SetActive(BordyLocale.Current == BordyLanguage.Id);
+            BordyFonts.Apply(_langZhLabel);
+            BordyFonts.Apply(_langJaLabel);
+            BordyFonts.Apply(_langTitleLabel);
         }
 
         private void SetPanelVisible(bool visible)
@@ -238,7 +289,7 @@ namespace Bordy
             var cardRt = card.rectTransform;
             cardRt.anchorMin = cardRt.anchorMax = new Vector2(0.5f, 0.5f);
             cardRt.pivot = new Vector2(0.5f, 0.5f);
-            cardRt.sizeDelta = new Vector2(720f, 420f);
+            cardRt.sizeDelta = new Vector2(720f, 828f);
 
             _langTitleLabel = CreateText("Title", card.transform, "", 44, FontStyle.Bold);
             Anchor(_langTitleLabel.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
@@ -247,31 +298,11 @@ namespace Bordy
             _langTitleLabel.alignment = TextAnchor.MiddleCenter;
             _langTitleLabel.color = ColInk;
 
-            var row = CreatePanel("EnRow", card.transform, ColPill);
-            BordyUi.ApplySliced(row);
-            var rowRt = row.rectTransform;
-            rowRt.anchorMin = rowRt.anchorMax = new Vector2(0.5f, 1f);
-            rowRt.pivot = new Vector2(0.5f, 1f);
-            rowRt.sizeDelta = new Vector2(640f, 88f);
-            rowRt.anchoredPosition = new Vector2(0f, -124f);
-
-            _langEnLabel = CreateText("Label", row.transform, "", 32, FontStyle.Normal);
-            Anchor(_langEnLabel.rectTransform, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0.5f));
-            _langEnLabel.rectTransform.offsetMin = new Vector2(28f, 0f);
-            _langEnLabel.rectTransform.offsetMax = new Vector2(-80f, 0f);
-            _langEnLabel.alignment = TextAnchor.MiddleLeft;
-            _langEnLabel.color = ColInk;
-
-            _langEnCheck = CreatePanel("Check", row.transform, ColAccent);
-            var checkRt = _langEnCheck.rectTransform;
-            checkRt.anchorMin = checkRt.anchorMax = new Vector2(1f, 0.5f);
-            checkRt.pivot = new Vector2(1f, 0.5f);
-            checkRt.sizeDelta = new Vector2(28f, 28f);
-            checkRt.anchoredPosition = new Vector2(-28f, 0f);
-
-            var rowBtn = row.gameObject.AddComponent<Button>();
-            rowBtn.targetGraphic = row;
-            rowBtn.onClick.AddListener(OnSelectEnglish);
+            AddLanguageRow(card.transform, "ZhRow", -120f, OnSelectChinese, out _langZhLabel, out _langZhCheck);
+            AddLanguageRow(card.transform, "JaRow", -224f, OnSelectJapanese, out _langJaLabel, out _langJaCheck);
+            AddLanguageRow(card.transform, "EnRow", -328f, OnSelectEnglish, out _langEnLabel, out _langEnCheck);
+            AddLanguageRow(card.transform, "EsRow", -432f, OnSelectSpanish, out _langEsLabel, out _langEsCheck);
+            AddLanguageRow(card.transform, "IdRow", -536f, OnSelectIndonesian, out _langIdLabel, out _langIdCheck);
 
             var closePill = CreatePill("CloseButton", card.transform, "", ColAccent, Color.white);
             var closeRt = closePill.rectTransform;
@@ -281,6 +312,35 @@ namespace Bordy
             closeRt.anchoredPosition = new Vector2(0f, 32f);
             _langCloseLabel = closePill.transform.Find("Text").GetComponent<Text>();
             closePill.gameObject.AddComponent<Button>().onClick.AddListener(() => SetLanguagePanelVisible(false));
+        }
+
+        private void AddLanguageRow(Transform card, string name, float y, UnityEngine.Events.UnityAction onClick, out Text label, out Image check)
+        {
+            var row = CreatePanel(name, card, ColPill);
+            BordyUi.ApplySliced(row);
+            var rowRt = row.rectTransform;
+            rowRt.anchorMin = rowRt.anchorMax = new Vector2(0.5f, 1f);
+            rowRt.pivot = new Vector2(0.5f, 1f);
+            rowRt.sizeDelta = new Vector2(640f, 88f);
+            rowRt.anchoredPosition = new Vector2(0f, y);
+
+            label = CreateText("Label", row.transform, "", 32, FontStyle.Normal);
+            Anchor(label.rectTransform, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0.5f));
+            label.rectTransform.offsetMin = new Vector2(28f, 0f);
+            label.rectTransform.offsetMax = new Vector2(-80f, 0f);
+            label.alignment = TextAnchor.MiddleLeft;
+            label.color = ColInk;
+
+            check = CreatePanel("Check", row.transform, ColAccent);
+            var checkRt = check.rectTransform;
+            checkRt.anchorMin = checkRt.anchorMax = new Vector2(1f, 0.5f);
+            checkRt.pivot = new Vector2(1f, 0.5f);
+            checkRt.sizeDelta = new Vector2(28f, 28f);
+            checkRt.anchoredPosition = new Vector2(-28f, 0f);
+
+            var rowBtn = row.gameObject.AddComponent<Button>();
+            rowBtn.targetGraphic = row;
+            rowBtn.onClick.AddListener(onClick);
         }
 
         private void RefreshLegalPanel()

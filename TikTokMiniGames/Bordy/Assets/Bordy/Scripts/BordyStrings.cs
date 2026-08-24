@@ -12,6 +12,7 @@ namespace Bordy
             public const string SettingsLanguage = "settings.language";
             public const string SettingsLanguageButton = "settings.language.button";
             public const string SettingsLangZh = "settings.lang_zh";
+            public const string SettingsLangJa = "settings.lang_ja";
             public const string SettingsLangEn = "settings.lang_en";
             public const string SettingsClose = "settings.close";
             public const string SettingsPlayerGuest = "settings.player.guest";
@@ -146,6 +147,7 @@ namespace Bordy
             { Keys.SettingsLanguage, "Language" },
             { Keys.SettingsLanguageButton, "Language" },
             { Keys.SettingsLangZh, "简体中文" },
+            { Keys.SettingsLangJa, "日本語" },
             { Keys.SettingsLangEn, "English" },
             { Keys.SettingsClose, "关闭" },
             { Keys.SettingsPlayerGuest, "玩家" },
@@ -283,6 +285,7 @@ namespace Bordy
             { Keys.SettingsLanguage, "Language" },
             { Keys.SettingsLanguageButton, "Language" },
             { Keys.SettingsLangZh, "简体中文" },
+            { Keys.SettingsLangJa, "日本語" },
             { Keys.SettingsLangEn, "English" },
             { Keys.SettingsClose, "Close" },
             { Keys.SettingsPlayerGuest, "Player" },
@@ -413,15 +416,446 @@ namespace Bordy
             { Keys.TutorialNudgeIdle, "This step isn't done yet. Tap the highlighted cell or button." },
         };
 
+        private static readonly Dictionary<string, string> Ja = new Dictionary<string, string>
+        {
+            { Keys.SettingsTitle, "設定" },
+            { Keys.SettingsFabLabel, "設定" },
+            { Keys.SettingsLanguage, "言語" },
+            { Keys.SettingsLanguageButton, "言語" },
+            { Keys.SettingsLangZh, "简体中文" },
+            { Keys.SettingsLangJa, "日本語" },
+            { Keys.SettingsLangEn, "English" },
+            { Keys.SettingsClose, "閉じる" },
+            { Keys.SettingsPlayerGuest, "プレイヤー" },
+            { Keys.SettingsPlayerMetaFmt, "キャラ：{0}  ·  キャンペーン {1}" },
+            { Keys.SettingsPrivacy, "プライバシーと利用規約" },
+            { Keys.SettingsSidebar, "サイドバーに追加" },
+            { Keys.SettingsShortcut, "デスクトップに追加" },
+            { Keys.HomeChipSidebar, "サイドバー" },
+            { Keys.HomeChipShortcut, "デスクトップ" },
+            { Keys.SettingsInvite, "友だちを招待" },
+            { Keys.SettingsInviteShare, "Bordy で一緒に遊ぼう！" },
+            { Keys.ShareDailyTitle, "今日のチャレンジは {0} でクリア。超えられる？" },
+            { Keys.ShareDailySubtitle, "同じパズル。勝負しない？" },
+            { Keys.SettingsStatusPrivacy, "プライバシーと規約を開いています…" },
+            { Keys.SettingsStatusPrivacyOk, "プライバシーと規約を開きました" },
+            { Keys.SettingsStatusPrivacyFail, "ページを開けませんでした。全文を下に表示します。" },
+            { Keys.SettingsStatusSidebar, "サイドバーを開いています…" },
+            { Keys.SettingsStatusSidebarOk, "サイドバーを開きました" },
+            { Keys.SettingsStatusSidebarFail, "サイドバーは今使えません。後でもう一度。" },
+            { Keys.SettingsStatusShortcut, "ポップアップでデスクトップ追加を確認してください" },
+            { Keys.SettingsStatusShortcutOk, "デスクトップに追加しました" },
+            { Keys.SettingsStatusInvite, "招待を開いています…" },
+            { Keys.SettingsStatusLanguage, "言語：日本語" },
+            { Keys.SettingsLegalTitle, "Privacy & Terms" },
+            { Keys.SettingsLegalBody,
+                "Operator: Shanghai Quanjie Technology Co., Ltd.\n\n" +
+                "Privacy: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
+                "Terms: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
+                "We collect only what the TikTok Mini Game platform provides (OpenID, cloud save, ads). Data is stored on Cloudflare. Youth / general audience. Contact: 1531362757@qq.com" },
+            { Keys.NavBack, "戻る" },
+
+            { Keys.ShopFabLabel, "ショップ" },
+            { Keys.ShopTitle, "アイコンショップ" },
+            { Keys.ShopUse, "使う" },
+            { Keys.ShopSelected, "使用中" },
+            { Keys.ShopWatchAd, "広告を見て解除" },
+            { Keys.ShopLoadingAd, "広告を読み込み中…" },
+            { Keys.ShopUnlocked, "解除しました。装備済み！" },
+            { Keys.ShopAdFailed, "広告を再生できません。後でもう一度。" },
+            { Keys.ShopAdEditorBlocked, "ヒント解除にはリワード広告が必要です（Editor では広告シミュなし）" },
+            { Keys.ShopAdSdkNotReady, "広告の準備中です。少し待ってからもう一度。" },
+            { Keys.ShopAdNotConfigured, "広告枠が未設定です。ポータルでリワード広告を作成してください" },
+
+            { Keys.HomeSubtitle, "ロジックパズル" },
+            { Keys.HomeStart, "プレイ" },
+            { Keys.HomeFooter, "ボタンをタップして始める" },
+            { Keys.HomeLoginLoading, "ログイン中…" },
+            { Keys.HomeLoginFailed, "ログインに失敗しました。通信を確認して再試行してください。" },
+            { Keys.HomeLoginRetry, "再試行" },
+
+            { Keys.LevelSelectTitle, "レベル選択" },
+            { Keys.LevelSelectHintUnlocked, "レベルを選んで挑戦" },
+            { Keys.LevelSelectHintLocked, "チュートリアルをクリアすると本編が開放されます" },
+
+            { Keys.LevelTutorialTitle, "チュートリアル" },
+            { Keys.LevelTutorialSubtitle, "遊び方を順番に覚えよう" },
+            { Keys.LevelDailyTitle, "デイリーチャレンジ" },
+            { Keys.LevelDailySubtitleDefault, "毎日1問 · 全員同じ" },
+            { Keys.LevelDailySubtitleLocked, "チュートリアル後に開放" },
+            { Keys.LevelDailySubtitleOpen, "毎日1問 · 全員同じ · 今日挑戦できる" },
+            { Keys.LevelDailySubtitleDone, "今日クリア済み · {0} · タップで見る" },
+            { Keys.LevelDailyLoading, "今日のパズルを読み込み中…" },
+            { Keys.LevelDailyLoadError, "今日のパズルを読み込めません。タップで再試行" },
+            { Keys.Level1Title, "レベル 1" },
+            { Keys.Level1Subtitle, "6×6 チャレンジ" },
+
+            { Keys.CampaignTitle, "キャンペーン" },
+            { Keys.CampaignHint, "順番にクリアして次のレベルを開放" },
+            { Keys.CampaignEmpty, "レベルがありません。Unity で Bordy → Generate Campaign Levels を実行" },
+            { Keys.CampaignHubTitle, "キャンペーン" },
+            { Keys.CampaignHubSubtitle, "本編 · だんだん難しく" },
+            { Keys.CampaignLevelTitleFmt, "レベル {0}" },
+            { Keys.CampaignLevelOpen, "{0}×{1} · タップして開始" },
+            { Keys.CampaignLevelLocked, "{0}×{1} · 未開放" },
+            { Keys.CampaignLevelDone, "{0}×{1} · クリア済み" },
+
+            { Keys.GameplayReset, "リセット" },
+            { Keys.GameplayUndo, "チェック" },
+            { Keys.GameplayCheck, "チェック" },
+            { Keys.GameplayHint, "ヒント" },
+            { Keys.GameplayRulesHeading, "遊び方" },
+            { Keys.GameplayRulesBody, "•  各行・各列で2種類のアイコン数が同じ。同じアイコンは隣り合って2つまで。\n•  = で区切られたマスは同じ、× で区切られたマスは反対。" },
+            { Keys.GameplayRulesTutorialHeading, "ガイド" },
+            { Keys.GameplayRulesTutorialBody, "•  ヒントに従って 6×6 を埋めていこう。\n•  各行・各列に各アイコンが3つ。\n•  = は同じ、× は反対。3つ連続は禁止。" },
+            { Keys.RulesIconsFill, "•  各マスに入れるのは" },
+            { Keys.RulesIconsOr, "または" },
+
+            { Keys.StatusTap, "" },
+            { Keys.StatusNoHint, "ヒントできるマスがありません" },
+            { Keys.StatusHintLoadingAd, "広告を読み込み中…" },
+            { Keys.StatusHintAdFailed, "広告を再生できません。後でもう一度。" },
+            { Keys.StatusHintEditorBlocked, "ヒントにはリワード広告が必要です（Editor では広告シミュなし）" },
+            { Keys.StatusHintSdkNotReady, "広告の準備中です。少し待ってからもう一度。" },
+            { Keys.StatusHintAdNotConfigured, "広告枠が未設定です。ポータルでリワード広告を作成してください" },
+            { Keys.StatusHintFreeLeft, "無料ヒント残り {0} 回" },
+            { Keys.StatusHintWatchAd, "無料ヒントは使い切りました。広告を見てヒントを獲得" },
+            { Keys.StatusHintCap, "このレベルのヒントは上限です（最大 {0} 回）" },
+            { Keys.StatusErrors, "まだルールを満たしていません。赤いマスを確認" },
+            { Keys.StatusWin, "クリア！" },
+            { Keys.StatusDailyDone, "今日クリア済み · {0}（閲覧のみ · 明日また来てね）" },
+            { Keys.StatusDailyWin, "デイリーチャレンジ完了！ {0}（閲覧のみ）" },
+
+            { Keys.TutorialWelcome, "Bordy へようこそ！\n\nすべてのマスを {sun} か {moon} で埋めてね。" },
+            { Keys.TutorialStart, "スタート" },
+            { Keys.TutorialCoachTap, "どこかをタップして続ける" },
+            { Keys.TutorialGuideSun, "ハイライトのマスを1回タップして\n{sun} を置こう" },
+            { Keys.TutorialGuideMoon, "マスを2回タップすると {moon} になる\n\n目標：すべての行と列に\n{sun} と {moon} を3つずつ" },
+            { Keys.TutorialSymbols, "マスの間に = と × が出るよ\n\n=  両側は同じ\n×  両側は反対\n\n順番に試してみよう。" },
+            { Keys.TutorialContinue, "続ける" },
+            { Keys.TutorialEquals, "= は両側が同じという意味。\nこの2マスをどちらも {sun} にしよう。" },
+            { Keys.TutorialCross, "× は両側が反対という意味。\n上を {moon}、下を {sun} にしよう。" },
+            { Keys.TutorialRowCount, "各行・各列に {sun} と {moon} が3つずつ。\nこの行はすでに {moon} が3つあるから、\nここは {sun}。" },
+            { Keys.TutorialColCount, "列も同じ。\nこの列は {moon} が2つ、{sun} が1つだから、\nここは {sun}。" },
+            { Keys.TutorialAvoidThree, "同じ行・列で同じアイコンを3つ連続させない。\n隣がすでに {moon} {moon} だから、\nここは {sun}。" },
+            { Keys.TutorialRowNeedSun, "この行は太陽がもう1つ必要。太陽になるまでタップ。" },
+            { Keys.TutorialColNeedSun, "この列は月がすでに2つあるから、ここは太陽。" },
+            { Keys.TutorialCheckPlant, "間違えても大丈夫。\nまずこのマスを {moon} にしてみよう。" },
+            { Keys.TutorialCheckUse, "消したい？もう1回タップすると\n空に戻るよ。" },
+            { Keys.TutorialCheckFix, "もう1回タップして、正しい {sun} を置こう。" },
+            { Keys.TutorialHintUse, "詰まったら「ヒント」。黄色い「ヒント」をタップすると、1マス正しく埋めてくれる。" },
+            { Keys.TutorialLastMoon, "最後のマス：この行はすでに {sun} が2つあるから、\n{moon} にしよう。" },
+            { Keys.TutorialComplete, "チュートリアル完了！\n\nキャンペーンとデイリーが開放されました。間違いは「チェック」、行き詰まったら「ヒント」。" },
+            { Keys.TutorialToLevelSelect, "レベル選択" },
+            { Keys.TutorialNudgeCell, "黄色いハイライトのマスをタップしてね。" },
+            { Keys.TutorialNudgeAgain, "まだ終わってないよ。もう一度タップ。" },
+            { Keys.TutorialNudgeCheck, "先に黄色い「チェック」をタップしてね。" },
+            { Keys.TutorialNudgeHint, "黄色い「ヒント」をタップしてね。" },
+            { Keys.TutorialNudgeIdle, "このステップはまだ終わっていません。ハイライトのマスかボタンをタップ。" },
+        };
+
+        private static readonly Dictionary<string, string> Es = new Dictionary<string, string>
+        {
+            { Keys.SettingsTitle, "Ajustes" },
+            { Keys.SettingsFabLabel, "Ajustes" },
+            { Keys.SettingsLanguage, "Idioma" },
+            { Keys.SettingsLanguageButton, "Idioma" },
+            { Keys.SettingsLangZh, "简体中文" },
+            { Keys.SettingsLangJa, "日本語" },
+            { Keys.SettingsLangEn, "English" },
+            { Keys.SettingsClose, "Cerrar" },
+            { Keys.SettingsPlayerGuest, "Jugador" },
+            { Keys.SettingsPlayerMetaFmt, "Personaje: {0}  ·  Campaña {1}" },
+            { Keys.SettingsPrivacy, "Privacidad y términos" },
+            { Keys.SettingsSidebar, "Añadir a la barra lateral" },
+            { Keys.SettingsShortcut, "Añadir acceso directo" },
+            { Keys.HomeChipSidebar, "Barra lateral" },
+            { Keys.HomeChipShortcut, "Escritorio" },
+            { Keys.SettingsInvite, "Invitar amigos" },
+            { Keys.SettingsInviteShare, "¡Ven a jugar Bordy conmigo!" },
+            { Keys.ShareDailyTitle, "Terminé el Bordy de hoy en {0}, ¿puedes superarme?" },
+            { Keys.ShareDailySubtitle, "Mismo puzle. ¿Crees que eres más rápido?" },
+            { Keys.SettingsStatusPrivacy, "Abriendo privacidad y términos…" },
+            { Keys.SettingsStatusPrivacyOk, "Privacidad y términos abiertos" },
+            { Keys.SettingsStatusPrivacyFail, "No se pudo abrir la página. La política se muestra abajo." },
+            { Keys.SettingsStatusSidebar, "Abriendo la barra lateral…" },
+            { Keys.SettingsStatusSidebarOk, "Barra lateral abierta" },
+            { Keys.SettingsStatusSidebarFail, "La barra lateral no está disponible ahora. Inténtalo de nuevo." },
+            { Keys.SettingsStatusShortcut, "Confirma añadir al escritorio en el aviso" },
+            { Keys.SettingsStatusShortcutOk, "Añadido al escritorio" },
+            { Keys.SettingsStatusInvite, "Abriendo invitación…" },
+            { Keys.SettingsStatusLanguage, "Idioma: Español" },
+            { Keys.SettingsLegalTitle, "Privacidad y términos" },
+            { Keys.SettingsLegalBody,
+                "Operador: Shanghai Quanjie Technology Co., Ltd.\n\n" +
+                "Privacidad: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
+                "Términos: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
+                "Solo recopilamos lo que proporciona la plataforma de minijuegos de TikTok (OpenID, guardado en la nube, anuncios). Los datos se almacenan en Cloudflare. Público general. Contacto: 1531362757@qq.com" },
+            { Keys.NavBack, "Atrás" },
+
+            { Keys.ShopFabLabel, "Tienda" },
+            { Keys.ShopTitle, "Tienda de iconos" },
+            { Keys.ShopUse, "Usar" },
+            { Keys.ShopSelected, "En uso" },
+            { Keys.ShopWatchAd, "Ver anuncio" },
+            { Keys.ShopLoadingAd, "Cargando anuncio…" },
+            { Keys.ShopUnlocked, "¡Desbloqueado y equipado!" },
+            { Keys.ShopAdFailed, "Anuncio no disponible, inténtalo más tarde" },
+            { Keys.ShopAdEditorBlocked, "Mira un anuncio con recompensa para desbloquear (sim. de anuncios del Editor desactivada)" },
+            { Keys.ShopAdSdkNotReady, "Los anuncios aún se están cargando, inténtalo en un momento" },
+            { Keys.ShopAdNotConfigured, "Unidad de anuncios no configurada: crea un espacio con recompensa en el portal de desarrolladores" },
+
+            { Keys.HomeSubtitle, "Puzle de lógica" },
+            { Keys.HomeStart, "Jugar" },
+            { Keys.HomeFooter, "Toca el botón para jugar" },
+            { Keys.HomeLoginLoading, "Iniciando sesión…" },
+            { Keys.HomeLoginFailed, "Error al iniciar sesión. Revisa tu conexión e inténtalo de nuevo." },
+            { Keys.HomeLoginRetry, "Reintentar" },
+
+            { Keys.LevelSelectTitle, "Elegir nivel" },
+            { Keys.LevelSelectHintUnlocked, "Elige un nivel para empezar" },
+            { Keys.LevelSelectHintLocked, "Termina el tutorial para desbloquear los niveles principales" },
+
+            { Keys.LevelTutorialTitle, "Tutorial" },
+            { Keys.LevelTutorialSubtitle, "Aprende a jugar, paso a paso" },
+            { Keys.LevelDailyTitle, "Reto diario" },
+            { Keys.LevelDailySubtitleDefault, "Un puzle al día · Igual para todos" },
+            { Keys.LevelDailySubtitleLocked, "Se desbloquea tras el tutorial" },
+            { Keys.LevelDailySubtitleOpen, "Un puzle al día · Igual para todos · Juega hoy" },
+            { Keys.LevelDailySubtitleDone, "Hecho hoy · Tiempo {0} · Toca para ver" },
+            { Keys.LevelDailyLoading, "Cargando el puzle de hoy…" },
+            { Keys.LevelDailyLoadError, "No se pudo cargar el puzle de hoy: toca para reintentar" },
+            { Keys.Level1Title, "Nivel 1" },
+            { Keys.Level1Subtitle, "Reto 6×6" },
+
+            { Keys.CampaignTitle, "Campaña" },
+            { Keys.CampaignHint, "Supera los niveles en orden para desbloquear el siguiente" },
+            { Keys.CampaignEmpty, "No hay niveles cargados: ejecuta Bordy → Generate Campaign Levels en Unity" },
+            { Keys.CampaignHubTitle, "Campaña" },
+            { Keys.CampaignHubSubtitle, "Niveles de historia · fácil → difícil" },
+            { Keys.CampaignLevelTitleFmt, "Nivel {0}" },
+            { Keys.CampaignLevelOpen, "{0}×{1} · toca para jugar" },
+            { Keys.CampaignLevelLocked, "{0}×{1} · bloqueado" },
+            { Keys.CampaignLevelDone, "{0}×{1} · completado" },
+
+            { Keys.GameplayReset, "Reiniciar" },
+            { Keys.GameplayUndo, "Comprobar" },
+            { Keys.GameplayCheck, "Comprobar" },
+            { Keys.GameplayHint, "Pista" },
+            { Keys.GameplayRulesHeading, "Cómo jugar" },
+            { Keys.GameplayRulesBody, "•  Cada fila y columna tiene el mismo número de cada icono, con como máximo 2 iconos iguales seguidos.\n•  Las celdas separadas por = deben coincidir; las separadas por × deben diferir." },
+            { Keys.GameplayRulesTutorialHeading, "Guía" },
+            { Keys.GameplayRulesTutorialBody, "•  Sigue los consejos y completa la cuadrícula 6×6, paso a paso.\n•  Cada fila y columna tiene tres de cada icono.\n•  = significa igual, × significa opuesto; nunca 3 seguidos." },
+            { Keys.RulesIconsFill, "•  Rellena cada celda con" },
+            { Keys.RulesIconsOr, "o" },
+
+            { Keys.StatusTap, "" },
+            { Keys.StatusNoHint, "No quedan celdas para pistas" },
+            { Keys.StatusHintLoadingAd, "Cargando anuncio…" },
+            { Keys.StatusHintAdFailed, "Anuncio no disponible, inténtalo más tarde" },
+            { Keys.StatusHintEditorBlocked, "Mira un anuncio con recompensa para una pista (sim. de anuncios del Editor desactivada)" },
+            { Keys.StatusHintSdkNotReady, "Los anuncios aún se están cargando, inténtalo en un momento" },
+            { Keys.StatusHintAdNotConfigured, "Unidad de anuncios no configurada: crea un espacio con recompensa en el portal de desarrolladores" },
+            { Keys.StatusHintFreeLeft, "Quedan {0} pista(s) gratis" },
+            { Keys.StatusHintWatchAd, "No quedan pistas gratis: mira un anuncio para una pista" },
+            { Keys.StatusHintCap, "No quedan pistas en este nivel (máx {0})" },
+            { Keys.StatusErrors, "Algunas reglas no se cumplen: revisa las celdas en rojo" },
+            { Keys.StatusWin, "¡Puzle resuelto!" },
+            { Keys.StatusDailyDone, "Hecho hoy · Tiempo {0} (solo lectura, vuelve mañana)" },
+            { Keys.StatusDailyWin, "¡Reto diario completado! Tiempo {0} (solo lectura)" },
+
+            { Keys.TutorialWelcome, "¡Bienvenido a Bordy!\n\nRellena cada casilla con un {sun} o una {moon}." },
+            { Keys.TutorialStart, "Empezar" },
+            { Keys.TutorialCoachTap, "Toca en cualquier lugar para continuar" },
+            { Keys.TutorialGuideSun, "Toca la casilla resaltada\nuna vez para poner un {sun}" },
+            { Keys.TutorialGuideMoon, "Toca una casilla dos veces para poner una {moon}\n\nMeta: rellena la cuadrícula para que cada fila y\ncolumna tenga tres {sun} y tres {moon}" },
+            { Keys.TutorialSymbols, "Las celdas pueden tener = o × entre ellas\n\n=  ambos lados deben coincidir\n×  ambos lados deben diferir\n\nProbemos cada uno." },
+            { Keys.TutorialContinue, "Continuar" },
+            { Keys.TutorialEquals, "= significa que ambos lados coinciden.\nHaz que estas dos celdas sean {sun}." },
+            { Keys.TutorialCross, "× significa que las dos celdas difieren.\nHaz la celda de arriba {moon}\ny la de abajo {sun}." },
+            { Keys.TutorialRowCount, "Cada fila y columna tiene tres {sun}\ny tres {moon}. Esta fila ya tiene\ntres {moon}, así que esta debe ser un {sun}." },
+            { Keys.TutorialColCount, "Las columnas funcionan igual.\nEsta columna tiene dos {moon} y un {sun},\nasí que esta celda debe ser un {sun}." },
+            { Keys.TutorialAvoidThree, "Nunca 3 iguales seguidos en fila o columna.\nEstas dos ya son {moon} {moon},\nasí que esta debe ser un {sun}." },
+            { Keys.TutorialRowNeedSun, "A esta fila le falta un Sol. Toca hasta que sea un Sol." },
+            { Keys.TutorialColNeedSun, "Esta columna ya tiene 2 lunas, así que esta celda debe ser un Sol." },
+            { Keys.TutorialCheckPlant, "¿Te equivocaste? No pasa nada.\nToca esta celda para poner una {moon} primero." },
+            { Keys.TutorialCheckUse, "¿Quieres borrarla? Toca de nuevo\ny vuelve a estar vacía." },
+            { Keys.TutorialCheckFix, "Toca una vez más para poner el {sun} correcto." },
+            { Keys.TutorialHintUse, "Si te atascas, usa Pista. Toca Pista y el juego rellena una celda correctamente." },
+            { Keys.TutorialLastMoon, "Última celda: esta fila ya tiene dos {sun},\nasí que ponla como {moon}." },
+            { Keys.TutorialComplete, "¡Tutorial completado!\n\nLa Campaña y el Reto diario están desbloqueados. Usa Comprobar para hallar errores y Pista cuando te atasques." },
+            { Keys.TutorialToLevelSelect, "Elegir nivel" },
+            { Keys.TutorialNudgeCell, "Toca la celda resaltada en amarillo." },
+            { Keys.TutorialNudgeAgain, "Aún no está: toca de nuevo." },
+            { Keys.TutorialNudgeCheck, "Primero toca el botón amarillo Comprobar." },
+            { Keys.TutorialNudgeHint, "Toca el botón amarillo Pista." },
+            { Keys.TutorialNudgeIdle, "Este paso aún no está hecho. Toca la celda o el botón resaltado." },
+        };
+
+        private static readonly Dictionary<string, string> Id = new Dictionary<string, string>
+        {
+            { Keys.SettingsTitle, "Pengaturan" },
+            { Keys.SettingsFabLabel, "Pengaturan" },
+            { Keys.SettingsLanguage, "Bahasa" },
+            { Keys.SettingsLanguageButton, "Bahasa" },
+            { Keys.SettingsLangZh, "简体中文" },
+            { Keys.SettingsLangJa, "日本語" },
+            { Keys.SettingsLangEn, "English" },
+            { Keys.SettingsClose, "Tutup" },
+            { Keys.SettingsPlayerGuest, "Pemain" },
+            { Keys.SettingsPlayerMetaFmt, "Karakter: {0}  ·  Kampanye {1}" },
+            { Keys.SettingsPrivacy, "Privasi & Ketentuan" },
+            { Keys.SettingsSidebar, "Tambahkan ke bilah sisi" },
+            { Keys.SettingsShortcut, "Tambahkan pintasan" },
+            { Keys.HomeChipSidebar, "Bilah sisi" },
+            { Keys.HomeChipShortcut, "Desktop" },
+            { Keys.SettingsInvite, "Undang teman" },
+            { Keys.SettingsInviteShare, "Ayo main Bordy bareng aku!" },
+            { Keys.ShareDailyTitle, "Aku menyelesaikan Bordy hari ini dalam {0} — bisa kalahkan aku?" },
+            { Keys.ShareDailySubtitle, "Teka-teki yang sama. Merasa lebih cepat?" },
+            { Keys.SettingsStatusPrivacy, "Membuka Privasi & Ketentuan…" },
+            { Keys.SettingsStatusPrivacyOk, "Privasi & Ketentuan dibuka" },
+            { Keys.SettingsStatusPrivacyFail, "Tidak bisa membuka halaman. Kebijakan ditampilkan di bawah." },
+            { Keys.SettingsStatusSidebar, "Membuka bilah sisi…" },
+            { Keys.SettingsStatusSidebarOk, "Bilah sisi dibuka" },
+            { Keys.SettingsStatusSidebarFail, "Bilah sisi tidak tersedia saat ini. Coba lagi." },
+            { Keys.SettingsStatusShortcut, "Konfirmasi tambah ke desktop pada permintaan" },
+            { Keys.SettingsStatusShortcutOk, "Ditambahkan ke desktop" },
+            { Keys.SettingsStatusInvite, "Membuka undangan…" },
+            { Keys.SettingsStatusLanguage, "Bahasa: Indonesia" },
+            { Keys.SettingsLegalTitle, "Privasi & Ketentuan" },
+            { Keys.SettingsLegalBody,
+                "Operator: Shanghai Quanjie Technology Co., Ltd.\n\n" +
+                "Privasi: https://bordy-api.brainless.workers.dev/privacy.html\n\n" +
+                "Ketentuan: https://bordy-api.brainless.workers.dev/terms.html\n\n" +
+                "Kami hanya mengumpulkan data yang disediakan platform Mini Game TikTok (OpenID, simpanan awan, iklan). Data disimpan di Cloudflare. Untuk umum. Kontak: 1531362757@qq.com" },
+            { Keys.NavBack, "Kembali" },
+
+            { Keys.ShopFabLabel, "Toko" },
+            { Keys.ShopTitle, "Toko Ikon" },
+            { Keys.ShopUse, "Pakai" },
+            { Keys.ShopSelected, "Dipakai" },
+            { Keys.ShopWatchAd, "Tonton iklan" },
+            { Keys.ShopLoadingAd, "Memuat iklan…" },
+            { Keys.ShopUnlocked, "Terbuka — sudah dipasang untukmu!" },
+            { Keys.ShopAdFailed, "Iklan tidak tersedia — coba lagi nanti" },
+            { Keys.ShopAdEditorBlocked, "Tonton iklan berhadiah untuk membuka (simulasi iklan Editor mati)" },
+            { Keys.ShopAdSdkNotReady, "Iklan masih dimuat — coba lagi sebentar" },
+            { Keys.ShopAdNotConfigured, "Unit iklan belum diatur — buat penempatan berhadiah di portal pengembang" },
+
+            { Keys.HomeSubtitle, "Teka-teki Logika" },
+            { Keys.HomeStart, "Main" },
+            { Keys.HomeFooter, "Ketuk tombol untuk bermain" },
+            { Keys.HomeLoginLoading, "Masuk…" },
+            { Keys.HomeLoginFailed, "Gagal masuk. Periksa koneksimu dan coba lagi." },
+            { Keys.HomeLoginRetry, "Coba lagi" },
+
+            { Keys.LevelSelectTitle, "Pilih Level" },
+            { Keys.LevelSelectHintUnlocked, "Pilih level untuk mulai" },
+            { Keys.LevelSelectHintLocked, "Selesaikan tutorial untuk membuka level utama" },
+
+            { Keys.LevelTutorialTitle, "Tutorial" },
+            { Keys.LevelTutorialSubtitle, "Belajar bermain, langkah demi langkah" },
+            { Keys.LevelDailyTitle, "Tantangan Harian" },
+            { Keys.LevelDailySubtitleDefault, "Satu teka-teki per hari · Sama untuk semua" },
+            { Keys.LevelDailySubtitleLocked, "Terbuka setelah tutorial" },
+            { Keys.LevelDailySubtitleOpen, "Satu teka-teki per hari · Sama untuk semua · Main hari ini" },
+            { Keys.LevelDailySubtitleDone, "Selesai hari ini · Waktu {0} · Ketuk untuk lihat" },
+            { Keys.LevelDailyLoading, "Memuat teka-teki hari ini…" },
+            { Keys.LevelDailyLoadError, "Tidak bisa memuat teka-teki hari ini — ketuk untuk coba lagi" },
+            { Keys.Level1Title, "Level 1" },
+            { Keys.Level1Subtitle, "Tantangan 6×6" },
+
+            { Keys.CampaignTitle, "Kampanye" },
+            { Keys.CampaignHint, "Selesaikan level secara berurutan untuk membuka berikutnya" },
+            { Keys.CampaignEmpty, "Belum ada level dimuat — jalankan Bordy → Generate Campaign Levels di Unity" },
+            { Keys.CampaignHubTitle, "Kampanye" },
+            { Keys.CampaignHubSubtitle, "Level cerita · mudah → sulit" },
+            { Keys.CampaignLevelTitleFmt, "Level {0}" },
+            { Keys.CampaignLevelOpen, "{0}×{1} · ketuk untuk main" },
+            { Keys.CampaignLevelLocked, "{0}×{1} · terkunci" },
+            { Keys.CampaignLevelDone, "{0}×{1} · selesai" },
+
+            { Keys.GameplayReset, "Ulang" },
+            { Keys.GameplayUndo, "Periksa" },
+            { Keys.GameplayCheck, "Periksa" },
+            { Keys.GameplayHint, "Petunjuk" },
+            { Keys.GameplayRulesHeading, "Cara Bermain" },
+            { Keys.GameplayRulesBody, "•  Tiap baris dan kolom memuat jumlah ikon yang sama, maksimal 2 ikon sama berdampingan.\n•  Sel yang dipisah = harus sama; sel yang dipisah × harus berbeda." },
+            { Keys.GameplayRulesTutorialHeading, "Panduan" },
+            { Keys.GameplayRulesTutorialBody, "•  Ikuti petunjuk dan isi kisi 6×6, selangkah demi selangkah.\n•  Tiap baris dan kolom punya tiga dari tiap ikon.\n•  = berarti sama, × berarti berbeda; jangan pernah 3 berturut-turut." },
+            { Keys.RulesIconsFill, "•  Isi tiap sel dengan" },
+            { Keys.RulesIconsOr, "atau" },
+
+            { Keys.StatusTap, "" },
+            { Keys.StatusNoHint, "Tidak ada sel tersisa untuk petunjuk" },
+            { Keys.StatusHintLoadingAd, "Memuat iklan…" },
+            { Keys.StatusHintAdFailed, "Iklan tidak tersedia — coba lagi nanti" },
+            { Keys.StatusHintEditorBlocked, "Tonton iklan berhadiah untuk petunjuk (simulasi iklan Editor mati)" },
+            { Keys.StatusHintSdkNotReady, "Iklan masih dimuat — coba lagi sebentar" },
+            { Keys.StatusHintAdNotConfigured, "Unit iklan belum diatur — buat penempatan berhadiah di portal pengembang" },
+            { Keys.StatusHintFreeLeft, "Sisa {0} petunjuk gratis" },
+            { Keys.StatusHintWatchAd, "Petunjuk gratis habis — tonton iklan untuk petunjuk" },
+            { Keys.StatusHintCap, "Petunjuk habis di level ini (maks {0})" },
+            { Keys.StatusErrors, "Beberapa aturan belum terpenuhi — periksa sel yang merah" },
+            { Keys.StatusWin, "Teka-teki terpecahkan!" },
+            { Keys.StatusDailyDone, "Selesai hari ini · Waktu {0} (hanya lihat — kembali besok)" },
+            { Keys.StatusDailyWin, "Tantangan Harian selesai! Waktu {0} (hanya lihat)" },
+
+            { Keys.TutorialWelcome, "Selamat datang di Bordy!\n\nIsi tiap kotak dengan {sun} atau {moon}." },
+            { Keys.TutorialStart, "Mulai" },
+            { Keys.TutorialCoachTap, "Ketuk di mana saja untuk lanjut" },
+            { Keys.TutorialGuideSun, "Ketuk kotak yang disorot\nsekali untuk menaruh {sun}" },
+            { Keys.TutorialGuideMoon, "Ketuk kotak dua kali untuk menaruh {moon}\n\nTujuan: isi kisi agar tiap baris dan\nkolom punya tiga {sun} dan tiga {moon}" },
+            { Keys.TutorialSymbols, "Sel bisa punya = atau × di antaranya\n\n=  kedua sisi harus sama\n×  kedua sisi harus berbeda\n\nAyo coba satu per satu." },
+            { Keys.TutorialContinue, "Lanjut" },
+            { Keys.TutorialEquals, "= berarti kedua sisi harus sama.\nBuat kedua sel ini {sun}." },
+            { Keys.TutorialCross, "× berarti kedua sel harus berbeda.\nBuat sel atas {moon}\ndan sel bawah {sun}." },
+            { Keys.TutorialRowCount, "Tiap baris dan kolom punya tiga {sun}\ndan tiga {moon}. Baris ini sudah punya\ntiga {moon}, jadi ini harus {sun}." },
+            { Keys.TutorialColCount, "Kolom bekerja dengan cara sama.\nKolom ini punya dua {moon} dan satu {sun},\njadi sel ini harus {sun}." },
+            { Keys.TutorialAvoidThree, "Jangan pernah 3 sama berturut-turut di baris atau kolom.\nKedua ini sudah {moon} {moon},\njadi yang ini harus {sun}." },
+            { Keys.TutorialRowNeedSun, "Baris ini masih butuh satu Matahari. Ketuk sampai jadi Matahari." },
+            { Keys.TutorialColNeedSun, "Kolom ini sudah punya 2 bulan, jadi sel ini harus Matahari." },
+            { Keys.TutorialCheckPlant, "Salah? Tidak masalah.\nKetuk sel ini jadi {moon} dulu." },
+            { Keys.TutorialCheckUse, "Ingin menghapusnya? Ketuk lagi\ndan kembali kosong." },
+            { Keys.TutorialCheckFix, "Ketuk sekali lagi untuk menaruh {sun} yang benar." },
+            { Keys.TutorialHintUse, "Kalau buntu, pakai Petunjuk. Ketuk Petunjuk dan permainan mengisi satu sel dengan benar." },
+            { Keys.TutorialLastMoon, "Sel terakhir: baris ini sudah punya dua {sun},\njadi jadikan {moon}." },
+            { Keys.TutorialComplete, "Tutorial selesai!\n\nKampanye dan Tantangan Harian terbuka. Pakai Periksa untuk menemukan kesalahan dan Petunjuk saat buntu." },
+            { Keys.TutorialToLevelSelect, "Pilih Level" },
+            { Keys.TutorialNudgeCell, "Ketuk sel yang disorot kuning." },
+            { Keys.TutorialNudgeAgain, "Belum selesai — ketuk lagi." },
+            { Keys.TutorialNudgeCheck, "Ketuk tombol Periksa kuning dulu." },
+            { Keys.TutorialNudgeHint, "Ketuk tombol Petunjuk kuning." },
+            { Keys.TutorialNudgeIdle, "Langkah ini belum selesai. Ketuk sel atau tombol yang disorot." },
+        };
+
         public static string Get(string key)
         {
-            var table = BordyLocale.Current == BordyLanguage.En ? En : Zh;
-            return table.TryGetValue(key, out var value) ? value : key;
+            var table = TableFor(BordyLocale.Current);
+            if (table.TryGetValue(key, out var value))
+                return value;
+            return En.TryGetValue(key, out value) ? value : key;
+        }
+
+        private static Dictionary<string, string> TableFor(BordyLanguage language)
+        {
+            switch (language)
+            {
+                case BordyLanguage.ZhHans: return Zh;
+                case BordyLanguage.Ja: return Ja;
+                case BordyLanguage.Es: return Es;
+                case BordyLanguage.Id: return Id;
+                default: return En;
+            }
         }
 
         /// <summary>Language row label — ASCII fallback when CJK font not bundled.</summary>
         public static string SettingsLangZhLabel()
             => BordyFonts.HasCjk ? Get(Keys.SettingsLangZh) : "Chinese (Simplified)";
+
+        public static string SettingsLangJaLabel()
+            => BordyFonts.HasCjk ? Get(Keys.SettingsLangJa) : "Japanese";
 
         public static string Format(string key, params object[] args)
             => args == null || args.Length == 0 ? Get(key) : string.Format(Get(key), args);
@@ -452,6 +886,19 @@ namespace Bordy
                     case "medium": return "Medium";
                     case "hard": return "Hard";
                     case "brutal": return "Extreme";
+                    default: return tier;
+                }
+            }
+
+            if (BordyLocale.Current == BordyLanguage.Ja)
+            {
+                switch (tier)
+                {
+                    case "easy":
+                    case "hook": return "かんたん";
+                    case "medium": return "ふつう";
+                    case "hard": return "むずかしい";
+                    case "brutal": return "超難関";
                     default: return tier;
                 }
             }
