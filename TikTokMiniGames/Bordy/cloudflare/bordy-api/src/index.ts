@@ -125,13 +125,26 @@ async function exchangeCode(env: Env, code: string): Promise<string> {
   return openId;
 }
 
+function sessionPointerKey(openId: string): string {
+  return `session-user:${openId}`;
+}
+
 async function createSession(env: Env, openId: string): Promise<string> {
+  const pointerKey = sessionPointerKey(openId);
+  const previousToken = await env.BORDY_KV.get(pointerKey);
+  if (previousToken) {
+    await env.BORDY_KV.delete(`session:${previousToken}`);
+  }
+
   const token = randomToken();
   const record: SessionRecord = {
     openId,
     expiresAt: Math.floor(Date.now() / 1000) + SESSION_TTL_SEC,
   };
   await env.BORDY_KV.put(`session:${token}`, JSON.stringify(record), {
+    expirationTtl: SESSION_TTL_SEC,
+  });
+  await env.BORDY_KV.put(pointerKey, token, {
     expirationTtl: SESSION_TTL_SEC,
   });
   return token;
@@ -146,7 +159,10 @@ async function resolveSession(env: Env, authHeader: string | null): Promise<stri
   if (!raw) return null;
 
   const record = JSON.parse(raw) as SessionRecord;
-  if (record.expiresAt < Math.floor(Date.now() / 1000)) return null;
+  if (record.expiresAt < Math.floor(Date.now() / 1000)) {
+    await env.BORDY_KV.delete(`session:${token}`);
+    return null;
+  }
   return record.openId;
 }
 
