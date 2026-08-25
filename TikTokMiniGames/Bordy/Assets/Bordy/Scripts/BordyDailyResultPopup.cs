@@ -95,7 +95,7 @@ namespace Bordy
             crt.sizeDelta = new Vector2(760, 648);
             crt.anchoredPosition = Vector2.zero;
 
-            var title = CreateText("Title", card.transform, "🎉  Daily Challenge Complete!", 42, FontStyle.Bold, ColInk);
+            var title = CreateText("Title", card.transform, "Daily Challenge Complete!", 42, FontStyle.Bold, ColInk);
             Anchor(title.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1));
             title.rectTransform.sizeDelta = new Vector2(-48, 92);
             title.rectTransform.anchoredPosition = new Vector2(0, -28);

@@ -69,7 +69,7 @@ namespace Bordy.EditorTools
             titleLabel.alignment = TextAnchor.MiddleCenter;
             titleLabel.color = ColInk;
 
-            var timer = CreateText("Timer", parent, "◷ 0:00", 36, FontStyle.Normal);
+            var timer = CreateText("Timer", parent, "0:00", 36, FontStyle.Normal);
             Anchor(timer.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             timer.rectTransform.sizeDelta = new Vector2(260, 64);
             timer.rectTransform.anchoredPosition = new Vector2(0, -230);

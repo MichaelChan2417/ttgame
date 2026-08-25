@@ -1104,7 +1104,7 @@ namespace Bordy
                 // 全部闯关通关 → 弹「更多关卡敬请期待」。
                 if (BordyProgress.AllCampaignCompleted())
                     BordyMessagePopup.Show(transform,
-                        "All levels cleared! 🎉",
+                        "All levels cleared!",
                         "You've beaten every Bordy level. More challenges are coming soon — thanks for playing!");
             }
             else

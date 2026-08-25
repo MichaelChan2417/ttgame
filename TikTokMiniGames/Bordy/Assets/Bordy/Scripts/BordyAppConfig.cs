@@ -47,6 +47,6 @@ namespace Bordy
         /// TESTING ONLY: when true, every skin is treated as already unlocked (no ad, no tap).
         /// Set back to false before shipping. / 仅测试用：所有皮肤视为已解锁。上线前改回 false。
         /// </summary>
-        public const bool UnlockAllSkinsForTesting = true;
+        public const bool UnlockAllSkinsForTesting = false;
     }
 }

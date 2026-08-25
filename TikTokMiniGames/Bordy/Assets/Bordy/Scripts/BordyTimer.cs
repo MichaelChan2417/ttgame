@@ -58,7 +58,8 @@ namespace Bordy
         private void Update()
         {
             int t = (int)Current;
-            _label.text = $"◷ {t / 60}:{t % 60:00}";
+            // No clock glyph: Noto Sans CJK lacks U+25F7, which renders as a box on device.
+            _label.text = $"{t / 60}:{t % 60:00}";
         }
 
         /// <summary>Reset to zero and start counting. / 清零并开始计时。</summary>

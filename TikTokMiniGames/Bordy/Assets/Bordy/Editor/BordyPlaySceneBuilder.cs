@@ -57,7 +57,7 @@ namespace Bordy.EditorTools
             title.rectTransform.anchoredPosition = new Vector2(0, -120);
             title.alignment = TextAnchor.MiddleCenter;
 
-            var timer = CreateText("Timer", canvasGo.transform, "◷ 0:00", 36, FontStyle.Normal);
+            var timer = CreateText("Timer", canvasGo.transform, "0:00", 36, FontStyle.Normal);
             Anchor(timer.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1));
             timer.rectTransform.sizeDelta = new Vector2(260, 64);
             timer.rectTransform.anchoredPosition = new Vector2(0, -230);
