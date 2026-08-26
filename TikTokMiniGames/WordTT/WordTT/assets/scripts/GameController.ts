@@ -17,7 +17,7 @@ const BASE_ROWS = 6;   // normal guesses
 const MAX_ROWS = 7;    // hard cap once the +1-row booster is used
 
 /** Rewarded-ad slot id — configure in the TikTok dev portal before release. */
-const AD_UNIT = 'YOUR_REWARDED_AD_UNIT_ID';
+const AD_UNIT = 'ad7677905482645162005';
 /** Cloud-storage key for the friend leaderboard. */
 const DAILY_KEY = 'wordtt_daily';
 /** Local-storage key for saving today's in-progress game. */
