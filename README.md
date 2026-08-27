@@ -1,15 +1,15 @@
 # ttgame (archived)
 
-This repository is **read-only**. Mini-game work moved to [Holya007/BrainlessMinis](https://github.com/Holya007/BrainlessMinis).
+This repository is **read-only**. Mini-game work moved to [BrainlessMinigames/BrainlessMinis](https://github.com/BrainlessMinigames/BrainlessMinis).
 
-- Shared modules: `comm` → [Holya007/brainless-comm](https://github.com/Holya007/brainless-comm)
-- Bordy: [Holya007/Bordy](https://github.com/Holya007/Bordy)
-- WordTT: [Holya007/WordTT](https://github.com/Holya007/WordTT)
+- Shared modules: `comm` → [BrainlessMinigames/brainless-comm](https://github.com/BrainlessMinigames/brainless-comm)
+- Bordy: [BrainlessMinigames/Bordy](https://github.com/BrainlessMinigames/Bordy)
+- WordTT: [BrainlessMinigames/WordTT](https://github.com/BrainlessMinigames/WordTT)
 
 Do not merge new game code here. Clone the superproject and pull the mini you need:
 
 ```bash
-git clone git@github.com:Holya007/BrainlessMinis.git
+git clone --recurse-submodules git@github.com:BrainlessMinigames/BrainlessMinis.git
 cd BrainlessMinis
 ./scripts/mini pull Bordy
 ```
